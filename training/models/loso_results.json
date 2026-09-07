@@ -112,10 +112,11 @@
     "classes": [
       "benign"
     ],
-    "macro_f1": 0.002714756641458212,
+    "macro_f1": 0.2916227940275091,
     "per_class_f1": {
-      "benign": 0.002714756641458212
-    }
+      "benign": 0.2916227940275091
+    },
+    "note": "Recomputed 2026-09-06 with synthetic_nav_ecommerce added to data_clean/ as a second, independent benign-navigation source (present in the training set for this fold, since it is not the held-out source). F1 improved from 0.0027 (original 9-source sweep) to 0.2916 - a real but partial improvement, not a resolution. See docs/limitations.md section 4 and section 10 for the larger structural finding this surfaced (benign corpus underrepresents real HTTP request/navigation shape). Other 8 entries in this file are unchanged from the original full sweep (commit 4486b17) and were not recomputed."
   },
   {
     "held_out_source": "xss_dataset",

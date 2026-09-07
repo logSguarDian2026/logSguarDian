@@ -166,3 +166,13 @@ mappings:
   # none of them are in SHELL_COMMAND_COUNT's vocabulary. Nonce-based dedup.
   synthetic_cmdi_compound:
     cmdi: cmdi
+
+  # training/data_clean/synthetic_nav_ecommerce.jsonl
+  # Synthetic e-commerce navigation traffic (GET-heavy, empty query/body
+  # for ~90%+, e-commerce path taxonomy: cart/checkout/orders/products/
+  # category, expanded UA pool including Edge/Samsung Internet/okhttp/
+  # Go-http-client, varied cookie styles). Second independent pure-nav
+  # source alongside synthetic_nav, targeting synthetic_nav's isolated
+  # LOSO generalization gap. Raw label field is already "benign".
+  synthetic_nav_ecommerce:
+    benign: benign

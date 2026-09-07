@@ -174,6 +174,47 @@ substantially until re-training incorporates a sample of it — this system
 does not claim, and LOSO shows it should not be assumed, to generalize to
 arbitrary unseen traffic styles beyond what informed its training data.
 
+**Partial mitigation (2026-09-06): `synthetic_nav_ecommerce` added as a
+second independent pure-navigation source.** 380 records of e-commerce
+navigation (GET-heavy, empty query/body for ~90%+, expanded UA pool,
+`training/data_clean/synthetic_nav_ecommerce.jsonl`), verified with 0%
+three-way MinHash overlap against `synthetic_nav`, `path_traversal`, and
+`sqli` once short-string shingle artifacts were filtered out (payloads
+under 15 chars produce unreliable k=3 Jaccard estimates and were excluded
+from that check — see `label_map.yaml`'s entry for the exact source). Only
+133 of the 380 records survive `unify.py`'s exact dedup, since its
+fingerprint (`path|query|body|label`) does not include User-Agent/cookie —
+most of the file's intentional UA variety collapses to one surviving record
+per unique path, a real limitation of this addition worth noting for anyone
+extending it further.
+
+Re-running LOSO with `synthetic_nav` held out but `synthetic_nav_ecommerce`
+present in training (`training/models/loso_results.json`, `synthetic_nav`
+entry) moved its F1 from **0.0027 to 0.2916** — a genuine, non-trivial
+improvement, but **not a resolution**: 0.29 remains in the "poor
+generalization" band defined above. The other 8 sources' LOSO entries were
+not recomputed and are unchanged from the original sweep.
+
+This addition does not resolve the structural finding it surfaced during
+verification: 99.6% of the benign corpus does not model real HTTP request
+shape (path + headers + User-Agent) at all — the overwhelming majority are
+isolated field values from payload-classification datasets (names,
+addresses, emails), with no navigation context. `synthetic_nav` and
+`synthetic_nav_ecommerce` combined represent roughly 0.8% of the total
+benign corpus. This also explains and generalizes the User-Agent tension
+already documented in §10 (corrected to note RF, not only IF, is affected)
+— it is not an isolated User-Agent problem, but a broader gap in how much
+of the corpus represents real navigation traffic at all.
+
+**Future work (larger scope, out of this cycle):** systematic benign-vocabulary
+diversification via templated generation across multiple application
+"personas" (blog, e-commerce, dashboard, API-only, admin panel), each
+contributing proportionally, at a scale that meaningfully shifts
+representation above the current <1% of the corpus — applying the same
+dose-response sweep and RF (not only IF) recall-regression checks used in
+the §10 investigation, since making benign traffic more realistic has
+already been shown there to trade off against attack-class recall.
+
 ---
 
 ## 5. Near-Duplicate Detection Scope Gap
