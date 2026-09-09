@@ -174,6 +174,47 @@ substantially until re-training incorporates a sample of it — this system
 does not claim, and LOSO shows it should not be assumed, to generalize to
 arbitrary unseen traffic styles beyond what informed its training data.
 
+**Partial mitigation (2026-09-06): `synthetic_nav_ecommerce` added as a
+second independent pure-navigation source.** 380 records of e-commerce
+navigation (GET-heavy, empty query/body for ~90%+, expanded UA pool,
+`training/data_clean/synthetic_nav_ecommerce.jsonl`), verified with 0%
+three-way MinHash overlap against `synthetic_nav`, `path_traversal`, and
+`sqli` once short-string shingle artifacts were filtered out (payloads
+under 15 chars produce unreliable k=3 Jaccard estimates and were excluded
+from that check — see `label_map.yaml`'s entry for the exact source). Only
+133 of the 380 records survive `unify.py`'s exact dedup, since its
+fingerprint (`path|query|body|label`) does not include User-Agent/cookie —
+most of the file's intentional UA variety collapses to one surviving record
+per unique path, a real limitation of this addition worth noting for anyone
+extending it further.
+
+Re-running LOSO with `synthetic_nav` held out but `synthetic_nav_ecommerce`
+present in training (`training/models/loso_results.json`, `synthetic_nav`
+entry) moved its F1 from **0.0027 to 0.2916** — a genuine, non-trivial
+improvement, but **not a resolution**: 0.29 remains in the "poor
+generalization" band defined above. The other 8 sources' LOSO entries were
+not recomputed and are unchanged from the original sweep.
+
+This addition does not resolve the structural finding it surfaced during
+verification: 99.6% of the benign corpus does not model real HTTP request
+shape (path + headers + User-Agent) at all — the overwhelming majority are
+isolated field values from payload-classification datasets (names,
+addresses, emails), with no navigation context. `synthetic_nav` and
+`synthetic_nav_ecommerce` combined represent roughly 0.8% of the total
+benign corpus. This also explains and generalizes the User-Agent tension
+already documented in §10 (corrected to note RF, not only IF, is affected)
+— it is not an isolated User-Agent problem, but a broader gap in how much
+of the corpus represents real navigation traffic at all.
+
+**Future work (larger scope, out of this cycle):** systematic benign-vocabulary
+diversification via templated generation across multiple application
+"personas" (blog, e-commerce, dashboard, API-only, admin panel), each
+contributing proportionally, at a scale that meaningfully shifts
+representation above the current <1% of the corpus — applying the same
+dose-response sweep and RF (not only IF) recall-regression checks used in
+the §10 investigation, since making benign traffic more realistic has
+already been shown there to trade off against attack-class recall.
+
 ---
 
 ## 5. Near-Duplicate Detection Scope Gap
@@ -652,13 +693,42 @@ resolves this while IF trains only on unlabeled benign structure.
 authority (`decision-policy.md` §3 — RF is the sole blocking gate, IF is
 log-enrichment only). The live `pass_anomaly` inflation is an
 operational log-noise cost (would flood a webhook/SIEM integration with
-false anomaly flags on ordinary traffic), not a security regression —
-RF's detection is completely unaffected by any part of this
-investigation. Accepting IF's current calibration (tuned to the
-offline/training benign distribution) was judged preferable to trading
-it for a confirmed recall cost on IF's own detection of 2-4 attack
-classes, in exchange for fixing secondary/diagnostic signal quality
-only.
+false anomaly flags on ordinary traffic), not a security regression.
+Accepting IF's current calibration (tuned to the offline/training
+benign distribution) was judged preferable to trading it for a
+confirmed recall cost on IF's own detection of 2-4 attack classes, in
+exchange for fixing secondary/diagnostic signal quality only.
+
+**Correction (post-v11 investigation): RF is also affected, not just
+IF.** The claim above originally read "RF's detection is completely
+unaffected by any part of this investigation" — that was verified only
+against IF's ablation at the time and did not generalize to RF as
+stated. A later investigation (triggered by an unrelated generalization
+finding — severe path-vocabulary concentration in `synthetic_nav`,
+during scoping of a new e-commerce benign dataset) found the same
+UA-representation gap also shifts RF's output on under-represented
+paths. Reproducible example against the current `rf.onnx` (rf_v11):
+`GET /profile` with no User-Agent scores top-class `xss @ 0.500`
+(full distribution: benign=0.433, cmdi=0.032, path_traversal=0.033,
+sqli=0.002, xss=0.500); the identical request with a realistic mobile
+Safari UA (`Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)
+AppleWebKit/605.1.15`) scores top-class `path_traversal @ 0.500`
+instead (full: benign=0.300, cmdi=0.065, path_traversal=0.500,
+sqli=0.135, xss=0.000) — a real shift in RF's blocking-relevant output,
+not just IF's diagnostic score. This is UA-string-dependent, not a
+uniform "any UA flips it" effect: the same request with a Windows
+desktop UA stays top-class benign (0.467 vs path_traversal's 0.400,
+a near-tie), and with `okhttp`/`Go-http-client` UAs it stays
+comfortably benign (0.633). The mechanism only manifests on paths
+outside `synthetic_nav`'s dominant vocabulary (`/posts`, ~81% of that
+file) — it is a generalization gap on under-represented benign path
+shapes, not a claim that RF's reported test-set metrics (F1,
+precision/recall) are wrong; those remain valid for the distribution
+they were measured on. This does not reopen the decision above not to
+pursue a data-augmentation fix for IF — that reasoning (two tested
+approaches, both with confirmed recall regression) stands
+independently. It corrects only the scope/attribution of which model
+is affected.
 
 **Future work:** if IF's live-traffic calibration is revisited, consider
 either (a) a threshold recalibrated specifically against real
