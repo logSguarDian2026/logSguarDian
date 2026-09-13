@@ -8,7 +8,7 @@ import request from "supertest";
 import { createCollectorApp } from "../src/collector/server";
 import type { Collector } from "../src/collector/server";
 
-const VALID_VECTOR = Array.from({ length: 73 }, (_, i) => i * 0.01);
+const VALID_VECTOR = Array.from({ length: 75 }, (_, i) => i * 0.01);
 
 function tmpDb(): string {
   return path.join(os.tmpdir(), `lg-mlops-${Date.now()}-${Math.random().toString(36).slice(2)}.db`);
@@ -46,7 +46,7 @@ describe("POST /telemetry", () => {
     expect(stored.source_id).toBe("host-a");
     expect(stored.predicted_class).toBe("sqli");
     expect(stored.confidence).toBeCloseTo(0.91);
-    expect(stored.vector).toHaveLength(73);
+    expect(stored.vector).toHaveLength(75);
     expect(stored.vector[5]).toBeCloseTo(0.05);
   });
 
