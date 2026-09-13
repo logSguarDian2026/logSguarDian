@@ -16,17 +16,26 @@ root-cause analysis that motivated this retrain. The full pipeline (unify → ex
 
 ## 1. Trained Model Summary
 
+> **Nota de versión (2026-09-10):** la tabla de abajo es un registro histórico congelado
+> de la generación rf_v3/if_v2 (cerrado 2026-06-20, ver encabezado de este documento) —
+> ambos modelos usaban 66 de las 72 features del extractor de esa época, el mismo
+> recorte para RF e IF. **No refleja el modelo actualmente en producción.** El modelo
+> vigente es rf_v11/if_v10: 69 features (RF) / 63 features (IF), de 75 totales — RF e IF
+> ya no comparten el mismo recorte. Fuente viva en cualquier momento:
+> [`training/models/parity_report.json`](../training/models/parity_report.json)
+> (`rf_n_features`, `if_n_features`) y `docs/feature-spec.md`.
+
 | Model | File | Configuration | n_features |
 |-------|------|--------------|-----------|
-| Random Forest | `training/models/rf.onnx` (rf_v3.pkl) | n=30, max_depth=25, class_weight=balanced_subsample | 66 |
-| Isolation Forest | `training/models/if.onnx` (if_v2.pkl) | n_estimators=200, contamination=0.05, trained on benign-only | 66 |
+| Random Forest | `training/models/rf.onnx` (rf_v3.pkl, **histórico** — ver nota arriba) | n=30, max_depth=25, class_weight=balanced_subsample | 66 |
+| Isolation Forest | `training/models/if.onnx` (if_v2.pkl, **histórico** — ver nota arriba) | n_estimators=200, contamination=0.05, trained on benign-only | 66 |
 
 **RF classes (in output order):** `['benign', 'cmdi', 'path_traversal', 'sqli', 'xss']`  
-Source: `training/models/parity_report.json` — `rf_classes`, `n_features=66`, `parity_passed=true`
+Source (registro histórico de la retrain rf_v3/if_v2): `training/models/parity_report.json` — `rf_classes`, `n_features=66` (en ese momento), `parity_passed=true`. Valor actual de `parity_report.json`: `rf_n_features=69`, `if_n_features=63`.
 
-**Excluded features (indices 66–71):** `status_code`, `req_count_1s`, `req_count_5s`,
+**Excluded features (indices 66–71, at the rf_v3/if_v2-era 72-feature count — historical):** `status_code`, `req_count_1s`, `req_count_5s`,
 `req_count_60s`, `error_rate_4xx_60s`, `endpoint_diversity_60s` — runtime behavioural
-signals not available at request interception time.
+signals not available at request interception time. Same 6 names still excluded from RF today (now indices 69–74 of 75, see `docs/feature-spec.md`); IF additionally excludes 6 more since rf_v11/if_v10.
 
 ---
 

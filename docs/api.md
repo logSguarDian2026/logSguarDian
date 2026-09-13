@@ -194,7 +194,7 @@ else                                          →  verdict = 'pass'
 
 **Known limitation:** IF's `pass_anomaly` rate on ordinary benign traffic is currently much higher than its offline-calibrated target (root-caused to a User-Agent representation gap in its training data — see `docs/limitations.md`). This does not affect blocking (RF is unaffected), but it means `pass_anomaly` volume should be treated as noisy operational signal, not a precise anomaly rate, until that gap is closed.
 
-**RF and IF see different feature slices.** Both are computed from the same underlying 73-feature vector (`@logsguardian/extractor`), but RF consumes 67 of them and IF consumes 61 (6 further features dropped for IF — confirmed zero/near-zero variance on benign traffic, dead weight for anomaly detection). This is an internal implementation detail, not something callers need to configure.
+**RF and IF see different feature slices.** Both are computed from the same underlying 75-feature vector (`@logsguardian/extractor`; vigente desde rf_v11/if_v10 — ver `training/models/parity_report.json` para la versión activa en cualquier momento), but RF consumes 69 of them and IF consumes 63 (RF drops 6 runtime-unavailable features; IF drops those same 6 plus 6 more — confirmed zero/near-zero variance on benign traffic, dead weight for anomaly detection; see `docs/feature-spec.md` for the exact excluded-feature lists). This is an internal implementation detail, not something callers need to configure.
 
 ---
 
@@ -245,7 +245,7 @@ Content-Type: application/json
 
 ## Feature extraction
 
-The middleware converts the Express `req` object to a `CanonicalRequest` (from `@logsguardian/extractor`). Feature extraction itself (`extractFeatureVector()`, 73 dimensions) runs **inside each worker thread**, not on the main thread — the middleware only ships the `CanonicalRequest` across the worker boundary, keeping the extraction cost off the Node.js Event Loop entirely. Each worker slices the 73-dim vector down to what its own model expects (67 for RF, 61 for IF) by feature name.
+The middleware converts the Express `req` object to a `CanonicalRequest` (from `@logsguardian/extractor`). Feature extraction itself (`extractFeatureVector()`, 75 dimensions — vigente desde rf_v11/if_v10, ver `training/models/parity_report.json`) runs **inside each worker thread**, not on the main thread — the middleware only ships the `CanonicalRequest` across the worker boundary, keeping the extraction cost off the Node.js Event Loop entirely. Each worker slices the 75-dim vector down to what its own model expects (69 for RF, 63 for IF) by feature name.
 
 Request bodies are serialized the same way the query string already is (`URLSearchParams`, not `JSON.stringify`) — this avoids introducing structural characters (`{`, `}`, `:`, `"`) that ordinary form submissions don't otherwise contain and that earlier caused false positives on plain login/form POSTs.
 
