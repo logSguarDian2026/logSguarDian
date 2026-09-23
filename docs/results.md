@@ -581,6 +581,27 @@ this deployment profile, not as a substitute pass/fail verdict — the
 relative criterion is what PLAN.md specifies, and F6.5's gate requires
 reporting the measured value against it regardless.
 
+### Verdict (decision of 2026-09-19, option A: evaluate in absolute form)
+
+The criterion is evaluated in its absolute form, `Δp95 ≤ 5 ms` (PLAN.md F6.2),
+because the relative form is structurally unpassable against a ~4-5ms baseline
+(see above).
+
+| Environment | Absolute Δp95 | Verdict (≤ 5 ms) |
+|---|---|---|
+| Docker + Postgres reference app (shipped design) | ~7-9ms | **NOT MET** (exceeds by ~2-4ms) |
+| Bare Express, no Docker (§A24, async log-patch) | ~0.18ms (p95 0.119 → 0.300ms) | Met |
+
+**Official verdict: NOT MET in the reference environment, by a small absolute
+margin.** The relative form written in the protocol (≤ 5% / ≤ 10%) is also not
+met (+142% to +178% for the shipped variant) and is reported as not met for the
+mathematical reason above. Reinterpreting the metric does not turn the result
+into a pass; it changes what the result is reported against. Because the
+approved protocol states the relative form, this change of metric must be
+communicated to the advisor and declared in the final report as a justified
+deviation. The 7-9ms figure is a latency measurement only; CPU and throughput
+impact were not measured.
+
 ---
 
 ## F1.8 — Extractor Benchmark (CLOSED)

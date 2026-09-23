@@ -25,7 +25,7 @@
 
 | Item | Status | Note |
 |------|--------|------|
-| **Δp95 latency criterion (OE3, `.claude/CLAUDE.md`)** | **Unresolved as literally worded** | The relative-% gate (≤5-10%) is structurally very hard to pass against this project's near-zero-latency reference app baseline — absolute overhead is small (single-digit ms) but the ratio still fails. Needs an explicit decision (reinterpret as absolute ms, or re-measure against a more realistic baseline) before reporting this objective as met. See `docs/results.md` §F6.5. |
+| **Δp95 latency criterion (OE3, `.claude/CLAUDE.md`)** | **Decided 2026-09-19 (option A): NOT MET, small absolute margin** | Evaluated in absolute form (`Δp95 ≤ 5 ms`, PLAN.md F6.2): ~7-9ms in the Docker+Postgres reference environment (exceeds by ~2-4ms); met in bare Express (~0.18ms). The relative form in the protocol (≤5-10%) is also not met, for the structural reason in `docs/results.md` §F6.5. Pending: tell the advisor about the change of metric and declare it in the final report. See `docs/results.md` §F6.5 (Verdict) and `docs/cybersecurity-objectives-compliance.md`. |
 | **IF `pass_anomaly` rate on benign traffic** | Accepted limitation, not a bug | Root-caused to a User-Agent representation gap in IF's training data (see `docs/limitations.md`). Does not affect blocking — RF holds sole blocking authority. |
 | **`middleware.test.ts` timing flakiness under full-suite parallel load** | Documented, not fixed | Several tests depend on real `setTimeout` margins; under 18-suite parallel CPU contention, different tests intermittently exceed their margin (each individually passes in isolation). One deterministic case (too-tight 5ms margin) was fixed; the broader pattern (real timers vs. fake timers) was not — same treatment as `smoke.test.ts`'s existing CI exclusion. |
 | **`docs/architecture.md` §2 (ML/training side)** | Annotated 2026-09-10, still not verified | Cites "72 features"/"1,155,302 rows" for the `data_manager/*.ipynb` → `dataset_final.parquet` pipeline — unclear if that pipeline is still the one feeding training (the CT/CI/CD pipeline, `training/unify.py`/`ct_pipeline.py`, uses the extractor CLI's 75-column `FEATURE_NAMES` directly, a separate path). No confirmed current row/feature count for the notebook pipeline specifically; flagged inline in the doc (§2.1) rather than replaced with an unverified number. |
@@ -41,7 +41,7 @@
 
 ## Section 4 — Next actions
 
-1. **Resolve the Δp95 latency criterion wording** (Section 2) — needed before any final thesis reporting of OE3 as met.
+1. **Tell the advisor about the Δp95 metric change** (relative → absolute, decided 2026-09-19, verdict NOT MET — Section 2) and declare it as a justified deviation in the final report.
 2. **Actual `npm publish`** — everything in Section 1 is ready; publishing itself has not been run.
 3. **Config 3 write-up** — turn the Round 4 raw results into the evasion-rate analysis originally scoped.
 4. Optional: verify/update `docs/architecture.md` §2's dataset numbers if a source of truth is available; investigate the broader `middleware.test.ts` timing-flakiness pattern (fake timers) if it starts causing real CI noise.
