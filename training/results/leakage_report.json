@@ -1,0 +1,196 @@
+{
+  "_meta": {
+    "round4_corpus_path": "/Users/xtsebas/Universidad/logSguarDian-vulnerable-project/attack-sim/large_corpus.json",
+    "e2e_fixture_path": "/Users/xtsebas/Universidad/logSguarDian-fase1-leakage/e2e/fixtures/test_payloads.jsonl",
+    "classes": [
+      "sqli",
+      "xss",
+      "path_traversal",
+      "cmdi"
+    ],
+    "note_pt_wordlists": "training/parsers/ has NO parser for pt_wordlists / Deep-Travelsal.txt (verified: `git log --all -- '*pt_wordlist*'` is empty in both logSguarDian and this worktree, and no training/data_clean/pt_wordlists.jsonl exists or ever existed in git — only 9 parsers are committed: capec, command_injection, modsec_learn, owasp, patt_cmdi_curated, payload_full, payloads_csv, seclists_cmdi, xss_dataset). DATA_INVENTORY.md's mention of a pt_wordlists.parquet (1,166 rows, dated 2026-06-10) refers to an artifact that was never produced by any committed script — same pattern as the v10_test_results.json ad-hoc-script issue already found elsewhere in this audit. The raw file itself DOES exist on disk (read-only check, main repo, gitignored data/ dir): 'data/omurugur Path_Travelsal_Payload_List master Payload/Deep-Travelsal.txt' — but nothing in git ever ingests it into data_clean. Current path_traversal training data (train.parquet, 11,799 rows) is dominated by capec (10,121 rows, 85.8% — real '../'-encoded traversal chains to /etc/passwd-style targets) with owasp_logs (1,463 rows, 12.4% — real honeypot probes for app-level files like wp-config.php/.env) and payload_full (203 rows) a distant second and third. So no direct Deep-Travelsal.txt-vs-LFI-gracefulsecurity-linux.txt comparison was possible — that specific pairing named in the task is moot because the training side of it was never built. What IS reported below is the question that actually matters given the current codebase: whether the Round 4 path_traversal payloads (from LFI-gracefulsecurity-linux.txt) overlap with what is ACTUALLY in train/val/test today."
+  },
+  "round4_vs_train": {
+    "sqli": {
+      "total": 77,
+      "exact_matches": 0,
+      "template_matches": 21,
+      "template_rule": "generic_template (urldecode+lowercase+digit)",
+      "training_rows_missing_raw_text": 16
+    },
+    "xss": {
+      "total": 113,
+      "exact_matches": 10,
+      "template_matches": 11,
+      "template_rule": "generic_template (urldecode+lowercase+digit)",
+      "training_rows_missing_raw_text": 33
+    },
+    "path_traversal": {
+      "total": 200,
+      "exact_matches": 0,
+      "template_matches": 0,
+      "template_rule": "generic_template (urldecode+lowercase+digit)",
+      "training_rows_missing_raw_text": 12
+    },
+    "cmdi": {
+      "total": 200,
+      "exact_matches": 46,
+      "template_matches": 182,
+      "template_rule": "template_shape (canary+digit)",
+      "training_rows_missing_raw_text": 21
+    }
+  },
+  "round4_vs_val": {
+    "sqli": {
+      "total": 77,
+      "exact_matches": 0,
+      "template_matches": 7,
+      "template_rule": "generic_template (urldecode+lowercase+digit)",
+      "training_rows_missing_raw_text": 4
+    },
+    "xss": {
+      "total": 113,
+      "exact_matches": 3,
+      "template_matches": 5,
+      "template_rule": "generic_template (urldecode+lowercase+digit)",
+      "training_rows_missing_raw_text": 7
+    },
+    "path_traversal": {
+      "total": 200,
+      "exact_matches": 0,
+      "template_matches": 0,
+      "template_rule": "generic_template (urldecode+lowercase+digit)",
+      "training_rows_missing_raw_text": 2
+    },
+    "cmdi": {
+      "total": 200,
+      "exact_matches": 8,
+      "template_matches": 79,
+      "template_rule": "template_shape (canary+digit)",
+      "training_rows_missing_raw_text": 5
+    }
+  },
+  "round4_vs_test": {
+    "sqli": {
+      "total": 77,
+      "exact_matches": 0,
+      "template_matches": 11,
+      "template_rule": "generic_template (urldecode+lowercase+digit)",
+      "training_rows_missing_raw_text": 4
+    },
+    "xss": {
+      "total": 113,
+      "exact_matches": 2,
+      "template_matches": 4,
+      "template_rule": "generic_template (urldecode+lowercase+digit)",
+      "training_rows_missing_raw_text": 7
+    },
+    "path_traversal": {
+      "total": 200,
+      "exact_matches": 0,
+      "template_matches": 0,
+      "template_rule": "generic_template (urldecode+lowercase+digit)",
+      "training_rows_missing_raw_text": 3
+    },
+    "cmdi": {
+      "total": 200,
+      "exact_matches": 9,
+      "template_matches": 85,
+      "template_rule": "template_shape (canary+digit)",
+      "training_rows_missing_raw_text": 5
+    }
+  },
+  "cmdi_anchor_validation": {
+    "full_source_file": "/Users/xtsebas/Universidad/logSguarDian-fase1-leakage/training/data_clean/seclists_cmdi.jsonl",
+    "full_source_rows_unique_templates": 2455,
+    "vs_full_source_pre_split": {
+      "exact_matches": 63,
+      "template_matches": 200,
+      "matches_known_anchor": true
+    },
+    "per_partition_exact_counts": {
+      "train": 46,
+      "val": 8,
+      "test": 9
+    },
+    "sum_of_per_partition_exact": 63,
+    "union_of_per_partition_exact": 63,
+    "per_partition_template_counts": {
+      "train": 182,
+      "val": 79,
+      "test": 85
+    },
+    "union_of_per_partition_template": 200,
+    "explanation": "The 63/200 anchor was established against the FULL, pre-split seclists_cmdi.jsonl (2455 unique-template rows). That file's rows are then partitioned disjointly (no row in two partitions) by the 70/15/15 stratified split. Summing exact matches across train+val+test reproduces 63 exactly (each payload's single matching row lands in exactly one partition). Template matches do NOT sum cleanly across partitions (182+79+85=346, not 200) because template matching is substring containment, not row-level set equality: a short post-normalization payload template can be a substring of more than one distinct training row's template in more than one partition at once. The UNION of per-partition template matches is exactly 200/200, confirming every Round 4 cmdi payload's template exists SOMEWHERE in the unified corpus — but round4_vs_train alone (this report's main entry) correctly reports only what is actually present in the train partition specifically, which is the partition the model is fit on."
+  },
+  "e2e_fixture_vs_splits": {
+    "sqli": {
+      "vs_train": {
+        "total": 100,
+        "exact_matches": 73,
+        "template_matches": 78
+      },
+      "vs_val": {
+        "total": 100,
+        "exact_matches": 14,
+        "template_matches": 18
+      },
+      "vs_test": {
+        "total": 100,
+        "exact_matches": 13,
+        "template_matches": 18
+      }
+    },
+    "xss": {
+      "vs_train": {
+        "total": 100,
+        "exact_matches": 72,
+        "template_matches": 73
+      },
+      "vs_val": {
+        "total": 100,
+        "exact_matches": 15,
+        "template_matches": 17
+      },
+      "vs_test": {
+        "total": 100,
+        "exact_matches": 13,
+        "template_matches": 15
+      }
+    },
+    "path_traversal": {
+      "vs_train": {
+        "total": 100,
+        "exact_matches": 70,
+        "template_matches": 70
+      },
+      "vs_val": {
+        "total": 100,
+        "exact_matches": 19,
+        "template_matches": 19
+      },
+      "vs_test": {
+        "total": 100,
+        "exact_matches": 11,
+        "template_matches": 13
+      }
+    },
+    "cmdi": {
+      "vs_train": {
+        "total": 100,
+        "exact_matches": 75,
+        "template_matches": 76
+      },
+      "vs_val": {
+        "total": 100,
+        "exact_matches": 11,
+        "template_matches": 12
+      },
+      "vs_test": {
+        "total": 100,
+        "exact_matches": 14,
+        "template_matches": 14
+      }
+    }
+  }
+}
