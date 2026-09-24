@@ -10,11 +10,12 @@
  * worker_threads do). See docs/results.md for the concurrency investigation.
  *
  * Feature reduction (v8+): RF and IF use different slices of the same
- * 75-feature vector.
- *   - RF gets 69 features: the 75-feature vector from @logsguardian/extractor
+ * 76-feature vector.
+ *   - RF gets 69 features: the 76-feature vector from @logsguardian/extractor
  *     minus the 6 runtime-behavioral features (status_code, req_count_*,
- *     error_rate_4xx_60s, endpoint_diversity_60s), unavailable at request
- *     interception time.
+ *     error_rate_4xx_60s, endpoint_diversity_60s) unavailable at request
+ *     interception time, and non_json_quote_count (additive-only pending
+ *     the retrain that picks it up — see EXCLUDED_NAMES below).
  *   - IF gets 63 features: RF's 69 minus 6 further features confirmed to
  *     have zero/near-zero variance on benign traffic (dotdot_encoded_count,
  *     authorization_length, unusual_headers_count, null_byte_count,
@@ -23,16 +24,19 @@
  * Both reductions are by feature name, not index. See docs/decision-policy.md §4.
  *
  * NOTE (v11): the extractor grew from 73 to 75 features (distinct_shell_
- * command_count, shell_to_path_ratio — compound-cmdi fix). Every count below
- * (75/69/63) is derived from FEATURE_NAMES.length and the two exclusion sets
- * at load time, but the assertions and literal tensor-shape dims below are
- * still hardcoded per model version by design (fail loudly, not silently, if
- * extractor and model shape ever drift again — this is the exact failure
- * mode from the v8/v9 merge-conflict incident: update these three numbers
- * together whenever FEATURE_NAMES or either exclusion set changes).
+ * command_count, shell_to_path_ratio — compound-cmdi fix). NOTE (post-v11):
+ * grew again to 76 (non_json_quote_count — quote_count JSON-discount fix,
+ * excluded from both models' inputs until its own retrain). Every count
+ * below (76/69/63) is derived from FEATURE_NAMES.length and the two
+ * exclusion sets at load time, but the assertions and literal tensor-shape
+ * dims below are still hardcoded per model version by design (fail loudly,
+ * not silently, if extractor and model shape ever drift again — this is the
+ * exact failure mode from the v8/v9 merge-conflict incident: update these
+ * three numbers together whenever FEATURE_NAMES or either exclusion set
+ * changes).
  *
  * Feature extraction runs redundantly in each worker (both RF and IF workers
- * extract the full 75-dim vector independently from the same canonical
+ * extract the full 76-dim vector independently from the same canonical
  * request) rather than extracting once and shipping the vector across an
  * extra hop — extraction costs ~0.04ms, negligible next to the concurrency
  * problem this architecture fixes, and it keeps the message contract simple.
@@ -61,6 +65,11 @@ const EXCLUDED_NAMES = new Set([
   "req_count_60s",
   "error_rate_4xx_60s",
   "endpoint_diversity_60s",
+  // non_json_quote_count (quote_count JSON-discount fix) is additive-only,
+  // like non_form_operator_count before it: production rf.onnx/if.onnx
+  // still expect 69/63 inputs until a retrain picks the new feature up,
+  // so it's excluded from both models' inputs for now. See semantic.ts.
+  "non_json_quote_count",
 ]);
 
 const IF_ADDITIONAL_EXCLUDED = new Set([
