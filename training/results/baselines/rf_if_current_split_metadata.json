@@ -1,0 +1,22 @@
+{
+  "rf": {
+    "n_features": 69,
+    "macro_f1_val": 0.9807079464231736,
+    "per_class_f1_val": {
+      "cmdi": 0.9368005266622779,
+      "path_traversal": 0.9855129986108355,
+      "sqli": 0.9962751136530283,
+      "xss": 0.9865289627301302
+    },
+    "onnx_path": "/Users/diego/Uvg/Proyecto de Graduacion/logSguarDian/training/models/baselines/rf_current_split.onnx",
+    "model_size_bytes": 8904909
+  },
+  "if": {
+    "n_features": 63,
+    "threshold": 0.004205941820353609,
+    "val_recall": 0.9115133586890173,
+    "val_fp_rate": 0.05870894068650501,
+    "onnx_path": "/Users/diego/Uvg/Proyecto de Graduacion/logSguarDian/training/models/baselines/if_current_split.onnx",
+    "model_size_bytes": 2156276
+  }
+}

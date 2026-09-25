@@ -1,0 +1,13 @@
+{
+  "architecture": "MLPRegressor(32, 8, 32) (encoder-decoder, bottleneck=8), StandardScaler, X->X reconstruction",
+  "n_features": 63,
+  "n_params_approx": 4679,
+  "trained_on": "benign_only",
+  "fp_ceiling": 0.06,
+  "selected_threshold": 0.5207333197960491,
+  "val_recall": 0.9148002066018688,
+  "val_fp_rate": 0.05568616914086116,
+  "model_size_bytes": 19771,
+  "latency_p50_ms": 0.006249989382922649,
+  "latency_p95_ms": 0.006542017217725515
+}
