@@ -18,7 +18,14 @@ module.exports = {
       // own process, is the honest fix for the actual failure mode — a
       // dedicated process can't be corrupted by any other file's leaked
       // handle, whatever it turns out to be.
-      testPathIgnorePatterns: ["parity.node.test.ts", "cli-config-set.test.ts"],
+      // smoke.test.ts's "with real models" test is excluded here (not via
+      // CI's CLI flags) deliberately: a CLI-level --testPathIgnorePatterns
+      // *replaces* this array instead of merging with it, which previously
+      // silently un-excluded cli-config-set.test.ts in CI and reintroduced
+      // the exact interference flake this array exists to prevent (see
+      // .github/workflows/ci.yml's test-core step history). Keeping every
+      // permanent exclusion here, never on the CLI, is the actual fix.
+      testPathIgnorePatterns: ["parity.node.test.ts", "cli-config-set.test.ts", "smoke.test.ts"],
       transform: {
         "^.+\\.tsx?$": ["ts-jest", { tsconfig: "tsconfig.test.json", diagnostics: { ignoreCodes: [151002] } }],
       },
