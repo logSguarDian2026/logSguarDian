@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import Database from "better-sqlite3";
-import { requireConfig, parseFormat, dbPathMismatchHint } from "./guard";
+import { requireConfig, parseFormat, dbPathMismatchHint, tableExists } from "./guard";
 import type { MiddlewareOptions } from "../types";
 
 interface AttackTypeRow {
@@ -72,33 +72,51 @@ export function runEndpointsProfile(args: string[]): void {
   }
   const where = whereClauses.join(" AND ");
 
-  const totals = db
-    .prepare(`SELECT verdict, COUNT(*) AS count FROM detection_events WHERE ${where} GROUP BY verdict`)
-    .all(params) as Array<{ verdict: string; count: number }>;
+  // The file can exist without this table — e.g. one only ever touched by
+  // WebhookStore for a mismatched dbPath (see guard.ts's tableExists doc).
+  // Every query below is skipped in favor of its empty-result shape rather
+  // than letting the first prepare().all() throw uncaught — this naturally
+  // produces a zero-incident profile, which printProfile already renders as
+  // the same dbPathMismatchHint messaging used for a genuinely empty table.
+  const hasTable = tableExists(db, "detection_events");
 
-  const methods = db
-    .prepare(`SELECT method, COUNT(*) AS count FROM detection_events WHERE ${where} GROUP BY method ORDER BY count DESC`)
-    .all(params) as Array<{ method: string; count: number }>;
+  const totals: Array<{ verdict: string; count: number }> = hasTable
+    ? (db
+        .prepare(`SELECT verdict, COUNT(*) AS count FROM detection_events WHERE ${where} GROUP BY verdict`)
+        .all(params) as Array<{ verdict: string; count: number }>)
+    : [];
 
-  const attackTypes = db
-    .prepare(
-      `SELECT predicted_class, COUNT(*) AS count FROM detection_events WHERE ${where} GROUP BY predicted_class ORDER BY count DESC`
-    )
-    .all(params) as AttackTypeRow[];
+  const methods: Array<{ method: string; count: number }> = hasTable
+    ? (db
+        .prepare(`SELECT method, COUNT(*) AS count FROM detection_events WHERE ${where} GROUP BY method ORDER BY count DESC`)
+        .all(params) as Array<{ method: string; count: number }>)
+    : [];
 
-  const hourly = db
-    .prepare(
-      `SELECT CAST(strftime('%H', timestamp / 1000, 'unixepoch') AS INTEGER) AS hour, COUNT(*) AS count
-       FROM detection_events WHERE ${where} GROUP BY hour ORDER BY hour ASC`
-    )
-    .all(params) as HourlyRow[];
+  const attackTypes: AttackTypeRow[] = hasTable
+    ? (db
+        .prepare(
+          `SELECT predicted_class, COUNT(*) AS count FROM detection_events WHERE ${where} GROUP BY predicted_class ORDER BY count DESC`
+        )
+        .all(params) as AttackTypeRow[])
+    : [];
 
-  const topIps = db
-    .prepare(
-      `SELECT client_ip, COUNT(*) AS count FROM detection_events WHERE ${where} AND client_ip != ''
-       GROUP BY client_ip ORDER BY count DESC LIMIT 10`
-    )
-    .all(params) as IpRow[];
+  const hourly: HourlyRow[] = hasTable
+    ? (db
+        .prepare(
+          `SELECT CAST(strftime('%H', timestamp / 1000, 'unixepoch') AS INTEGER) AS hour, COUNT(*) AS count
+           FROM detection_events WHERE ${where} GROUP BY hour ORDER BY hour ASC`
+        )
+        .all(params) as HourlyRow[])
+    : [];
+
+  const topIps: IpRow[] = hasTable
+    ? (db
+        .prepare(
+          `SELECT client_ip, COUNT(*) AS count FROM detection_events WHERE ${where} AND client_ip != ''
+           GROUP BY client_ip ORDER BY count DESC LIMIT 10`
+        )
+        .all(params) as IpRow[])
+    : [];
 
   db.close();
 

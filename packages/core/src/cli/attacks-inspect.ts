@@ -11,9 +11,11 @@ interface ClassMetric {
   f1: number | null;
   precision: number | null;
   recall: number | null;
+  auc_roc?: number;
 }
 
 interface ClassMetrics {
+  model: string;
   eval_set: string;
   eval_note: string;
   macro_f1: number;
@@ -98,9 +100,11 @@ export function runAttacksInspect(args: string[]): void {
   const result = {
     attack_type: attackType,
     detection_rate: {
+      model: classMetrics.model,
       f1: classInfo?.f1 ?? null,
       precision: classInfo?.precision ?? null,
       recall: classInfo?.recall ?? null,
+      auc_roc: classInfo?.auc_roc ?? null,
       eval_set: classMetrics.eval_set,
       eval_note: classMetrics.eval_note,
     },
@@ -135,6 +139,7 @@ function printTable(
 
   console.log("  DETECTION RATE");
   console.log("  " + "─".repeat(40));
+  console.log(`  Model: ${classMetrics.model}`);
   if (classInfo?.f1 != null) {
     console.log(`  F1 Score (${classMetrics.eval_set} set): ${(classInfo.f1 * 100).toFixed(1)}%`);
   } else {
@@ -142,6 +147,9 @@ function printTable(
   }
   if (classInfo?.precision != null && classInfo?.recall != null) {
     console.log(`  Precision: ${(classInfo.precision * 100).toFixed(1)}%  Recall: ${(classInfo.recall * 100).toFixed(1)}%`);
+  }
+  if (classInfo?.auc_roc != null) {
+    console.log(`  AUC-ROC (OvR): ${(classInfo.auc_roc * 100).toFixed(1)}%`);
   }
   console.log(`  Note: ${classMetrics.eval_note}`);
   console.log();

@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import Database from "better-sqlite3";
-import { requireConfig, parseFormat, dbPathMismatchHint } from "./guard";
+import { requireConfig, parseFormat, dbPathMismatchHint, tableExists } from "./guard";
 import type { MiddlewareOptions } from "../types";
 
 interface AttackTypeRow {
@@ -31,15 +31,21 @@ export function runAttacksList(args: string[]): void {
   }
 
   const db = new Database(dbPath, { readonly: true });
-  const rows = db
-    .prepare(
-      `SELECT predicted_class, COUNT(*) AS total_count, MAX(timestamp) AS last_detected
-       FROM detection_events
-       WHERE predicted_class != 'benign'
-       GROUP BY predicted_class
-       ORDER BY total_count DESC`
-    )
-    .all() as AttackTypeRow[];
+  // The file can exist without this table — e.g. one only ever touched by
+  // WebhookStore for a mismatched dbPath (see guard.ts's tableExists doc).
+  // Treated as zero rows rather than letting the SELECT throw uncaught, so
+  // it falls into the same dbPathMismatchHint messaging below.
+  const rows: AttackTypeRow[] = tableExists(db, "detection_events")
+    ? (db
+        .prepare(
+          `SELECT predicted_class, COUNT(*) AS total_count, MAX(timestamp) AS last_detected
+           FROM detection_events
+           WHERE predicted_class != 'benign'
+           GROUP BY predicted_class
+           ORDER BY total_count DESC`
+        )
+        .all() as AttackTypeRow[])
+    : [];
   db.close();
 
   if (format === "json") {

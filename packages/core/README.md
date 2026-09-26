@@ -26,10 +26,10 @@ npm install logsguardian
 
 Requires Node.js ≥ 20 and Express 4 or 5 (peer dependency).
 
-## Quick star
+## Quick Start
 
 ```bash
-npx logsguardian config ini
+npx logsguardian config init
 ```
 
 This writes `logsguardian.config.js` in the current directory. Then mount the middleware **after** your body parsers (`express.urlencoded`/`express.json`, and any `multer` instance if your app accepts file uploads — logsguardian needs to see the parsed body to inspect it):
