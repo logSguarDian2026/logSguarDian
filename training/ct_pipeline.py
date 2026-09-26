@@ -91,8 +91,16 @@ def merge_curated_telemetry() -> int:
                 rows.append(rec)
 
     curated_df = pd.DataFrame(rows)
+    # Backfill with 0, not None/NaN: curated telemetry rows are pre-extracted
+    # feature-space snapshots from whatever FEATURE_NAMES set was current when
+    # they were collected. A column missing here means the extractor grew a
+    # new feature since collection (e.g. non_json_quote_count) - 0 is the
+    # correct default (same semantics as this project's other never-computed-
+    # for-this-row numeric features, e.g. the permanently-0 temporal group),
+    # not a genuinely missing/unknown value. NaN broke 02_baseline.ipynb's
+    # LogisticRegression, which doesn't accept NaN natively.
     for col in set(df.columns) - set(curated_df.columns):
-        curated_df[col] = None
+        curated_df[col] = 0
     curated_df = curated_df[df.columns]
 
     # unify.py's exact-dedup step (hash(path+query+body+label)) never runs on

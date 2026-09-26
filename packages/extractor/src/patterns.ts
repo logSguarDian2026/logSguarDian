@@ -22,6 +22,13 @@ export const SELECT_PRESENT_TEST = /\bselect\b/i;
 // to subtract benign key=value structure out of sqli_operator_count.
 export const FORM_FIELD_COUNT = /(^|&)[a-zA-Z_][a-zA-Z0-9_]*=/g;
 
+// Quotes immediately adjacent (allowing whitespace) to a JSON structural
+// delimiter (: , { } [ ]) on either side - i.e. the quote marks around a
+// JSON key or string value, not quote characters appearing inside payload
+// content. Used to subtract benign JSON key/value quoting out of
+// quote_count, same principle as FORM_FIELD_COUNT for sqli_operator_count.
+export const JSON_KV_QUOTE_COUNT = /"(?=\s*[:,}\]])|(?<=[:,{\[]\s*)"/g;
+
 // ---- Grupo 5: XSS ----------------------------------------------------------
 export const XSS_MARKER_COUNT =
   /(<\s*script|<\s*\/\s*script|<\s*img|<\s*svg|<\s*iframe|<\s*body|<\s*input|on(?:error|load|click|mouseover|mouseout|focus|input|keyup|keydown)\s*=|javascript\s*:|alert\s*\(|confirm\s*\(|prompt\s*\(|document\.cookie|window\.location|eval\s*\(|innerHTML|src\s*=\s*["']?\s*javascript)/gi;

@@ -1,0 +1,216 @@
+{
+  "config": {
+    "max_corpus_per_class": 50000,
+    "min_text_len": 15,
+    "shingle_k": 3,
+    "num_perm": 64,
+    "lsh_threshold": 0.7,
+    "flag_threshold": 0.01
+  },
+  "results": {
+    "dashboard_200": {
+      "total_records": 200,
+      "evaluated_records": 181,
+      "excluded_short_text": 19,
+      "overlap_pct": {
+        "path_traversal": 0.0,
+        "sqli": 0.0,
+        "xss": 0.0,
+        "cmdi": 0.0
+      },
+      "match_examples": {
+        "path_traversal": null,
+        "sqli": null,
+        "xss": null,
+        "cmdi": null
+      }
+    },
+    "dashboard_500": {
+      "total_records": 500,
+      "evaluated_records": 461,
+      "excluded_short_text": 39,
+      "overlap_pct": {
+        "path_traversal": 0.0,
+        "sqli": 0.0,
+        "xss": 0.0,
+        "cmdi": 0.0
+      },
+      "match_examples": {
+        "path_traversal": null,
+        "sqli": null,
+        "xss": null,
+        "cmdi": null
+      }
+    },
+    "dashboard_1000": {
+      "total_records": 1000,
+      "evaluated_records": 912,
+      "excluded_short_text": 88,
+      "overlap_pct": {
+        "path_traversal": 0.0,
+        "sqli": 0.0,
+        "xss": 0.0,
+        "cmdi": 0.0
+      },
+      "match_examples": {
+        "path_traversal": null,
+        "sqli": null,
+        "xss": null,
+        "cmdi": null
+      }
+    },
+    "dashboard_2000": {
+      "total_records": 2000,
+      "evaluated_records": 1825,
+      "excluded_short_text": 175,
+      "overlap_pct": {
+        "path_traversal": 0.0,
+        "sqli": 0.0,
+        "xss": 0.0,
+        "cmdi": 0.0
+      },
+      "match_examples": {
+        "path_traversal": null,
+        "sqli": null,
+        "xss": null,
+        "cmdi": null
+      }
+    },
+    "api_only_200": {
+      "total_records": 200,
+      "evaluated_records": 196,
+      "excluded_short_text": 4,
+      "overlap_pct": {
+        "path_traversal": 0.0,
+        "sqli": 0.0,
+        "xss": 0.0,
+        "cmdi": 0.0
+      },
+      "match_examples": {
+        "path_traversal": null,
+        "sqli": null,
+        "xss": null,
+        "cmdi": null
+      }
+    },
+    "api_only_500": {
+      "total_records": 500,
+      "evaluated_records": 491,
+      "excluded_short_text": 9,
+      "overlap_pct": {
+        "path_traversal": 0.0,
+        "sqli": 0.0,
+        "xss": 0.0,
+        "cmdi": 0.0
+      },
+      "match_examples": {
+        "path_traversal": null,
+        "sqli": null,
+        "xss": null,
+        "cmdi": null
+      }
+    },
+    "api_only_1000": {
+      "total_records": 1000,
+      "evaluated_records": 978,
+      "excluded_short_text": 22,
+      "overlap_pct": {
+        "path_traversal": 0.0,
+        "sqli": 0.0,
+        "xss": 0.0,
+        "cmdi": 0.0
+      },
+      "match_examples": {
+        "path_traversal": null,
+        "sqli": null,
+        "xss": null,
+        "cmdi": null
+      }
+    },
+    "api_only_2000": {
+      "total_records": 2000,
+      "evaluated_records": 1952,
+      "excluded_short_text": 48,
+      "overlap_pct": {
+        "path_traversal": 0.0,
+        "sqli": 0.0,
+        "xss": 0.0,
+        "cmdi": 0.0
+      },
+      "match_examples": {
+        "path_traversal": null,
+        "sqli": null,
+        "xss": null,
+        "cmdi": null
+      }
+    },
+    "admin_panel_200": {
+      "total_records": 200,
+      "evaluated_records": 179,
+      "excluded_short_text": 21,
+      "overlap_pct": {
+        "path_traversal": 0.0,
+        "sqli": 0.0,
+        "xss": 0.0,
+        "cmdi": 0.0
+      },
+      "match_examples": {
+        "path_traversal": null,
+        "sqli": null,
+        "xss": null,
+        "cmdi": null
+      }
+    },
+    "admin_panel_500": {
+      "total_records": 500,
+      "evaluated_records": 459,
+      "excluded_short_text": 41,
+      "overlap_pct": {
+        "path_traversal": 0.0,
+        "sqli": 0.0,
+        "xss": 0.0,
+        "cmdi": 0.0
+      },
+      "match_examples": {
+        "path_traversal": null,
+        "sqli": null,
+        "xss": null,
+        "cmdi": null
+      }
+    },
+    "admin_panel_1000": {
+      "total_records": 1000,
+      "evaluated_records": 918,
+      "excluded_short_text": 82,
+      "overlap_pct": {
+        "path_traversal": 0.0,
+        "sqli": 0.0,
+        "xss": 0.0,
+        "cmdi": 0.0
+      },
+      "match_examples": {
+        "path_traversal": null,
+        "sqli": null,
+        "xss": null,
+        "cmdi": null
+      }
+    },
+    "admin_panel_2000": {
+      "total_records": 2000,
+      "evaluated_records": 1833,
+      "excluded_short_text": 167,
+      "overlap_pct": {
+        "path_traversal": 0.0,
+        "sqli": 0.0,
+        "xss": 0.0,
+        "cmdi": 0.0
+      },
+      "match_examples": {
+        "path_traversal": null,
+        "sqli": null,
+        "xss": null,
+        "cmdi": null
+      }
+    }
+  }
+}
