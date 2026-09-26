@@ -1,0 +1,84 @@
+{
+  "lock_verified": true,
+  "lock_hash": "7486c258692a3cc66fa0ef74087255b904a9ea4d41c8646bb7c0784b15aa4fd9",
+  "model": "rf_v11",
+  "if_companion_model": "if_v10",
+  "eval_set": "test",
+  "eval_date": "2026-09-24",
+  "eval_note": "R2 one-time locked test-set read against the ONNX models actually published in npm (rf.onnx / if.onnx via onnxruntime, not the .pkl files). Produced by training/evaluate_test.py. test.lock.sha256 verified to match before any inference ran (see lock_hash above). This is the first test-set read for rf_v11/if_v10; prior figures in docs/decision-policy.md sec 2.1 are rf_v3, two generations behind the published model, and are not comparable to these.",
+  "n_test_rows": 57481,
+  "rf_n_features": 69,
+  "if_n_features": 63,
+  "rf_classification_report": {
+    "benign": {
+      "precision": 0.9982524532867321,
+      "recall": 0.9977159747413678,
+      "f1-score": 0.997984141916409,
+      "support": 14886.0
+    },
+    "cmdi": {
+      "precision": 0.9337704918032786,
+      "recall": 0.9700272479564033,
+      "f1-score": 0.9515536251252924,
+      "support": 1468.0
+    },
+    "path_traversal": {
+      "precision": 0.9842581660763479,
+      "recall": 0.988928430209569,
+      "f1-score": 0.9865877712031558,
+      "support": 2529.0
+    },
+    "sqli": {
+      "precision": 0.9965697197138501,
+      "recall": 0.9965989386342979,
+      "f1-score": 0.9965843289599062,
+      "support": 34107.0
+    },
+    "xss": {
+      "precision": 0.9954843079701964,
+      "recall": 0.9817412602983745,
+      "f1-score": 0.9885650224215247,
+      "support": 4491.0
+    },
+    "accuracy": 0.9947112959064734,
+    "macro avg": {
+      "precision": 0.981667027770081,
+      "recall": 0.9870023703680024,
+      "f1-score": 0.9842549779252577,
+      "support": 57481.0
+    },
+    "weighted avg": {
+      "precision": 0.9947752033015264,
+      "recall": 0.9947112959064734,
+      "f1-score": 0.9947304388433563,
+      "support": 57481.0
+    }
+  },
+  "rf_macro_f1": 0.9842549779252577,
+  "rf_auc_roc_per_class": {
+    "benign": 0.9998378434012177,
+    "cmdi": 0.9996951673489967,
+    "path_traversal": 0.9999400965397689,
+    "sqli": 0.9999054799404696,
+    "xss": 0.999399665322131
+  },
+  "rf_auc_roc_method": "one-vs-rest (sklearn.metrics.roc_auc_score, multi_class='ovr', average=None)",
+  "if_model": "if_v10",
+  "if_threshold": 0.00806713286301003,
+  "if_threshold_source": "training/models/if_v10_metadata.json (frozen; not recalibrated against test)",
+  "if_test_recall": 0.9156943303204601,
+  "if_test_fp_rate": 0.05743651753325272,
+  "if_test_precision": 0.9785493865877217,
+  "if_test_per_class_recall": {
+    "cmdi": 0.9577656675749319,
+    "path_traversal": 0.9972321075523922,
+    "sqli": 0.8989943413375553,
+    "xss": 0.982854598085059
+  },
+  "if_test_confusion": {
+    "tp": 39004,
+    "fn": 3591,
+    "fp": 855,
+    "tn": 14031
+  }
+}

@@ -653,7 +653,7 @@ ablation: toggling UA alone flips the anomaly verdict on a realistic
 benign request (`GET /profile` with a real browser UA and session
 cookie); toggling cookie, referer, or query-string richness on the same
 request does not move the score at all. (Cookie/referer content isn't
-even measured by any of the extractor's 73 features — they only affect
+even measured by any of the extractor's 75 features (vigente desde rf_v11/if_v10, ver `training/models/parity_report.json`) — they only affect
 `unusual_headers_count` membership, not the anomaly score.)
 
 **Attempted fix:** generated synthetic UA-bearing benign traffic at

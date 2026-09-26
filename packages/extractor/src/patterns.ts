@@ -69,12 +69,7 @@ export const DOUBLE_ENCODED_COUNT = /%25[0-9a-fA-F]{2}/gi;
 export const HEX_ESCAPE_COUNT = /(\\x[0-9a-fA-F]{2}|0x[0-9a-fA-F]+)/gi;
 export const UNICODE_ESCAPE_COUNT = /(\\u[0-9a-fA-F]{4}|\\U[0-9a-fA-F]{8}|%u[0-9a-fA-F]{4})/gi;
 export const HTML_ENTITY_COUNT = /(&[a-zA-Z]+;|&#\d+;|&#x[0-9a-fA-F]+;)/gi;
-// '/' deliberately excluded from the character class: real base64 embedded
-// in a URL is virtually always base64url-encoded (-/_ instead of +//) for
-// exactly this reason, but REST paths with several alnum segments
-// (/api/v1/tokens/<uuid>) formed an unbroken 20+ char run purely from path
-// separators and false-triggered this feature on ordinary API traffic.
-export const BASE64_LIKE_COUNT = /[A-Za-z0-9+]{20,}={0,2}/g;
+export const BASE64_LIKE_COUNT = /[A-Za-z0-9+\/]{20,}={0,2}/g;
 
 // ---- Grupo 2: Composicion de caracteres ------------------------------------
 export const SPECIAL_CHAR_COUNT = /[!@#$%^&*()\[\]{};:'",./<>?|\\=+_~`]/g;

@@ -90,10 +90,29 @@ jobs:
         working-directory: packages/core
         run: npx jest --testPathIgnorePatterns parity.node.test.ts smoke.test.ts --forceExit
 
+  test-mlops:
+    name: Test mlops (collector, review-clusters)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # mlops imports @logsguardian/extractor's dist/ (workspace package
+      # resolution), so extractor must be built first, same as test-core.
+      - run: pnpm run build
+      - run: pnpm --filter @logsguardian/mlops test
+
   publish:
     name: Publish logsguardian to npm
     runs-on: ubuntu-latest
-    needs: [lint, build, test-extractor, test-core]
+    needs: [lint, build, test-extractor, test-core, test-mlops]
     # Only ever runs on main itself (i.e. after a develop -> main merge lands),
     # never on develop or on pull_request events - publishing must not be
     # triggerable from a PR branch. `environment: npm-publish` is optional
