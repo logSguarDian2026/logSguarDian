@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import Database from "better-sqlite3";
-import { requireConfig, parseFormat, dbPathMismatchHint } from "./guard";
+import { requireConfig, parseFormat, dbPathMismatchHint, tableExists } from "./guard";
 import type { MiddlewareOptions } from "../types";
 
 type Severity = "high" | "medium" | "low";
@@ -74,19 +74,25 @@ export function runAttacksSummary(args: string[]): void {
     params.endpoint = endpoint;
   }
 
-  const rows = db
-    .prepare(
-      `SELECT
-         path,
-         method,
-         CASE verdict WHEN 'block' THEN 'high' WHEN 'pass_anomaly' THEN 'medium' ELSE 'low' END AS severity,
-         predicted_class,
-         COUNT(*) AS count
-       FROM detection_events
-       WHERE ${whereClauses.join(" AND ")}
-       GROUP BY path, method, severity, predicted_class`
-    )
-    .all(params) as SummaryRow[];
+  // The file can exist without this table — e.g. one only ever touched by
+  // WebhookStore for a mismatched dbPath (see guard.ts's tableExists doc).
+  // Treated as zero rows rather than letting the SELECT throw uncaught, so
+  // it falls into the same dbPathMismatchHint messaging below.
+  const rows: SummaryRow[] = tableExists(db, "detection_events")
+    ? (db
+        .prepare(
+          `SELECT
+             path,
+             method,
+             CASE verdict WHEN 'block' THEN 'high' WHEN 'pass_anomaly' THEN 'medium' ELSE 'low' END AS severity,
+             predicted_class,
+             COUNT(*) AS count
+           FROM detection_events
+           WHERE ${whereClauses.join(" AND ")}
+           GROUP BY path, method, severity, predicted_class`
+        )
+        .all(params) as SummaryRow[])
+    : [];
   db.close();
 
   rows.sort((a, b) => {

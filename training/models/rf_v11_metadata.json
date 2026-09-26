@@ -1,0 +1,12 @@
+{
+  "n_features": 69,
+  "eval_set": "val",
+  "macro_f1": 0.9807079464231736,
+  "per_class_f1": {
+    "cmdi": 0.9368005266622779,
+    "path_traversal": 0.9855129986108355,
+    "sqli": 0.9962751136530283,
+    "xss": 0.9865289627301302
+  },
+  "classes_meeting_gate": 4
+}

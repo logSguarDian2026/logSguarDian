@@ -15,7 +15,7 @@ function tmpDir(): string {
 }
 
 function makeVector(seed: number): number[] {
-  return Array.from({ length: 75 }, (_, i) => seed + i * 0.01);
+  return Array.from({ length: FEATURE_NAMES.length }, (_, i) => seed + i * 0.01);
 }
 
 function writeTelemetryDb(dbPath: string, events: Array<{ id: number; vector: number[] }>): void {

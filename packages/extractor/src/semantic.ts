@@ -11,6 +11,7 @@ import {
   SQLI_COMMENT_COUNT,
   SQLI_OPERATOR_COUNT,
   FORM_FIELD_COUNT,
+  JSON_KV_QUOTE_COUNT,
   UNION_PRESENT_TEST,
   SELECT_PRESENT_TEST,
   XSS_MARKER_COUNT,
@@ -41,6 +42,8 @@ export function computeSqliFeatures(payload: string): Record<string, number> {
   const sqliKeywordCount = countMatches(payload, SQL_KEYWORDS_COUNT);
   const sqliOperatorCount = countMatches(payload, SQLI_OPERATOR_COUNT);
   const formFieldCount = countMatches(payload, FORM_FIELD_COUNT);
+  const quoteCount = countMatches(payload, /['"]/g);
+  const jsonKvQuoteCount = countMatches(payload, JSON_KV_QUOTE_COUNT);
 
   return {
     sqli_keyword_count: sqliKeywordCount,
@@ -51,7 +54,12 @@ export function computeSqliFeatures(payload: string): Record<string, number> {
     // sqli_operator_count without modifying that feature itself, so rows
     // that rely solely on sqli_operator_count keep their original signal.
     non_form_operator_count: Math.max(0, sqliOperatorCount - formFieldCount),
-    quote_count: countMatches(payload, /['"]/g),
+    quote_count: quoteCount,
+    // Additive only — subtracts benign JSON key/value quoting out of
+    // quote_count without modifying that feature itself, same principle as
+    // non_form_operator_count above. A quote-breakout payload's quote isn't
+    // adjacent to a JSON delimiter, so its signal survives the subtraction.
+    non_json_quote_count: Math.max(0, quoteCount - jsonKvQuoteCount),
     semicolon_count: countMatches(payload, /;/g),
     parenthesis_count: countMatches(payload, /[()]/g),
     union_present: UNION_PRESENT_TEST.test(payload) ? 1 : 0,

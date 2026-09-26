@@ -4,6 +4,7 @@ import * as path from "path";
 import { runConfigInit } from "../src/cli/config-init";
 import { runAttacksList } from "../src/cli/attacks-list";
 import { EventStore } from "../src/store";
+import { WebhookStore } from "../src/webhook-store";
 import type { DetectionEvent } from "../src/types";
 
 function withTempDir(fn: (dir: string) => void): void {
@@ -153,6 +154,46 @@ describe("attacks list", () => {
       // actual resolved dbPath, not just a generic "check your config" message.
       expect(output).toContain(path.join(dir, "logsguardian.db"));
       expect(output).toContain("logsguardian(options)");
+    });
+  });
+
+  test("table output: shows the dbPath-mismatch hint (not a crash) when the file exists but has no detection_events table", () => {
+    withTempDir((dir) => {
+      runConfigInit();
+      // Reproduces the real failure mode: a dbPath that resolves to a file
+      // only ever touched by WebhookStore (e.g. `webhooks add`/`webhooks
+      // test` ran against this dbPath before the middleware ever did),
+      // which creates the file with a `webhooks` table but never
+      // `detection_events`. Previously this threw an uncaught
+      // `SqliteError: no such table: detection_events` instead of the
+      // friendly message below.
+      const webhooks = new WebhookStore(path.join(dir, "logsguardian.db"));
+      webhooks.add("https://example.com/hook");
+      webhooks.close();
+
+      const spy = jest.spyOn(console, "log").mockImplementation(() => {});
+      expect(() => runAttacksList([])).not.toThrow();
+      const output = spy.mock.calls.map((c) => c.join(" ")).join("\n");
+      spy.mockRestore();
+
+      expect(output).toContain("No attack types classified yet.");
+      expect(output).toContain(path.join(dir, "logsguardian.db"));
+    });
+  });
+
+  test("--format json: returns an empty array (not a crash) when the file exists but has no detection_events table", () => {
+    withTempDir((dir) => {
+      runConfigInit();
+      const webhooks = new WebhookStore(path.join(dir, "logsguardian.db"));
+      webhooks.add("https://example.com/hook");
+      webhooks.close();
+
+      const spy = jest.spyOn(console, "log").mockImplementation(() => {});
+      expect(() => runAttacksList(["--format", "json"])).not.toThrow();
+      const parsed = JSON.parse(spy.mock.calls[0][0] as string);
+      spy.mockRestore();
+
+      expect(parsed).toEqual([]);
     });
   });
 });
