@@ -75,8 +75,8 @@ jobs:
       # dist/ (workspace package resolution) — both must be built first, unlike test-extractor
       # which runs ts-jest directly against src/.
       - run: pnpm run build
-      # Two files are excluded from this gate, both deliberately, both real-ONNX-model
-      # dependent — not CLI/middleware logic:
+      # parity.node.test.ts and smoke.test.ts are excluded, both deliberately, both
+      # real-ONNX-model dependent — not CLI/middleware logic:
       #   - parity.node.test.ts: exact numeric parity between Python and Node ONNX runtimes.
       #     Its beforeAll hook has exceeded Jest's default timeout in this environment.
       #   - smoke.test.ts: its "with real models" test has been observed to fail
@@ -84,11 +84,48 @@ jobs:
       #     unreliable enough to gate a PR on right now. Its 3 model-free tests would be
       #     lost too since Jest excludes by file, not by test — acceptable tradeoff until
       #     that test is made reliable as separate work.
+      # Both exclusions live in jest.config.js's "default" project, not as a CLI flag
+      # here: `jest --testPathIgnorePatterns <...>` REPLACES a project's own
+      # testPathIgnorePatterns instead of merging with it, which previously silently
+      # un-excluded every CWD-mutating CLI test file too (they're excluded from
+      # "default" specifically because running any of them alongside other files
+      # reproduces a documented, unresolved cross-file interference flake — first
+      # seen on cli-config-set.test.ts, later also on cli-webhooks-remove.test.ts;
+      # see jest.config.js's CWD_MUTATING_TESTS comment) and let that flake
+      # intermittently fail unrelated tests in this same run.
+      # --selectProjects only chooses which configured projects run; it can't
+      # clobber any project's own exclusions.
       # --forceExit works around onnxruntime-node/worker_threads not always exiting cleanly;
       # without it, this job can hang after tests already reported pass/fail.
+      #
+      # Every CWD-mutating file below runs in its OWN `npx jest` invocation, not one
+      # combined --runInBand run across all of them: each file is 100% deterministic
+      # completely alone (verified locally), but running any two of them together in
+      # one process reproduces the interference flake — see jest.config.js's
+      # CWD_MUTATING_TESTS comment for why a shared --runInBand bucket was tried and
+      # made things worse (7/8 failed), not the single-file loop below (0/8+ failed).
       - name: Test core (cd into package — pnpm's `--` arg forwarding mishandles jest flags)
         working-directory: packages/core
-        run: npx jest --testPathIgnorePatterns parity.node.test.ts smoke.test.ts --forceExit
+        run: |
+          npx jest --selectProjects default --forceExit
+          for f in \
+            cli-attacks-list.test.ts \
+            cli-attacks-inspect.test.ts \
+            cli-attacks-summary.test.ts \
+            cli-config-init.test.ts \
+            cli-config-show.test.ts \
+            cli-config-validate.test.ts \
+            cli-config-set.test.ts \
+            cli-endpoints-profile.test.ts \
+            cli-endpoints-top.test.ts \
+            cli-endpoints-report.test.ts \
+            cli-webhooks-add.test.ts \
+            cli-webhooks-test.test.ts \
+            cli-webhooks-remove.test.ts \
+            cli-webhooks-list.test.ts \
+          ; do
+            npx jest --selectProjects cli-cwd-isolated --runInBand --forceExit "tests/$f"
+          done
 
   test-mlops:
     name: Test mlops (collector, review-clusters)

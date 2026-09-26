@@ -306,9 +306,26 @@ def main() -> None:
 
     # --- 6. Assemble output JSON ---
     print("\n--- Step 6: writing results ---")
+
+    # Checksum manifest: lock_hash above verifies row *identity* (which
+    # requests are in test) and is invariant to feature-value changes by
+    # design (see split.py/row_hash) — it can match even when the extractor
+    # that computed the feature columns has changed underneath it. This
+    # block additionally fixes the exact byte-content of every artifact this
+    # evaluation actually read, so a later reader can verify "is this still
+    # the same model+test-set pairing this metric describes" without relying
+    # on file mtimes or assuming nothing was silently regenerated (the gap
+    # that let a candidate retrain orphan the original rf_v11/if_v10 numbers).
+    artifact_checksums = {
+        "test_parquet_sha256": hashlib.sha256(TEST_PARQUET.read_bytes()).hexdigest(),
+        "rf_onnx_sha256": hashlib.sha256(RF_ONNX.read_bytes()).hexdigest(),
+        "if_onnx_sha256": hashlib.sha256(IF_ONNX.read_bytes()).hexdigest(),
+    }
+
     results = {
         "lock_verified": True,
         "lock_hash": lock_hash,
+        "artifact_checksums": artifact_checksums,
         "model": "rf_v11",
         "if_companion_model": "if_v10",
         "eval_set": "test",
