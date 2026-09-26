@@ -16,6 +16,15 @@ never left pointing at an unvalidated model; that only happens in Fase 8
 (`mlops promote-canary`), after Fase 6's gates pass and Fase 7's canary
 shadow run confirms the candidate is safe.
 
+The locked test set (training/splits/{train,val,test}.parquet,
+test.lock.sha256) gets the same treatment: backed up before split.py runs,
+saved as a timestamped split candidate, and restored after — a rejected or
+un-promoted candidate retrain must never leave the locked test set silently
+mutated on disk (this is what orphaned the original test.lock.sha256 that
+Chapter 7's first rf_v11/if_v10 evaluation depended on: the split parquet
+files are gitignored, so git-checkout-based restoration can't protect them
+the way it protects training/models/).
+
 Any step failing aborts the run immediately; production models are
 untouched either way (the backup/restore only brackets the training step).
 
@@ -28,6 +37,7 @@ import json
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -38,6 +48,8 @@ REPO = Path(__file__).parent.parent
 TRAINING = REPO / "training"
 DATA_CLEAN = TRAINING / "data_clean"
 MODELS = TRAINING / "models"
+SPLITS = TRAINING / "splits"
+SPLIT_FILES = ("train.parquet", "val.parquet", "test.parquet", "test.lock.sha256")
 EXTRACTOR_CLI = REPO / "packages" / "extractor" / "dist" / "cli.js"
 
 UNIFIED = DATA_CLEAN / "unified.jsonl"
@@ -136,6 +148,47 @@ def assert_clean_models_dir() -> None:
         sys.exit(1)
 
 
+def backup_splits(tmp_dir: Path) -> None:
+    """training/splits/*.parquet are gitignored (multi-MB, regenerable) so
+    restore_production_models()'s git-checkout can't protect them the way it
+    protects training/models/ — split.py silently overwrites the locked test
+    set on every run with no backup, which is exactly how a prior candidate
+    retrain orphaned the committed test.lock.sha256 (it stayed byte-identical
+    row-for-row, since the split is seeded, but the feature *values* baked
+    into that test.parquet drifted with no way to tell after the fact which
+    extractor state produced the numbers a citation depends on). Mirrors the
+    models backup/restore pattern: whatever split existed before this run is
+    restored after, regardless of gate outcome — promoting a new split is a
+    deliberate, separate act, same as promoting a new model."""
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    for name in SPLIT_FILES:
+        src = SPLITS / name
+        if src.exists():
+            shutil.copy(src, tmp_dir / name)
+
+
+def restore_splits(tmp_dir: Path) -> None:
+    """Restores training/splits/ to whatever backup_splits() saved. No-op for
+    any file that didn't exist at backup time (first-ever run)."""
+    for name in SPLIT_FILES:
+        backed_up = tmp_dir / name
+        if backed_up.exists():
+            shutil.copy(backed_up, SPLITS / name)
+    log("Restored training/splits/ to its pre-run state — locked test set untouched by this run.")
+
+
+def save_split_candidate(ts: str) -> None:
+    """Copies the freshly-cut splits to timestamped candidate files, same
+    treatment save_candidates() gives rf.onnx/if.onnx — Fase 8 promotion
+    reads these to adopt the new split deliberately, instead of it silently
+    becoming production the moment split.py runs."""
+    for name in SPLIT_FILES:
+        src = SPLITS / name
+        if src.exists():
+            stem, _, ext = name.partition(".")
+            shutil.copy(src, SPLITS / f"{stem}_candidate_{ts}.{ext}")
+
+
 def _latest_metadata_file(prefix: str) -> Path | None:
     """Notebooks write rf_vN_metadata.json / if_vN_metadata.json with a
     hand-bumped version number, not auto-incremented — glob by mtime
@@ -194,32 +247,41 @@ def main() -> None:
 
     assert_clean_models_dir()
     t0 = time.time()
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 
-    run_step("unify", [sys.executable, str(TRAINING / "unify.py")])
-    run_step("extractor CLI", ["node", str(EXTRACTOR_CLI), str(UNIFIED), str(FEATURES_CSV)])
-    run_step("csv_to_parquet", [sys.executable, str(TRAINING / "csv_to_parquet.py")])
+    with tempfile.TemporaryDirectory() as splits_backup:
+        splits_backup = Path(splits_backup)
+        backup_splits(splits_backup)
 
-    merged_rows = merge_curated_telemetry()
+        run_step("unify", [sys.executable, str(TRAINING / "unify.py")])
+        run_step("extractor CLI", ["node", str(EXTRACTOR_CLI), str(UNIFIED), str(FEATURES_CSV)])
+        run_step("csv_to_parquet", [sys.executable, str(TRAINING / "csv_to_parquet.py")])
 
-    run_step("split", [sys.executable, str(TRAINING / "split.py")])
+        merged_rows = merge_curated_telemetry()
 
-    try:
-        run_step("train (notebooks 02-04)", [sys.executable, str(TRAINING / "run_notebooks.py")])
-        run_step("export ONNX + parity (notebook 05)", [sys.executable, str(TRAINING / "run_notebook_05.py")])
-    except SystemExit:
-        # A step failed and already sys.exit(1)'d — restore production models
-        # before propagating, in case notebook 05 partially overwrote them.
+        run_step("split", [sys.executable, str(TRAINING / "split.py")])
+        save_split_candidate(ts)
+
+        try:
+            run_step("train (notebooks 02-04)", [sys.executable, str(TRAINING / "run_notebooks.py")])
+            run_step("export ONNX + parity (notebook 05)", [sys.executable, str(TRAINING / "run_notebook_05.py")])
+        except SystemExit:
+            # A step failed and already sys.exit(1)'d — restore production models
+            # before propagating, in case notebook 05 partially overwrote them.
+            restore_production_models()
+            restore_splits(splits_backup)
+            raise
+
+        candidates = save_candidates()
         restore_production_models()
-        raise
-
-    candidates = save_candidates()
-    restore_production_models()
+        restore_splits(splits_backup)
 
     elapsed = time.time() - t0
     log(f"\nCT pipeline completed in {elapsed:.1f}s")
     log(f"Curated telemetry rows merged: {merged_rows}")
     for name, path in candidates.items():
         log(f"Candidate: {path}")
+    log(f"Split candidate: training/splits/*_candidate_{ts}.*")
 
     sys.path.insert(0, str(TRAINING / "gates"))
     from run_all_gates import run_all_gates  # noqa: E402
