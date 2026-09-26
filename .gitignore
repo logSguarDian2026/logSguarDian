@@ -49,11 +49,19 @@ training/splits/*.parquet
 training/models/*.pkl
 # IF pkls are small (~1MB) and needed for local reproducibility without re-running F3.5
 !training/models/if_v*.pkl
+# rf_v11.pkl specifically is tracked: it's the currently-promoted/evaluated version
+# (parity_report.json, v11_test_results.json cite it) — an untracked promoted model
+# is exactly how a candidate retrain silently clobbered it with no recovery path
+# (see docs/limitations.md and the R2 test-set-relock incident). Older rf_v*.pkl
+# stay ignored; only the live one needs this guarantee.
+!training/models/rf_v11.pkl
 
 # RF metadata JSON (Fase 6 gate input, training/gates/gate_metrics.py) — regenerated
 # alongside the gitignored RF pkl on every run, same treatment. IF's metadata JSON
 # stays tracked (if_v*_metadata.json), matching the IF pkl exception above.
+# rf_v11_metadata.json is tracked for the same reason rf_v11.pkl now is.
 training/models/rf_v*_metadata.json
+!training/models/rf_v11_metadata.json
 
 # packages/core bundles ONNX models from training/models/ at build/publish time;
 # avoid duplicating the binaries in git (training/models/ is the source of truth)
@@ -69,6 +77,10 @@ packages/mlops/data/
 training/models/*_candidate*.onnx
 training/models/*_candidate_metadata.json
 training/models/.*.production_backup
+# Split candidates (training/ct_pipeline.py's backup_splits/save_split_candidate) —
+# same treatment: regenerable, never committed; only a promoted test.lock.sha256
+# (after a deliberate re-lock) is tracked.
+training/splits/*_candidate*
 
 # Fase 6 gate reports (training/gates/run_all_gates.py) — one per run, regenerable
 training/results/gate_report_*.json
