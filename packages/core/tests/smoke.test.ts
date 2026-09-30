@@ -98,8 +98,11 @@ describe("logsguardian middleware — smoke tests", () => {
       fs.existsSync(workerPath);
 
     if (!modelsExist) {
-      console.log("Skipping: models or compiled worker not present.");
-      return;
+      throw new Error(
+        "Real models or dist/worker.js not found - smoke test cannot verify real ONNX " +
+          "inference. Run `pnpm build` and ensure training/models/{rf,if}.onnx exist " +
+          "before running test:smoke.",
+      );
     }
 
     const mw = trackedLogsguardian({ mode: "block", timeoutMs: 5000, dbPath: ":memory:", modelDir });

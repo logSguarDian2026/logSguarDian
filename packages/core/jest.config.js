@@ -44,8 +44,9 @@ module.exports = {
       displayName: "default",
       testEnvironment: "node",
       testMatch: ["<rootDir>/tests/**/*.test.ts"],
-      // smoke.test.ts's "with real models" test is excluded here (not via
-      // CI's CLI flags) deliberately: a CLI-level --testPathIgnorePatterns
+      // smoke.test.ts is excluded here (it has its own "smoke" project below,
+      // run only by test:all, never by CI) and is excluded via this array (not
+      // via CI's CLI flags) deliberately: a CLI-level --testPathIgnorePatterns
       // *replaces* this array instead of merging with it, which previously
       // silently un-excluded cli-config-set.test.ts in CI and reintroduced
       // the exact interference flake this array exists to prevent (see
@@ -62,6 +63,17 @@ module.exports = {
       // native addon instanceof checks pass inside Jest's vm context.
       testEnvironment: "<rootDir>/jest-ort-environment.js",
       testMatch: ["<rootDir>/tests/parity.node.test.ts"],
+      transform: {
+        "^.+\\.tsx?$": ["ts-jest", { tsconfig: "tsconfig.test.json", diagnostics: { ignoreCodes: [151002] } }],
+      },
+    },
+    {
+      // Spawns real worker_threads (RF + 2 IF) against the real ONNX models,
+      // and its "with real models" test has failed intermittently in CI, so it
+      // runs alone in its own process and only via test:smoke / test:all.
+      displayName: "smoke",
+      testEnvironment: "node",
+      testMatch: ["<rootDir>/tests/smoke.test.ts"],
       transform: {
         "^.+\\.tsx?$": ["ts-jest", { tsconfig: "tsconfig.test.json", diagnostics: { ignoreCodes: [151002] } }],
       },
