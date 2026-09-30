@@ -718,6 +718,8 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
 
   // Resolves once every worker has finished loading its model (or has died), i.e.
   // once close() no longer risks hitting the mid-load native abort (see worker.ts).
+  // Known limit: no timeout and no failure path — a worker whose model fails to load
+  // never signals ready or error, so this hangs instead of rejecting.
   (logsguardianMiddleware as LogsguardianHandler).waitUntilReady = (): Promise<void> =>
     new Promise((resolve) => {
       if (allWorkersReady()) return resolve();
