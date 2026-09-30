@@ -16,7 +16,7 @@ export type AttackClass = "benign" | "cmdi" | "path_traversal" | "sqli" | "xss";
  * the same way IF is (fire-and-forget, patches a comparison table after the
  * real response has already gone out). */
 export interface LogsguardianHandler extends RequestHandler {
-  close?: () => void;
+  close?: () => void | Promise<void>;
   spawnCanaryWorker?: (candidateModelPath: string) => Promise<void>;
   closeCanaryWorker?: () => void;
 }

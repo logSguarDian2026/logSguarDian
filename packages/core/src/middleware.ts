@@ -377,7 +377,8 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
     const workerPath = path.join(__dirname, "worker.js");
 
     rfWorker = new Worker(workerPath, { workerData: { role: "rf", modelDir } });
-    rfWorker.on("message", (msg: WorkerResponse | { ready: true; role: "rf" }) => {
+    rfWorker.on("message", (msg: WorkerResponse | { ready: true; role: "rf" } | { closed: true }) => {
+      if ("closed" in msg) return;
       if ("ready" in msg) { rfReady = true; return; }
       handleRfMessage(msg);
     });
@@ -402,7 +403,8 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
 
     ifWorkers = Array.from({ length: IF_POOL_SIZE }, () => {
       const w = new Worker(workerPath, { workerData: { role: "if", modelDir } });
-      w.on("message", (msg: WorkerResponse | { ready: true; role: "if" }) => {
+      w.on("message", (msg: WorkerResponse | { ready: true; role: "if" } | { closed: true }) => {
+        if ("closed" in msg) return;
         if ("ready" in msg) { readyIfWorkers.push(w); return; }
         handleIfMessage(msg);
       });
@@ -462,6 +464,19 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
       if (!canaryStore) {
         try { canaryStore = new CanaryStore(options.dbPath); } catch { /* non-fatal; comparisons won't persist */ }
       }
+    });
+  }
+
+  /** Asks a worker to release its ONNX session, then terminates it once it
+   *  acknowledges. Resolves when the thread has exited. */
+  function shutdownWorker(worker: Worker): Promise<void> {
+    return new Promise((resolve) => {
+      if (worker.threadId === -1) return resolve();
+      worker.once("exit", () => resolve());
+      worker.on("message", (msg: { closed?: true }) => {
+        if (msg && msg.closed) void worker.terminate();
+      });
+      worker.postMessage({ shutdown: true });
     });
   }
 
@@ -667,24 +682,20 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
     trackForCanary();
   };
 
-  // Graceful shutdown: terminates the worker pool this call spawned. Not
+  // Graceful shutdown: releases each worker's ONNX session, then terminates the
+  // pool this call spawned. Resolves once every worker thread has exited. Not
   // needed by most consumers (workers are unref'd-equivalent from the
   // process's perspective — they don't block normal exit), but real apps
   // doing a clean SIGTERM shutdown, and tests that call logsguardian()
-  // directly and need to release the real worker_threads it spawns (rather
-  // than leaving them running until the process itself exits), need a way
+  // directly and need to release the real worker_threads it spawns, need a way
   // to reach them — nothing else exposes these closed-over references.
-  (logsguardianMiddleware as LogsguardianHandler).close = (): void => {
-    // Deliberately fire-and-forget, not awaited: onnxruntime-node's native
-    // addon has a known teardown race (the same "libc++abi ... Napi::Error"
-    // crash seen elsewhere in this project under --forceExit) that measurably
-    // triggers MORE often when terminate() is awaited (tested empirically —
-    // awaiting each worker's actual thread-exit confirmation, one at a time,
-    // gave the crash more chances to fire than just calling terminate() and
-    // moving on). Not fully understood why; not worth digging further into
-    // onnxruntime-node's native internals for a test-cleanup path.
-    rfWorker?.terminate();
-    for (const w of ifWorkers) w.terminate();
+  // Closing without releasing each worker's session first reliably aborted the
+  // process with a native "libc++abi ... Napi::Error" (exit 134) in the real
+  // middleware flow, even after every test already passed. The exact trigger is
+  // not isolated; this handshake is the verified fix for that flow.
+  (logsguardianMiddleware as LogsguardianHandler).close = async (): Promise<void> => {
+    const workers = [rfWorker, ...ifWorkers].filter((w): w is Worker => w !== null);
+    await Promise.all(workers.map(shutdownWorker));
     store?.close();
     webhookStore?.close();
     closeCanaryWorker();
