@@ -17,6 +17,8 @@ export type AttackClass = "benign" | "cmdi" | "path_traversal" | "sqli" | "xss";
  * real response has already gone out). */
 export interface LogsguardianHandler extends RequestHandler {
   close?: () => void | Promise<void>;
+  /** Resolves once every worker has loaded its model (or died). Call before close() to avoid closing mid-load. */
+  waitUntilReady?: () => Promise<void>;
   spawnCanaryWorker?: (candidateModelPath: string) => Promise<void>;
   closeCanaryWorker?: () => void;
 }

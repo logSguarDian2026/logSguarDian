@@ -194,6 +194,19 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
   // retriggers onnxruntime-node's concurrent-call growth (see worker.ts).
   let readyIfWorkers: Worker[] = [];
   let nextIfWorkerIndex = 0;
+  let readinessWaiters: Array<() => void> = [];
+
+  function allWorkersReady(): boolean {
+    if (!rfWorker) return true;
+    return rfReady && readyIfWorkers.length === ifWorkers.length;
+  }
+
+  function notifyReadinessWaiters(): void {
+    if (!allWorkersReady()) return;
+    const waiters = readinessWaiters;
+    readinessWaiters = [];
+    waiters.forEach((resolve) => resolve());
+  }
 
   // Fase 7: canary/candidate model, on-demand only — never spawned by
   // default (see docs/results.md's real 4-worker memory measurement).
@@ -379,7 +392,7 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
     rfWorker = new Worker(workerPath, { workerData: { role: "rf", modelDir } });
     rfWorker.on("message", (msg: WorkerResponse | { ready: true; role: "rf" } | { closed: true }) => {
       if ("closed" in msg) return;
-      if ("ready" in msg) { rfReady = true; return; }
+      if ("ready" in msg) { rfReady = true; notifyReadinessWaiters(); return; }
       handleRfMessage(msg);
     });
     rfWorker.on("error", () => {
@@ -389,6 +402,7 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
       }
       rfWorker = null;
       rfReady = false;
+      notifyReadinessWaiters();
     });
     // Don't let this worker alone keep the process alive. It's still fully usable —
     // unref() only affects exit semantics, not message delivery — but without it, a
@@ -405,7 +419,7 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
       const w = new Worker(workerPath, { workerData: { role: "if", modelDir } });
       w.on("message", (msg: WorkerResponse | { ready: true; role: "if" } | { closed: true }) => {
         if ("closed" in msg) return;
-        if ("ready" in msg) { readyIfWorkers.push(w); return; }
+        if ("ready" in msg) { readyIfWorkers.push(w); notifyReadinessWaiters(); return; }
         handleIfMessage(msg);
       });
       w.on("error", (err) => {
@@ -414,6 +428,7 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
         // never arrive, which is the same as an IF timeout (no-op — RF doesn't wait on it).
         ifWorkers = ifWorkers.filter((x) => x !== w);
         readyIfWorkers = readyIfWorkers.filter((x) => x !== w);
+        notifyReadinessWaiters();
       });
       w.unref(); // see the rfWorker.unref() comment above — same ordering requirement applies here
       return w;
@@ -700,6 +715,14 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
     webhookStore?.close();
     closeCanaryWorker();
   };
+
+  // Resolves once every worker has finished loading its model (or has died), i.e.
+  // once close() no longer risks hitting the mid-load native abort (see worker.ts).
+  (logsguardianMiddleware as LogsguardianHandler).waitUntilReady = (): Promise<void> =>
+    new Promise((resolve) => {
+      if (allWorkersReady()) return resolve();
+      readinessWaiters.push(resolve);
+    });
 
   (logsguardianMiddleware as LogsguardianHandler).spawnCanaryWorker = spawnCanaryWorker;
   (logsguardianMiddleware as LogsguardianHandler).closeCanaryWorker = closeCanaryWorker;
