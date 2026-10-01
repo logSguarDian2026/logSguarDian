@@ -140,7 +140,18 @@ if (DEBUG) {
   }).catch(() => { /* load error already handled below */ });
 }
 
-parentPort!.on("message", async (msg: WorkerRequest) => {
+parentPort!.on("message", async (msg: WorkerRequest | { shutdown: true }) => {
+  if ("shutdown" in msg) {
+    // Release the native session before the thread is terminated. With the real
+    // middleware, closing without this handshake reliably aborted the process with a
+    // native Napi::Error; the exact mechanism is not isolated (see the commit
+    // message). Known gap: a shutdown that arrives while the model is still loading
+    // is only deferred until the load finishes, and closing then still aborts the
+    // process (measured), so callers should not close() mid-load.
+    try { (await sessionPromise).release(); } catch { /* load failed: nothing to release */ }
+    parentPort!.postMessage({ closed: true });
+    return;
+  }
   const tStart = DEBUG ? process.hrtime.bigint() : undefined;
   let session: ort.InferenceSession;
   try {

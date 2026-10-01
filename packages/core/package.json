@@ -48,7 +48,10 @@
     "build": "tsc -p tsconfig.json",
     "postbuild": "cp ../../training/models/class_metrics.json data/ && cp ../../training/models/feature_importance.json data/ && cp ../../training/models/rf.onnx models/ && cp ../../training/models/if.onnx models/",
     "postinstall": "node scripts/postinstall.js",
-    "test": "jest --selectProjects default ort-parity && for f in cli-attacks-list cli-attacks-inspect cli-attacks-summary cli-config-init cli-config-show cli-config-validate cli-config-set cli-endpoints-profile cli-endpoints-top cli-endpoints-report cli-webhooks-add cli-webhooks-test cli-webhooks-remove cli-webhooks-list; do jest --selectProjects cli-cwd-isolated --runInBand \"tests/$f.test.ts\" || exit 1; done"
+    "test": "jest --selectProjects default --forceExit && pnpm run test:isolated",
+    "test:isolated": "for f in cli-attacks-list cli-attacks-inspect cli-attacks-summary cli-config-init cli-config-show cli-config-validate cli-config-set cli-endpoints-profile cli-endpoints-top cli-endpoints-report cli-webhooks-add cli-webhooks-test cli-webhooks-remove cli-webhooks-list; do jest --selectProjects cli-cwd-isolated --runInBand --forceExit \"tests/$f.test.ts\" || exit 1; done",
+    "test:smoke": "jest --selectProjects smoke --runInBand --forceExit",
+    "test:all": "jest --selectProjects default ort-parity --forceExit && pnpm run test:isolated && pnpm run test:smoke"
   },
   "dependencies": {
     "@logsguardian/extractor": "workspace:*",

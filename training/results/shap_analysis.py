@@ -24,14 +24,15 @@ CLASS_NAMES = ["benign", "cmdi", "path_traversal", "sqli", "xss"]
 rf = joblib.load(f"{REPO}/training/models/rf_v11.pkl")
 val = pd.read_parquet(f"{REPO}/training/splits/val.parquet")
 y_val = val["label"]
-X_val = val.drop(columns=[c for c in DROP_COLS + META_COLS if c in val.columns])
+X_val = val[list(rf.feature_names_in_)]
 assert list(rf.classes_) == CLASS_NAMES
-assert X_val.shape[1] == rf.n_features_in_ == 70
+assert X_val.shape[1] == rf.n_features_in_, \
+    f"Expected {rf.n_features_in_} features, got {X_val.shape[1]}"
 
 explainer = shap.TreeExplainer(rf)
 
 # ---------- STEP 2: global feature importance per class ----------
-shap_values = explainer.shap_values(X_val)  # shape (n, 70, 5)
+shap_values = explainer.shap_values(X_val)  # shape (n, n_features, 5)
 
 global_report = {}
 for i, cname in enumerate(CLASS_NAMES):
@@ -65,9 +66,9 @@ with open("/tmp/profile_no_ua2.json") as f:
 with open("/tmp/profile_with_ua2.json") as f:
     with_ua_raw = json.load(f)
 
-profile_df = pd.DataFrame([no_ua_raw, with_ua_raw])[X_val.columns]
+profile_df = pd.DataFrame([no_ua_raw, with_ua_raw])[list(rf.feature_names_in_)]
 profile_proba = rf.predict_proba(profile_df)
-profile_sv = explainer.shap_values(profile_df)  # (2, 70, 5)
+profile_sv = explainer.shap_values(profile_df)  # (2, n_features, 5)
 
 print("\n=== STEP 3: /profile UA-ablation local explanation ===")
 for row_idx, label in enumerate(["no_ua", "with_ua"]):
@@ -119,9 +120,9 @@ subprocess.run(["node", "/tmp/extract_attack_case.js"], check=True)
 with open("/tmp/attack_case.json") as f:
     attack_case = json.load(f)
 
-attack_df = pd.DataFrame([attack_case["features"]])[X_val.columns]
+attack_df = pd.DataFrame([attack_case["features"]])[list(rf.feature_names_in_)]
 attack_proba = rf.predict_proba(attack_df)[0]
-attack_sv = explainer.shap_values(attack_df)[0]  # (70, 5)
+attack_sv = explainer.shap_values(attack_df)[0]  # (n_features, 5)
 
 print("\n=== STEP 4: real detected sqli attack — local explanation ===")
 print(f"request path: {attack_case['request']['path'][:120]}")
