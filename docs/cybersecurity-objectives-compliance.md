@@ -2,7 +2,11 @@
 
 **Alcance:** objetivo general y objetivos específicos (OE1, OE2, OE3) del protocolo de ciberseguridad
 (Sebastián Huertas), más las métricas de aceptación que el protocolo asocia a ellos.
-**Fecha:** 2026-09-19. **Modelos vigentes:** `rf_v11` / `if_v10` (`training/models/parity_report.json`).
+**Fecha:** 2026-09-26 (actualizado — versión anterior: 2026-09-19).
+**Modelos vigentes:** `rf_v11` / `if_v10` (`training/models/parity_report.json`). **Nota de procedencia:**
+el binario `rf.onnx`/`if.onnx` actual es un retrain del 2026-09-26 (`training/results/v11_test_results.json`,
+verificado por checksum) — sustituye tanto las cifras de `rf_v3` como una lectura de test intermedia
+del 2026-09-23 que resultó estar atada a un modelo huérfano (ver OE3.1).
 
 ## Resumen
 
@@ -11,8 +15,8 @@
 | Objetivo general | **Cumplido, con una salvedad** | Librería publicada en npm (`logsguardian@0.1.0`); la salvedad es la latencia (ver OE3.2) |
 | OE1 — cuatro vectores, OWASP/MITRE | **Cumplido** en la implementación | La tabla OWASP/MITRE no existía en el repo; se propone abajo y debe validarse |
 | OE2 — dataset ≥ 100,000 muestras | **Cumplido** en tamaño (~383,000) | Balance resuelto por ponderación, no por conteos iguales; ver salvedades |
-| OE3.1 — F1 ≥ 0.80 en ≥ 3/4 categorías | **Cumplido** (4/4) | Cifras oficiales de test son de `rf_v3`; `rf_v11` tiene val pero no su lectura de test |
-| OE3.2 — Δp95 de latencia | **No cumplido (margen pequeño)** | Decisión A, 2026-09-19: se evalúa en forma absoluta, 7–9 ms vs 5 ms |
+| OE3.1 — F1 ≥ 0.80 en ≥ 3/4 categorías | **Cumplido** (4/4) | Lectura de test de `rf_v11` cerrada (macro F1 0.9776, checksum verificado) — ya no depende de `rf_v3` |
+| OE3.2 — Δp95 de latencia | **No cumplido, por margen grande** | Linux real (2026-09-26): +485% (normal) a +278% (ataque). Hallazgo nuevo grave: bajo volumen de datos, 14% de timeouts — colapso por saturación, no solo latencia alta |
 
 ---
 
@@ -25,7 +29,7 @@
 | Componente del objetivo | Dónde se cumple |
 |---|---|
 | Librería npm | `packages/core`, publicada como `logsguardian@0.1.0` (CI de publicación en `.github/workflows/ci.yml`) |
-| Pipeline de ingeniería de características | `packages/extractor` — 75 features, implementación única en TypeScript (`docs/feature-spec.md`) |
+| Pipeline de ingeniería de características | `packages/extractor` — 76 features (creció de 75 a 76 el 2026-09-25 con `non_json_quote_count`, PR #75; excluida de RF/IF hasta su propio retrain — ver `packages/core/src/worker.ts`), implementación única en TypeScript (`docs/feature-spec.md`, aún no actualizado a 76) |
 | Modelo híbrido | RF (supervisado, autoridad de bloqueo) + IF (no supervisado, solo registro/alerta) en ONNX; política en `docs/decision-policy.md` |
 | Amenazas conocidas y anomalías | RF clasifica 4 clases + benigno; IF marca anomalías (`pass_anomaly`) |
 | Tiempo de ejecución sin bloquear el Event Loop | Inferencia en `worker_threads` (RF dedicado + pool de IF), `docs/architecture.md` |
@@ -88,16 +92,22 @@ etiquetado documentados.
 
 ### OE2.1 — Tamaño (≥ 100,000): cumplido
 
-Cifras medidas (salida del notebook `training/notebooks/03_random_forest.ipynb`, modelo `rf_v11`):
+Cifras confirmadas por partida doble (dos lecturas de test independientes, mismo `test.lock.sha256`
+`7486c258...`): `training/results/v11_test_results.json` (2026-09-26) reporta `n_test_rows: 57481`;
+val/train confirmados por conteo directo de `training/splits/*.parquet` en la misma generación.
 
 | Partición | Filas |
 |---|---|
-| Train | 268,064 |
-| Val | 57,443 |
-| Test | ≈ 57,000 (partición 70/15/15; el conteo exacto de esta generación no está registrado en un doc) |
-| **Total** | **≈ 383,000** |
+| Train | 268,240 |
+| Val | 57,481 |
+| Test | 57,481 |
+| **Total** | **383,202** |
 
-Conteo por clase en train: sqli 159,138 · benign 69,379 · xss 20,928 · path_traversal 11,787 · cmdi 6,832.
+Conteo por clase en el test set (`v11_test_results.json`): benign 14,886 · sqli 34,107 · xss 4,491 ·
+path_traversal 2,529 · cmdi 1,468. (El conteo por clase en train de la versión anterior de este
+documento — sqli 159,138, benign 69,379, etc. — venía de una exploración previa a la regeneración del
+12 de septiembre y no se reconfirmó línea por línea; usar la distribución de test arriba como la
+verificada.)
 
 Antes de deduplicar y filtrar, las fuentes crudas suman más de 930,000 filas (`docs/dataset-audit.md`).
 La estimación de 585,000–645,000 de `training/ML_READINESS.md` es de antes de corregir los parsers y
@@ -152,7 +162,13 @@ el resultado final.
 - Deduplicación: `training/DEDUP_METHODOLOGY.md`. Partición estratificada por clase y fuente:
   `training/split.py`.
 - Reproducibilidad y anti-fuga: `training/splits/test.lock.sha256` se versiona **antes** de cada
-  reentrenamiento (`git log` muestra un commit `lock:` por generación, el último `8cbe6c9` para v11).
+  reentrenamiento (`git log` muestra un commit `lock:` por generación; el más reciente para v11 es
+  `6d1fa68`, 2026-09-23, tras encontrarse que el lock commiteado no coincidía con los artefactos en
+  disco — ver nota de procedencia al inicio del documento). Desde el 2026-09-26,
+  `training/evaluate_test.py` además graba un manifiesto de checksums (`test.parquet`, `rf.onnx`,
+  `if.onnx`) junto a cada lectura, y `rf_v11.pkl`/su metadata pasaron a estar trackeados en git —
+  cierra el hueco que permitió que un candidato sin promover sobreescribiera el `.pkl` de producción
+  bajo el mismo nombre sin que nada lo detectara (ver OE3.1).
 
 ![logsguadian npm](cibersecurity-images/obj2-e.png)
 ![logsguadian npm](cibersecurity-images/obj2-f.png)
@@ -168,9 +184,14 @@ el resultado final.
 2. **Un solo número canónico.** `docs/architecture.md` §2 todavía cita "1,155,302 filas / 72 features"
    de un pipeline anterior (marcado como no verificado en `docs/STATUS.md`). Hay que reemplazarlo por
    la cifra de la tabla de OE2.1.
-3. **Re-bloqueo del test set.** `test.lock.sha256` se regeneró para v6, v8, v9, v10 y v11. La disciplina
-   de "leer el test una vez" se aplica por generación de modelo; debe declararse así en la sección de
-   amenazas a la validez.
+3. **Re-bloqueo del test set.** `test.lock.sha256` se regeneró para v3, v4, v6, v8, v9, v10 y v11 (al
+   menos 7 veces, no 5). La disciplina de "leer el test una vez" se aplica por generación de modelo;
+   debe declararse así en la sección de amenazas a la validez. Mitigado parcialmente desde el
+   2026-09-26: el lock en sí protege la *identidad* de fila (hash de path+query+body+label), no el
+   contenido de features, así que es correctamente invariante a cambios del extractor — pero antes de
+   esa fecha nada ataba un número citado al contenido exacto (byte a byte) del modelo/test-set que lo
+   produjo; el manifiesto de checksums de `evaluate_test.py` cierra esa brecha específica hacia
+   adelante, no retroactivamente para las generaciones anteriores a v11.
 
 ---
 
@@ -178,41 +199,80 @@ el resultado final.
 
 ### OE3.1 — Precisión, recall y F1 por categoría (criterio: F1 ≥ 0.80 en ≥ 3 de 4): cumplido
 
-**Cifras oficiales (test set bloqueado, lectura única, `rf_v3`; `docs/decision-policy.md` §2.1, n = 59,947):**
+**Cifras oficiales, actuales (test set bloqueado, lectura única, `rf_v11`/`if_v10`;
+`training/results/v11_test_results.json` + `training/models/class_metrics.json`, ambos 2026-09-26,
+n = 57,481, hash de lock y checksums de `rf.onnx`/`if.onnx`/`test.parquet` verificados antes de leer):**
 
-| Clase | Precisión | Recall | F1 |
-|---|---|---|---|
-| cmdi | 0.8749 | 0.9170 | 0.8954 |
-| path_traversal | 0.9694 | 0.9648 | 0.9671 |
-| sqli | 0.9953 | 0.9956 | 0.9955 |
-| xss | 0.9911 | 0.9778 | 0.9844 |
-| **Macro F1 (incluye benign)** | | | **0.9682** |
+| Clase | Precisión | Recall | F1 | AUC-ROC |
+|---|---|---|---|---|
+| cmdi | 0.9015 | 0.9475 | **0.9239** | 0.9990 |
+| path_traversal | 0.9853 | 0.9798 | 0.9826 | 0.9990 |
+| sqli | 0.9955 | 0.9956 | 0.9956 | 0.9998 |
+| xss | 0.9950 | 0.9804 | 0.9877 | 0.9993 |
+| benign | 0.9984 | 0.9985 | 0.9984 | 1.0000 |
+| **Macro F1** | | | **0.9776** | |
 
-**4/4 categorías ≥ 0.80**, por encima del mínimo de 3/4.
+**4/4 categorías ≥ 0.80**, por encima del mínimo de 3/4. AUC-ROC por clase (One-vs-Rest) se reporta
+por primera vez en este proyecto — no existía en ningún artefacto antes de esta lectura.
 
-**Modelo vigente (`rf_v11`), conjunto de validación (n = 57,443):** macro F1 0.9831; cmdi 0.95,
-path_traversal 0.99, sqli 1.00, xss 0.99; 4/4 ≥ 0.80. IF (`if_v10`): recall 0.9157, FP 0.0596 en val.
+**IF (`if_v10`), mismo test set, threshold congelado (nunca recalibrado contra test):** recall 0.9125,
+FP rate 0.0546, precisión 0.9795. Ambos criterios del protocolo (recall ≥ 0.50 y FP ≤ 0.10) se
+cumplen con margen.
 
-**Brecha a cerrar:** las cifras oficiales de test corresponden a `rf_v3`, no al modelo publicado. `rf_v11`
-solo tiene métricas de validación; falta su lectura única de test para que el modelo evaluado y el
-publicado coincidan. Además `training/models/class_metrics.json` sigue en `rf_v3`, por lo que
-`logsguardian attacks inspect` muestra métricas de `rf_v3`.
+**Brecha cerrada, con una vuelta de tuerca en el camino.** La versión anterior de este documento
+señalaba que las cifras oficiales eran de `rf_v3` y que faltaba la lectura de test de `rf_v11`. Esa
+lectura se hizo (2026-09-23, macro F1 0.9843) — pero resultó estar atada a un `rf_v11.pkl` que había
+sido sobreescrito silenciosamente por un candidato sin promover de una investigación paralela
+(`investigate/benign-persona-diversification`, PR #75), sin que nada lo detectara porque el `.pkl`
+no estaba trackeado en git. Un retrain limpio contra el contrato de producción real (69/63 features)
+el 2026-09-26 produjo las cifras de arriba, que **reemplazan** las del 23 de septiembre. `cmdi` bajó
+de 0.9516 (cifra ahora inválida) a 0.9239 (cifra real) — sigue muy por encima del gate de 0.80.
+`training/models/class_metrics.json` y `logsguardian attacks inspect` ya muestran `rf_v11`, no `rf_v3`.
+
+**Pendiente, no bloqueante:** `docs/decision-policy.md` §2.1 (la fuente que este documento citaba como
+"oficial") todavía no se actualizó con esta tabla — sigue mostrando la de `rf_v3`, anotada como
+histórica pero no reemplazada. Hay que sincronizarla por separado.
 
 **"Bajo condiciones de tráfico simulado":**
 
 - Suite E2E (`e2e/detection.test.ts`, `pnpm run test:e2e`): 100 payloads por clase enviados por HTTP real
   contra Express con el middleware y los ONNX reales (`docs/results.md` §F5.7).
-- Corpus SecLists de 590 payloads contra la app vulnerable (Ronda 4, `docs/vulnerable-app-evaluation/`):
+- **Corpus SecLists de 590 payloads, Ronda 4 — con fuga confirmada, ya no citable como cifra principal.**
+  Se confirmó que el corpus de cmdi de esta ronda venía del mismo archivo SecLists usado en
+  entrenamiento (100 % de los 200 payloads colapsan a una plantilla ya vista). Tabla histórica,
+  conservada solo por trazabilidad — **no usar estos números en el informe**:
 
-| Categoría | Solo logsguardian | Solo WAF (CRS PL1) | Capas (WAF + logsguardian) |
-|---|---|---|---|
-| sqli | 98.7 % | 85.7 % | 100.0 % |
-| xss | 97.3 % | 97.3 % | 100.0 % |
-| path_traversal | 98.5 % | 87.0 % | 98.5 % |
-| cmdi | 100.0 % | 100.0 % | 100.0 % |
-| **Total** | **98.8 %** (583/590) | 93.2 % | 99.5 % |
+  | Categoría | Solo logsguardian | Solo WAF (CRS PL1) | Capas (WAF + logsguardian) |
+  |---|---|---|---|
+  | sqli | 98.7 % | 85.7 % | 100.0 % |
+  | xss | 97.3 % | 97.3 % | 100.0 % |
+  | path_traversal | 98.5 % | 87.0 % | 98.5 % |
+  | cmdi | 100.0 % (inflado por fuga) | 100.0 % | 100.0 % |
+  | **Total** | **98.8 %** (583/590) | 93.2 % | 99.5 % |
 
-De los 40 ataques que el WAF dejó pasar, logsguardian detuvo 37 de forma independiente.
+- **Ronda 5 (corpus limpio, sin fuga) — cifras vigentes, solo Config 2 (logsguardian activo, sin WAF):**
+  generado con sqlmap (sqli), generadores propios no derivados de SecLists (path_traversal, cmdi), y
+  filtrado por exclusión contra el corpus de entrenamiento completo antes de incluir cualquier payload.
+
+  | Categoría | Ronda 4 (con fuga) | Ronda 5 (limpia) |
+  |---|---|---|
+  | sqli | 98.7 % | 100.0 % |
+  | path_traversal | 98.5 % | **85.0 %** |
+  | cmdi | 100.0 % (fuga) | **91.5 %** (real) |
+  | xss | 97.3 % | placeholder — ZAP manual pendiente, no citable |
+
+  cmdi 91.5 % es la tasa de detección real contra payloads que el modelo nunca vio; el 100 % anterior
+  era memorización de plantilla. path_traversal bajó (85.0 % vs. 98.5 %) no por fuga (0 coincidencias
+  confirmadas) sino porque este corpus es más diverso en encoding — hallazgo genuino, no artefacto de
+  medición. Las variantes con WAF (3a/3b) y el baseline (Config 1) no se re-corrieron con este corpus
+  todavía. Fuente: repo `logSguarDian-vulnerable-project`, `docs/config3b-results.md` §Ronda 5 (ruta
+  corregida — la carpeta `docs/vulnerable-app-evaluation/` ya no existe, el repo hermano aplanó sus
+  docs directo a `docs/`).
+
+De los 40 ataques que el WAF dejó pasar en Ronda 4 (con fuga), logsguardian detuvo 37 de forma
+independiente — este hallazgo de defensa en profundidad no depende de la fuga de cmdi (viene
+mayormente de sqli/path_traversal/xss) y se mantiene válido, pero no se ha re-confirmado con el
+corpus de Ronda 5 todavía.
 
 ![logsguadian npm](cibersecurity-images/obj3-a.png)
 ![logsguadian npm](cibersecurity-images/obj3-b.png)
@@ -223,36 +283,77 @@ De los 40 ataques que el WAF dejó pasar, logsguardian detuvo 37 de forma indepe
 ![logsguadian npm](cibersecurity-images/obj3-f.png)
 ![logsguadian npm](cibersecurity-images/obj3-g.png)
 
-### OE3.2 — Latencia Δp95 (métrica de aceptación asociada): no cumplido, con margen pequeño
+### OE3.2 — Latencia Δp95 (métrica de aceptación asociada): no cumplido, y un hallazgo grave nuevo
 
 El criterio no está en el texto del OE3 anterior, sino en las métricas de aceptación del protocolo:
 Δp95 ≤ 5 % (carga normal) y ≤ 10 % (carga de ataque); `PLAN.md` F6.2 lo enuncia además en forma absoluta
 (Δp95 ≤ 5 ms por solicitud).
 
-**Decisión (2026-09-19, opción A):** el criterio se evalúa en su **forma absoluta** (Δp95 ≤ 5 ms). Motivo:
-la forma relativa diverge cuando el baseline tiende a cero (`Δ% = ε / p95_base × 100`), y la app de
-referencia tiene un baseline de ~4–5 ms; la demostración está en `docs/results.md` §F6.5.
+**Decisión revisada (2026-09-26): se abandona la "Decisión A" del 2026-09-19.** La versión anterior de
+este documento evaluaba el criterio en forma absoluta, argumentando que la forma relativa "diverge"
+contra un baseline casi nulo. El asesor rechazó ese cambio de métrica hecho después de ver el
+resultado y señaló, correctamente, que el baseline real (~4-5 ms) no tiende a cero — el criterio del
+protocolo simplemente está calibrado de forma optimista para una app de este perfil de latencia.
+Se reporta la **forma relativa como primaria** (la que aprobó el protocolo), con la absoluta como
+análisis complementario.
 
-| Entorno | p95 sin middleware | p95 con middleware | Δp95 absoluto | Veredicto (≤ 5 ms) |
-|---|---|---|---|---|
-| Docker + Postgres, app de referencia (arquitectura publicada) | ~5 ms | ~12–14 ms | **~7–9 ms** | **No cumple** (excede 2–4 ms) |
-| Express en Node puro, sin Docker (`docs/results.md` §A24) | 0.119 ms | 0.300 ms | ~0.18 ms | Cumple |
+**Resultados reales, Linux nativo (GitHub Actions `ubuntu-latest`, corrida del 2026-09-26, workflow
+`latency-benchmark.yml`, 5 corridas por condición, mediana — metodología de descarte de extremos
+verificada matemáticamente equivalente a la mediana simple para n=5):**
 
-**Veredicto oficial: NO CUMPLIDO en el entorno de referencia, por un margen absoluto pequeño.** La forma
-relativa del protocolo (≤ 5 % / ≤ 10 %) tampoco se cumple (+142 % a +178 % en la variante publicada) y
-se reporta como no cumplida por la razón matemática ya documentada; no se oculta.
+| Escenario | p95 sin middleware | p95 con middleware | Δp95 absoluto | Δp95 relativo | Fallos (timeouts) |
+|---|---|---|---|---|---|
+| Normal (navegación benigna) | 2.49 ms | 14.57 ms | 12.08 ms | **+485.1 %** | 0 / 0 |
+| Ataque (benigno + payloads concurrentes) | 4.62 ms | 17.47 ms | 12.85 ms | **+278.1 %** | 0 / 0 |
+| **Volumen (2010 filas sembradas)** | 63.84 ms | **6,559.3 ms** | **~6.5 s** | **+10,174.6 %** | **3,648 timeouts / 5 reps (~14 % de las requests)** |
 
-**Cómo leer el resultado sin exagerarlo:**
+**Veredicto oficial: NO CUMPLIDO, por un margen mucho mayor al que se creía.** Ni la forma relativa ni
+la absoluta se acercan a cumplirse en ningún escenario — los números de Docker Desktop/macOS que
+tenía la versión anterior de este documento (+142% a +178%, ~7-9ms) **subestimaban el problema**: en
+Linux nativo, con metodología correcta (100 req/s real, warmup separado, 5 corridas), el escenario
+normal ya da +485%, no +142-178%.
 
-- El sobrecosto medido es de 7–9 ms de p95 sobre una app cuyo baseline es de ~5 ms; frente a la latencia
-  típica de una API con base de datos y red (decenas a cientos de ms) es pequeño. Esto es un argumento,
-  no una medición de impacto en throughput o CPU: no se midió.
-- El entorno Docker Desktop sobre macOS añade virtualización que no existe en un servidor Linux
-  (`docs/vulnerable-app-evaluation/config2-latency-evaluation.md`); el propio contribuyente dominante
-  es el viaje al `worker_thread` (~75 % del sobrecosto), no el registro en SQLite.
-- Reinterpretar el criterio de relativo a absoluto **no convierte el resultado en aprobado**; cambia la
-  métrica con la que se reporta. Como el protocolo aprobado dice "≤ 5 % / ≤ 10 %", este cambio debe
-  comunicarse al asesor y declararse en el informe como desviación justificada.
+**Hallazgo nuevo y grave: bajo volumen de datos realista, el sistema entra en colapso por saturación,
+no solo en latencia alta.** La hipótesis original (`docs/vulnerable-app-evaluation` histórico,
+sembrar más filas para que el baseline suba y el Δ relativo se vea mejor, que había dado +70.2% en una
+medición manual anterior) **no se confirmó — ocurrió lo opuesto**. Verificado directamente en los logs
+crudos de Artillery (no solo en el resumen): **3,648 de las requests del escenario de volumen con
+logsguardian activo terminaron en `ERR_SOCKET_TIMEOUT`** (0 timeouts en cualquier otra combinación de
+escenario/condición), y las que sí completaron tardaron hasta 6.5-7.3 segundos. Los timeouts escalan
+dentro de cada corrida de 75s (76→107→62→68→92→**405** fallos por bucket de ~10s en la rep 1) — un
+patrón de acumulación de cola, no de solicitudes lentas individuales. La causa más probable, sin
+confirmar aún con instrumentación dedicada: la ruta `GET /posts` sin paginar ya es lenta con 2010 filas
+sin middleware (63.84ms vs 2.49ms normal, ~26×), y el overhead añadido de logsguardian sobre una app
+ya más lenta empuja el tiempo de servicio efectivo por debajo de la tasa de llegada (~100 req/s),
+generando una cola sin límite — un problema de capacidad/backpressure, no solo de latencia por
+solicitud. **Esto requiere una investigación de causa raíz dedicada antes de poder afirmar que
+logsguardian es seguro de desplegar contra tráfico con volúmenes de datos realistas**, y es
+independiente del veredicto de Δp95 en sí — de hecho posiblemente más serio para la tesis.
+
+**Memoria y CPU (mismo run, `analyze-memory.js`, ventana de 41.9 min, 374 muestras — cumple el
+requisito de ≥30 min de `PLAN.md` F6.3):** pico 494.8 MB, media 239.8 MB; CPU pico 198.6%, media 60%.
+El script marcó `possibleLeak: true` (crecimiento de 84.8% entre la primera y segunda mitad de la
+ventana) — **revisado contra los timestamps exactos de cada corrida y descartado como leak real**: el
+muestreo cubre las 3 corridas de reps de los 3 escenarios en secuencia (normal → ataque → volumen), y
+el pico de memoria coincide exactamente con la ventana del escenario de volumen (23:05-23:18), que es
+además donde ocurre el colapso por timeouts descrito arriba — el patrón es "distintos escenarios con
+perfiles de memoria muy distintos corriendo en secuencia dentro de la misma ventana muestreada", no un
+proceso único creciendo sin límite. La heurística de "primera mitad vs. segunda mitad" no distingue
+esto; el propio script ya lo advertía ("no tratar como concluyente solo con esta heurística").
+El pico de 494.8 MB en sí (vs. 245.11 MB del benchmark aislado sin carga) es consistente con un
+sistema bajo la saturación descrita arriba, con conexiones y trabajo en cola acumulándose.
+
+**Cómo leer estos resultados para la tesis:**
+
+- El criterio de latencia bajo carga normal y de ataque no se cumple, por un margen grande, en Linux
+  real — no hay forma honesta de presentar esto como "cumplido" ni "casi cumplido".
+- El hallazgo de volumen no es parte del criterio de aceptación formal (el protocolo no especifica un
+  escenario de volumen), pero es evidencia directa y grave sobre los límites operacionales reales de
+  la arquitectura publicada, y debe declararse en la sección de limitaciones/amenazas a la validez con
+  la misma honestidad que el resto de hallazgos de este documento.
+- Próximo paso técnico concreto: instrumentar el tiempo de cola del pool de workers
+  (`packages/core/src/worker.ts`) específicamente durante el escenario de volumen, para confirmar o
+  descartar la hipótesis de backpressure antes de proponer un fix.
 
 ![logsguadian npm](cibersecurity-images/obj3-h1.png)
 ![logsguadian npm](cibersecurity-images/obj3-h2.png)
@@ -293,22 +394,39 @@ se reporta como no cumplida por la razón matemática ya documentada; no se ocul
 
 | Métrica | Estado | Evidencia |
 |---|---|---|
-| Cobertura ≥ 80 % por categoría de payload | Cumplida (97.3–100 % por categoría en Ronda 4; ver también `docs/STATUS.md`) | ![logsguadian npm](cibersecurity-images/obj3-f.png), ![logsguadian npm](cibersecurity-images/obj3-g.png) |
-| Paridad ONNX < 0.1 % | Cumplida: diferencia máxima ~9.5e-08 (RF) y ~2.4e-07 (IF) | ![logsguadian npm](cibersecurity-images/obj3-k.png) `parity_report.json` y test de paridad |
+| Cobertura ≥ 80 % por categoría de payload | Cumplida (85.0–100 % por categoría en Ronda 5, corpus limpio; xss pendiente ZAP) | ![logsguadian npm](cibersecurity-images/obj3-f.png), ![logsguadian npm](cibersecurity-images/obj3-g.png) |
+| Paridad ONNX < 0.1 % | Cumplida: diferencia máxima ~1.0e-07 (RF) y ~2.4e-07 (IF), retrain 2026-09-26 | ![logsguadian npm](cibersecurity-images/obj3-k.png) `parity_report.json` y test de paridad |
 
 ---
 
 ## Riesgos abiertos consolidados
 
-1. Lectura única de test de `rf_v11` pendiente; `class_metrics.json` y `attacks inspect` aún en `rf_v3`.
+1. **Cerrado (2026-09-26):** lectura única de test de `rf_v11` — hecha, con checksum verificado. Ver
+   nota de procedencia al inicio del documento sobre la lectura intermedia del 23 de septiembre que
+   quedó invalidada.
 2. Tabla OWASP/MITRE sin validar contra fuentes oficiales, y posible inconsistencia de A03 para Path Traversal.
 3. Redacción de OE2 ("entorno que genere el dataset") frente a la práctica real (fuentes públicas).
-4. Cifra "1,155,302 filas" obsoleta en `docs/architecture.md`.
-5. Cambio de métrica de latencia (relativa → absoluta) sin comunicar aún al asesor.
+4. Cifra "1,155,302 filas" en `docs/architecture.md` — ya anotada como histórica (2026-09-25), pero
+   todavía no reemplazada por un número vigente del pipeline actual.
+5. `docs/decision-policy.md` §2.1 sigue mostrando la tabla de `rf_v3`; hay que sincronizarla con
+   `training/results/v11_test_results.json`.
+6. **Cerrado (2026-09-26):** workflow de latencia en Linux nativo corrido — reemplazadas las cifras de
+   Docker Desktop/macOS por los resultados reales (peores de lo estimado: +485% normal, +278% ataque).
+7. **Nuevo, alta prioridad:** bajo el escenario de volumen (2010 filas), 14% de las requests con
+   logsguardian activo terminan en timeout (6.5-7.3s de latencia real, no solo un p95 alto) — 0
+   timeouts en cualquier otro escenario/condición. Hipótesis de causa raíz (backpressure del pool de
+   workers combinado con una ruta sin paginar) sin confirmar — requiere instrumentación dedicada antes
+   de proponer un fix. Independiente del veredicto formal de Δp95, pero potencialmente más serio.
+8. Ronda 5 (corpus limpio) solo cubrió Config 2; faltan Config 1 baseline y las variantes con WAF
+   (3a/3b) con el mismo corpus, y el export real de ZAP para xss.
 
 ## Artefactos citados
 
 `training/label_map.yaml` · `training/parsers/` · `training/split.py` · `training/splits/test.lock.sha256` ·
-`training/models/parity_report.json` · `docs/dataset-audit.md` · `docs/decision-policy.md` ·
-`docs/feature-spec.md` · `docs/limitations.md` · `docs/results.md` · `docs/STATUS.md` ·
-`docs/vulnerable-app-evaluation/` · `e2e/detection.test.ts`.
+`training/models/parity_report.json` · `training/models/class_metrics.json` ·
+`training/results/v11_test_results.json` · `training/evaluate_test.py` · `docs/dataset-audit.md` ·
+`docs/decision-policy.md` · `docs/feature-spec.md` · `docs/limitations.md` · `docs/results.md` ·
+`docs/STATUS.md` · `docs/architecture.md` — repo hermano `logSguarDian-vulnerable-project`:
+`docs/config3b-results.md` (nota: la carpeta `docs/vulnerable-app-evaluation/` ya no existe, sus
+archivos viven directo en `docs/`) · `.github/workflows/latency-benchmark.yml` ·
+`e2e/detection.test.ts`.
