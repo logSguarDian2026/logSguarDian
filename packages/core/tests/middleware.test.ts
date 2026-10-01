@@ -38,6 +38,9 @@ jest.mock("worker_threads", () => {
   const { EventEmitter } = require("events");
   class MockWorker extends EventEmitter {
     role: "rf" | "if" | "canary";
+    // -1 is what a real Worker reports once its thread has exited, which lets
+    // close() skip the shutdown handshake no mock will ever acknowledge.
+    threadId = -1;
     constructor(_scriptPath: unknown, opts: { workerData: { role: "rf" | "if" | "canary" } }) {
       super();
       this.role = opts.workerData.role;
@@ -85,8 +88,8 @@ function tmpDb(): string {
 // leaked-handle-corrupts-other-files' process.cwd() concern as smoke.test.ts.
 const middlewareInstances: import("../src/types").LogsguardianHandler[] = [];
 
-afterAll(() => {
-  for (const mw of middlewareInstances) mw.close?.();
+afterAll(async () => {
+  await Promise.all(middlewareInstances.map((mw) => mw.close?.()));
   for (const p of tmpDbs) { try { fs.unlinkSync(p); } catch { /* already removed */ } }
 });
 

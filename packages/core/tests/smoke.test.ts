@@ -30,6 +30,8 @@ function makeRes(): Response {
   return res as unknown as Response;
 }
 
+const TEARDOWN_TIMEOUT_MS = 30000;
+
 describe("logsguardian middleware — smoke tests", () => {
   // Every logsguardian() call spawns real worker_threads (1 RF + 2 IF) — even
   // with a short timeoutMs, since the middleware's timeout only governs how
@@ -47,16 +49,18 @@ describe("logsguardian middleware — smoke tests", () => {
     instances.push(mw);
     return mw;
   }
-  // afterAll rather than afterEach: fewer terminate() calls overall (the
-  // worker-thread crash race is triggered by terminate() itself, so calling
-  // it less often — once at file teardown instead of after every test —
-  // reduces exposure), and all that actually matters is that no worker from
-  // this file survives into the NEXT file Jest schedules onto this worker
-  // process.
-  afterAll(() => {
-    for (const mw of instances) mw.close?.();
-    instances.length = 0;
-  });
+  // afterEach, not afterAll: each instance loads 3 real ONNX sessions, and
+  // measured concurrent loads scale badly (4 instances at once took ~38s to all
+  // become ready vs ~3s for one), so instances must not pile up across tests.
+  // close() must wait for readiness first: closing a worker mid-model-load
+  // aborts the process natively (known gap, see worker.ts).
+  afterEach(async () => {
+    const finished = instances.splice(0);
+    await Promise.all(finished.map(async (mw) => {
+      await mw.waitUntilReady?.();
+      await mw.close?.();
+    }));
+  }, TEARDOWN_TIMEOUT_MS);
 
   test("factory returns a RequestHandler function", () => {
     const mw = trackedLogsguardian({ mode: "monitor", dbPath: ":memory:" });
@@ -106,8 +110,7 @@ describe("logsguardian middleware — smoke tests", () => {
     }
 
     const mw = trackedLogsguardian({ mode: "block", timeoutMs: 5000, dbPath: ":memory:", modelDir });
-    // Give the worker time to load the models before sending real traffic.
-    await new Promise((r) => setTimeout(r, 3000));
+    await mw.waitUntilReady?.();
 
     // GET request: attack payload is in the query string, req.body is {} (default Express).
     // This is the canonical delivery vector for SQLi/XSS/PT/CMDi — the body bug would
