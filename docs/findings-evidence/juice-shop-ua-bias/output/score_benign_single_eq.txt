@@ -1,0 +1,3 @@
+path<=15 | UA long(>40)            n=7      FP=0 (0.0%) sqli-FP=0
+path<=15 | UA short/none           n=8432   FP=25 (0.3%) sqli-FP=23
+path>15 | UA short/none            n=63     FP=1 (1.6%) sqli-FP=0

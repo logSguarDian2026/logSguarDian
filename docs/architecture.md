@@ -193,7 +193,7 @@ src/
                              # to exist before running anything except `config init`)
 models/
 ├── rf.onnx, if.onnx      # Copied from training/models/ (git-ignored, synced before build/publish)
-└── model-metadata.json    # Consolidates parity_report.json (classes, ONNX output indices, thresholds)
+└── parity_report.json     # Copied from training/models/ (classes, ONNX output indices, threshold_if)
 tests/                     # Jest — middleware (worker-pool mocking, webhook dispatch, late-IF-patch
                            # behavior), store, CLI subcommands
 ```
@@ -225,8 +225,8 @@ training/splits/{train,val,test}.parquet  (RF: 67-feature vector, IF: 61-feature
    ▼  training/notebooks/02-05 (RandomForest, IsolationForest, ONNX export)
 training/models/{rf.onnx, if.onnx, parity_report.json}
    │
-   ▼  copied + consolidated into model-metadata.json
-packages/core/models/{rf.onnx, if.onnx, model-metadata.json}
+   ▼  copied by postbuild (parity_report.json supplies threshold_if)
+packages/core/models/{rf.onnx, if.onnx, parity_report.json}
 
 
 Runtime (consumer's Express app)

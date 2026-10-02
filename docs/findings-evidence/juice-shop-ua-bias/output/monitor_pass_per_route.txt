@@ -1,0 +1,60 @@
+GET /api/Addresss                                 browser    3    3 100.0%  {'path_traversal': 3}
+GET /api/Cards                                    browser    3    3 100.0%  {'path_traversal': 3}
+GET /api/Challenges                               browser    3    3 100.0%  {'path_traversal': 3}
+GET /api/Deliverys                                browser    3    3 100.0%  {'path_traversal': 3}
+GET /api/Feedbacks                                browser    3    3 100.0%  {'path_traversal': 3}
+GET /api/Products                                 browser    3    3 100.0%  {'path_traversal': 3}
+GET /api/Products/:id                             browser   45   45 100.0%  {'path_traversal': 45}
+GET /api/Quantitys                                browser    3    3 100.0%  {'path_traversal': 3}
+GET /api/SecurityQuestions                        browser    3    3 100.0%  {'sqli': 3}
+GET /api/SecurityQuestions                        curl       3    3 100.0%  {'sqli': 3}
+GET /rest/admin/application-configuration         browser    3    3 100.0%  {'path_traversal': 3}
+GET /rest/admin/application-version               browser    3    3 100.0%  {'path_traversal': 3}
+GET /rest/basket/:id                              browser    3    3 100.0%  {'path_traversal': 3}
+GET /rest/captcha                                 browser    3    3 100.0%  {'path_traversal': 3}
+GET /rest/deluxe-membership                       browser    3    3 100.0%  {'path_traversal': 3}
+GET /rest/image-captcha                           browser    3    3 100.0%  {'path_traversal': 3}
+GET /rest/languages                               browser    3    3 100.0%  {'path_traversal': 3}
+GET /rest/memories                                browser    3    3 100.0%  {'path_traversal': 3}
+GET /rest/order-history                           browser    3    3 100.0%  {'path_traversal': 3}
+GET /rest/products/:id/reviews                    browser   60   60 100.0%  {'path_traversal': 60}
+GET /rest/products/search                         curl      63   63 100.0%  {'sqli': 63}
+GET /rest/track-order/:id                         browser   15   15 100.0%  {'path_traversal': 15}
+GET /rest/user/security-question                  browser    3    3 100.0%  {'sqli': 3}
+GET /rest/user/security-question                  curl       3    3 100.0%  {'sqli': 3}
+GET /rest/user/whoami                             browser    3    3 100.0%  {'path_traversal': 3}
+GET /rest/user/whoami                             curl       3    3 100.0%  {'path_traversal': 3}
+GET /rest/wallet/balance                          browser    3    3 100.0%  {'path_traversal': 3}
+POST /api/Feedbacks                               browser   15   15 100.0%  {'sqli': 15}
+POST /api/Feedbacks                               curl      15   15 100.0%  {'sqli': 15}
+POST /api/Users                                   browser   18   18 100.0%  {'sqli': 18}
+POST /api/Users                                   curl      18   18 100.0%  {'sqli': 18}
+POST /rest/user/login                             browser   18   18 100.0%  {'cmdi': 12, 'sqli': 6}
+POST /rest/user/login                             curl      18   18 100.0%  {'sqli': 18}
+PUT /rest/products/:id/reviews                    browser   15   15 100.0%  {'sqli': 15}
+GET /rest/products/search                         browser   63   57  90.5%  {'sqli': 57}
+GET /api/Addresss                                 curl       3    0   0.0%  
+GET /api/Cards                                    curl       3    0   0.0%  
+GET /api/Challenges                               curl       3    0   0.0%  
+GET /api/Deliverys                                curl       3    0   0.0%  
+GET /api/Feedbacks                                curl       3    0   0.0%  
+GET /api/Products                                 curl       3    0   0.0%  
+GET /api/Products/:id                             curl      45    0   0.0%  
+GET /api/Quantitys                                curl       3    0   0.0%  
+GET /rest/admin/application-configuration         curl       3    0   0.0%  
+GET /rest/admin/application-version               curl       3    0   0.0%  
+GET /rest/basket/:id                              curl       3    0   0.0%  
+GET /rest/captcha                                 curl       3    0   0.0%  
+GET /rest/country-mapping                         browser    3    0   0.0%  
+GET /rest/country-mapping                         curl       3    0   0.0%  
+GET /rest/deluxe-membership                       curl       3    0   0.0%  
+GET /rest/image-captcha                           curl       3    0   0.0%  
+GET /rest/languages                               curl       3    0   0.0%  
+GET /rest/memories                                curl       3    0   0.0%  
+GET /rest/order-history                           curl       3    0   0.0%  
+GET /rest/products/:id/reviews                    curl      60    0   0.0%  
+GET /rest/track-order/:id                         curl      15    0   0.0%  
+GET /rest/wallet/balance                          curl       3    0   0.0%  
+PUT /rest/products/:id/reviews                    curl      15    0   0.0%  
+TOTAL browser: 303/312 (97.1%)
+TOTAL curl: 123/312 (39.4%)
