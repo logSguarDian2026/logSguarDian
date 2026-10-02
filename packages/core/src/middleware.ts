@@ -56,6 +56,7 @@ import { WebhookStore } from "./webhook-store";
 import { CanaryStore } from "./canary-store";
 import { sendWebhook } from "./webhook";
 import { sendTelemetry } from "./telemetry";
+import { loadIfThreshold } from "./model-metadata";
 import type {
   AttackClass,
   CanaryComparison,
@@ -68,12 +69,6 @@ import type {
 } from "./types";
 
 const RF_THRESHOLD = 0.35;
-// if_v10 (v11 retrain, 63-feature IF slice): recalibrated by
-// 04_isolation_forest.ipynb's recall>=0.50 AND FP<=0.06 gate. Was
-// 0.002486040118540811 for if_v9 — update this alongside every IF retrain
-// (training/models/if_v10_metadata.json / parity_report.json carry the
-// current value; this constant must be kept in sync by hand).
-const IF_THRESHOLD = 0.00806713286301003;
 const RF_CLASSES: AttackClass[] = ["benign", "cmdi", "path_traversal", "sqli", "xss"];
 
 const DEFAULT_TIMEOUT_MS = 50;
@@ -159,6 +154,7 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
   const userThreshold = options.threshold;
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const modelDir = options.modelDir ?? DEFAULT_MODEL_DIR;
+  const ifThreshold = loadIfThreshold(modelDir);
   const webhookUrl = options.webhookUrl;
   const telemetryUrl = options.telemetryUrl;
   const sourceId = options.sourceId ?? os.hostname();
@@ -234,7 +230,7 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
     const predicted_class = RF_CLASSES[maxIdx];
     const confidence = rfProbs[maxIdx];
     const is_attack = predicted_class !== "benign";
-    const is_anomaly = ifScore !== undefined ? ifScore < IF_THRESHOLD : false;
+    const is_anomaly = ifScore !== undefined ? ifScore < ifThreshold : false;
     const if_score = ifScore ?? 0;
     const threshold = userThreshold ?? RF_THRESHOLD;
 
@@ -259,7 +255,7 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
     clearTimeout(pending_.cleanupTimer);
     pendingLogPatches.delete(requestId);
 
-    const is_anomaly = ifScore < IF_THRESHOLD;
+    const is_anomaly = ifScore < ifThreshold;
     const becomesAnomaly = is_anomaly && pending_.event.verdict === "pass";
     const webhookFired = becomesAnomaly && !!webhookUrl;
 
