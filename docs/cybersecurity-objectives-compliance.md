@@ -16,7 +16,7 @@ del 2026-09-23 que resultó estar atada a un modelo huérfano (ver OE3.1).
 | OE1 — cuatro vectores, OWASP/MITRE | **Cumplido** en la implementación | La tabla OWASP/MITRE no existía en el repo; se propone abajo y debe validarse |
 | OE2 — dataset ≥ 100,000 muestras | **Cumplido** en tamaño (~383,000) | Balance resuelto por ponderación, no por conteos iguales; ver salvedades |
 | OE3.1 — F1 ≥ 0.80 en ≥ 3/4 categorías | **Cumplido** (4/4) | Lectura de test de `rf_v11` cerrada (macro F1 0.9776, checksum verificado) — ya no depende de `rf_v3` |
-| OE3.2 — Δp95 de latencia | **No cumplido, por margen grande** | Linux real (2026-09-26): +485% (normal) a +278% (ataque). Hallazgo nuevo grave: bajo volumen de datos, 14% de timeouts — colapso por saturación, no solo latencia alta |
+| OE3.2 — Δp95 de latencia | **No cumplido, por margen grande** | Linux real (2026-09-26): +485% (normal) a +278% (ataque). Hallazgo nuevo grave: bajo volumen de datos, 7.00% de timeouts (corregido el 2026-10-02, era 14% por un error de conteo) — colapso por saturación, no solo latencia alta. Modelo del benchmark sin reconciliar aún contra el `rf_v11` final de PR #79 |
 
 ---
 
@@ -34,7 +34,7 @@ del 2026-09-23 que resultó estar atada a un modelo huérfano (ver OE3.1).
 | Amenazas conocidas y anomalías | RF clasifica 4 clases + benigno; IF marca anomalías (`pass_anomaly`) |
 | Tiempo de ejecución sin bloquear el Event Loop | Inferencia en `worker_threads` (RF dedicado + pool de IF), `docs/architecture.md` |
 | Sin comprometer el rendimiento | Parcial: ver OE3.2 |
-| Generalización fuera del entorno de calibración | **Riesgo real, no cumplido sin reservas.** Probado instalando la librería publicada (no una simulación) en 3 apps de terceros nunca usadas en calibración ni entrenamiento (DVNA, node-api-goat, dvws-node — stacks y formas de tráfico distintas entre sí). Resultado: detección de ataques reales alta (92.5-100% recall por clase), pero **92.5-100% de falsos positivos en tráfico benigno en las 3 apps**, incluido el login en dos de ellas. Descarta la hipótesis de que el problema sea solo `ua_length`/User-Agent corto (en una de las 3, usar un User-Agent real de navegador empeoró el resultado). Evidencia de que el threshold está calibrado contra `logSguarDian-vulnerable-project` específicamente y no generaliza — ver `docs/vulnerable-projects-tests/`. |
+| Generalización fuera del entorno de calibración | **Riesgo real, no cumplido sin reservas — hallazgo preliminar, no evidencia citable de tesis todavía.** Probado instalando la librería publicada en 3 apps de terceros nunca usadas en calibración ni entrenamiento (DVNA, node-api-goat, dvws-node — stacks y formas de tráfico distintas entre sí). Resultado: recall alto en ataques reales (92.5-100% por clase) junto con 92.5-100% de falsos positivos en tráfico benigno en las 3 apps — con bloqueo casi total en ambos lados, el alto recall por sí solo es evidencia débil de discriminación útil (el sistema bloquea casi todo, no distingue bien). Refuta que la causa sea *solo* un User-Agent corto específicamente (en una de las 3, un User-Agent real de navegador empeoró el resultado) — no refuta la hipótesis más amplia de longitud/apariencia de UA en general, que se está investigando por separado (PR #90); los dos hallazgos deben reconciliarse en una sola narrativa antes de llegar a `develop`. **Limitación metodológica importante:** la evidencia (scripts, JSON antes/después, logs) vive en clones locales de los 3 proyectos, no commiteados ni accesibles desde este repo todavía — no citable como evidencia verificable de tesis hasta que se suban. Ver `docs/vulnerable-projects-tests/` para el detalle y las salvedades por app. |
 
 ![logsguadian npm](cibersecurity-images/obj0-a.png)
 ![logsguadian test and packages](cibersecurity-images/obj0-b.png)
@@ -115,7 +115,7 @@ La estimación de 585,000–645,000 de `training/ML_READINESS.md` es de antes de
 **ya no es la cifra vigente**; las cifras de la tabla superior sustituyen a esa estimación.
 
 ![logsguadian npm](cibersecurity-images/obj1-c.png)
-![logsguadian npm](cibersecurity-images/obj2-b.png)
+![Captura previa a la regeneración del 12 de septiembre (train 268,064/val 57,443, conteo por clase no reconfirmado — ver nota arriba)](cibersecurity-images/obj2-b.png)
 
 
 ### OE2.2 — Balance entre tráfico legítimo y ataques: cumplido por mitigación, no por conteos iguales
@@ -139,8 +139,10 @@ el resultado final.
 > | cmdi | 8,970 | 0.9% |
 >
 > **Por qué SMOTE en cmdi:** tras el split, cmdi queda con ~6,279 muestras de entrenamiento — una
-> proporción benign:cmdi de ~63:1, por encima del umbral 10:1 donde `class_weight='balanced'` por sí
-> solo deja de ser suficiente (He & Garcia, 2009). Se aplicó SMOTE (Chawla et al., 2002,
+> proporción benign:cmdi de ~63:1, muy por encima de lo que suele citarse como el punto donde
+> `class_weight='balanced'` por sí solo deja de ser suficiente (He & Garcia, 2009 — **pendiente:
+> verificar la cita textual exacta y el número de página antes de la defensa; "10:1" se usó aquí como
+> referencia aproximada, no una cita literal confirmada del paper**). Se aplicó SMOTE (Chawla et al., 2002,
 > `k_neighbors=5`) apuntando a 25,000 muestras de cmdi (6,279 reales + ~18,721 sintéticas).
 >
 > **Resultado observado (sweep 2026-06-14):** SMOTE mejoró el F1 de cmdi solo +0.015 en profundidad 15
@@ -251,6 +253,9 @@ histórica pero no reemplazada. Hay que sincronizarla por separado.
   | cmdi | 100.0 % (inflado por fuga) | 100.0 % | 100.0 % |
   | **Total** | **98.8 %** (583/590) | 93.2 % | 99.5 % |
 
+  ![Histórico — Ronda 4, corpus con fuga confirmada en cmdi, no citable](cibersecurity-images/obj3-f.png)
+  ![Histórico — Ronda 4, corpus con fuga confirmada en cmdi, no citable](cibersecurity-images/obj3-g.png)
+
 - **Ronda 5 (corpus limpio, sin fuga) — cifras vigentes, solo Config 2 (logsguardian activo, sin WAF):**
   generado con sqlmap (sqli), generadores propios no derivados de SecLists (path_traversal, cmdi), y
   filtrado por exclusión contra el corpus de entrenamiento completo antes de incluir cualquier payload.
@@ -275,14 +280,19 @@ independiente — este hallazgo de defensa en profundidad no depende de la fuga 
 mayormente de sqli/path_traversal/xss) y se mantiene válido, pero no se ha re-confirmado con el
 corpus de Ronda 5 todavía.
 
-![logsguadian npm](cibersecurity-images/obj3-a.png)
-![logsguadian npm](cibersecurity-images/obj3-b.png)
+> **obj3-a y obj3-b son históricas, no son las cifras vigentes.** obj3-a muestra `rf_v3.pkl` sobre
+> `test.parquet` (macro F1 0.9682, n=59,947 — partición y modelo distintos a los de la tabla de
+> arriba). obj3-b muestra un `classification_report` sobre el **validation set**, no el test set, de
+> una generación de modelo anterior (macro F1 0.9831). Se conservan por trazabilidad de cómo
+> evolucionaron las cifras, pero **la tabla de OE3.1 de arriba (`rf_v11`/`if_v10`, macro F1 0.9776,
+> test set) es la única citable**.
+
+![Histórico — rf_v3.pkl sobre test.parquet, no es la cifra vigente de rf_v11](cibersecurity-images/obj3-a.png)
+![Histórico — classification_report sobre validation set, no test set, generación de modelo anterior](cibersecurity-images/obj3-b.png)
 ![logsguadian npm](../training/results/if_recall_fp_curve.png)
 ![logsguadian npm](../training/results/rf_confusion_matrix.png)
 ![logsguadian npm](cibersecurity-images/obj3-d.png)
 ![logsguadian npm](cibersecurity-images/obj3-e.png)
-![logsguadian npm](cibersecurity-images/obj3-f.png)
-![logsguadian npm](cibersecurity-images/obj3-g.png)
 
 ### OE3.2 — Latencia Δp95 (métrica de aceptación asociada): no cumplido, y un hallazgo grave nuevo
 
@@ -306,7 +316,7 @@ verificada matemáticamente equivalente a la mediana simple para n=5):**
 |---|---|---|---|---|---|
 | Normal (navegación benigna) | 2.49 ms | 14.57 ms | 12.08 ms | **+485.1 %** | 0 / 0 |
 | Ataque (benigno + payloads concurrentes) | 4.62 ms | 17.47 ms | 12.85 ms | **+278.1 %** | 0 / 0 |
-| **Volumen (2010 filas sembradas)** | 63.84 ms | **6,559.3 ms** | **~6.5 s** | **+10,174.6 %** | **3,648 timeouts / 5 reps (~14 % de las requests)** |
+| **Volumen (2010 filas sembradas)** | 63.84 ms | **6,559.3 ms** | **~6.5 s** | **+10,174.6 %** | **1,824 timeouts / 26,048 requests (7.00 %)** |
 
 **Veredicto oficial: NO CUMPLIDO, por un margen mucho mayor al que se creía.** Ni la forma relativa ni
 la absoluta se acercan a cumplirse en ningún escenario — los números de Docker Desktop/macOS que
@@ -318,31 +328,61 @@ normal ya da +485%, no +142-178%.
 no solo en latencia alta.** La hipótesis original (`docs/vulnerable-app-evaluation` histórico,
 sembrar más filas para que el baseline suba y el Δ relativo se vea mejor, que había dado +70.2% en una
 medición manual anterior) **no se confirmó — ocurrió lo opuesto**. Verificado directamente en los logs
-crudos de Artillery (no solo en el resumen): **3,648 de las requests del escenario de volumen con
-logsguardian activo terminaron en `ERR_SOCKET_TIMEOUT`** (0 timeouts en cualquier otra combinación de
-escenario/condición), y las que sí completaron tardaron hasta 6.5-7.3 segundos. Los timeouts escalan
-dentro de cada corrida de 75s (76→107→62→68→92→**405** fallos por bucket de ~10s en la rep 1) — un
-patrón de acumulación de cola, no de solicitudes lentas individuales. La causa más probable, sin
-confirmar aún con instrumentación dedicada: la ruta `GET /posts` sin paginar ya es lenta con 2010 filas
-sin middleware (63.84ms vs 2.49ms normal, ~26×), y el overhead añadido de logsguardian sobre una app
-ya más lenta empuja el tiempo de servicio efectivo por debajo de la tasa de llegada (~100 req/s),
-generando una cola sin límite — un problema de capacidad/backpressure, no solo de latencia por
-solicitud. **Esto requiere una investigación de causa raíz dedicada antes de poder afirmar que
-logsguardian es seguro de desplegar contra tráfico con volúmenes de datos realistas**, y es
-independiente del veredicto de Δp95 en sí — de hecho posiblemente más serio para la tesis.
+crudos de Artillery (no solo en el resumen, y recalculado tras un error de conteo encontrado en
+revisión — ver nota de corrección abajo): **1,824 de 26,048 requests del escenario de volumen con
+logsguardian activo terminaron en `ERR_SOCKET_TIMEOUT` (7.00%)** (0 timeouts en cualquier otra
+combinación de escenario/condición), y las que sí completaron tardaron hasta 6.5-7.3 segundos. Dentro
+de cada rep de 75s los timeouts se concentran en los últimos buckets de ~10s (ej. rep 1:
+0,0,0,0,76,107,62,68,92 por bucket, sumando 405 para esa rep — los 5 reps suman 1,824) — un patrón de
+acumulación de cola hacia el final de la corrida, no de solicitudes lentas individuales desde el
+inicio. La causa más probable, sin confirmar aún con instrumentación dedicada: la ruta `GET /posts`
+sin paginar ya es lenta con 2010 filas sin middleware (63.84ms vs 2.49ms normal, ~26×), y el overhead
+añadido de logsguardian sobre una app ya más lenta empuja el tiempo de servicio efectivo por debajo de
+la tasa de llegada (~100 req/s), generando una cola creciente — un problema de capacidad/backpressure,
+no solo de latencia por solicitud. **Esto requiere una investigación de causa raíz dedicada antes de
+poder afirmar que logsguardian es seguro de desplegar contra tráfico con volúmenes de datos
+realistas**, y es independiente del veredicto de Δp95 en sí — de hecho posiblemente más serio para la
+tesis. Un 7% de timeouts sigue siendo una falla operacional seria (nadie diseña para perder 1 de cada
+14 requests bajo carga), aun corregido desde el 14% citado en una versión anterior de este documento.
+
+> **Corrección (2026-10-02):** la versión anterior de esta sección citaba 3,648 timeouts (~14%). Era un
+> error de conteo: el script de verificación sumó tanto los contadores de cada bloque intermedio de
+> Artillery como el `vusers.failed` del *Summary report* final de cada rep, que ya es el total
+> acumulado de esos mismos bloques — duplicando el conteo. Recalculado leyendo únicamente el Summary
+> report de cada una de las 5 reps: **1,824 / 26,048 = 7.00%**. La degradación severa (+485%, +278%,
+> +10,174.6%, y el patrón de colapso por cola) no cambia — solo la cifra de timeouts.
+
+> **Procedencia del modelo en este benchmark — sin resolver, declarado explícitamente.** Los
+> `rf.onnx`/`if.onnx` vendorizados en `logSguarDian-vulnerable-project` (`models/rf.onnx`, hash
+> `a7c015f5...`) **no coinciden** con el par `rf_v11`/`if_v10` canónico actual
+> (`training/models/rf.onnx`, hash `25b407e6...`, el mismo verificado por checksum en
+> `training/results/v11_test_results.json`). Tienen la forma correcta (69/63 features), pero son una
+> generación distinta — probablemente la sincronizada en una corrección anterior del mismo día, previa
+> al fix de modelo huérfano de PR #79. Los hallazgos de latencia/colapso de esta sección describen el
+> comportamiento de la **arquitectura** (worker pool, IPC, escritura a SQLite, query sin paginar) bajo
+> carga, no una propiedad de los pesos específicos del modelo — es razonable esperar que el patrón se
+> sostenga con el par corregido, dado que ambos modelos tienen la misma forma e inferencia de costo
+> similar — pero **esto no se ha reconfirmado contra el par exacto de PR #79** y no debe citarse como
+> si lo estuviera. Pendiente: sincronizar el vendor de `logSguarDian-vulnerable-project` con
+> `training/models/*.onnx` actual y volver a correr `latency-benchmark.yml` antes de que estos números
+> se usen como cifra final en la tesis.
 
 **Memoria y CPU (mismo run, `analyze-memory.js`, ventana de 41.9 min, 374 muestras — cumple el
 requisito de ≥30 min de `PLAN.md` F6.3):** pico 494.8 MB, media 239.8 MB; CPU pico 198.6%, media 60%.
 El script marcó `possibleLeak: true` (crecimiento de 84.8% entre la primera y segunda mitad de la
-ventana) — **revisado contra los timestamps exactos de cada corrida y descartado como leak real**: el
-muestreo cubre las 3 corridas de reps de los 3 escenarios en secuencia (normal → ataque → volumen), y
-el pico de memoria coincide exactamente con la ventana del escenario de volumen (23:05-23:18), que es
-además donde ocurre el colapso por timeouts descrito arriba — el patrón es "distintos escenarios con
-perfiles de memoria muy distintos corriendo en secuencia dentro de la misma ventana muestreada", no un
-proceso único creciendo sin límite. La heurística de "primera mitad vs. segunda mitad" no distingue
-esto; el propio script ya lo advertía ("no tratar como concluyente solo con esta heurística").
-El pico de 494.8 MB en sí (vs. 245.11 MB del benchmark aislado sin carga) es consistente con un
-sistema bajo la saturación descrita arriba, con conexiones y trabajo en cola acumulándose.
+ventana). **Esto sigue siendo inconcluso, no descartado ni confirmado.** El muestreo cubre las 3
+corridas de reps de los 3 escenarios en secuencia (normal → ataque → volumen) con reinicios de
+contenedor entre corridas, y el pico de memoria coincide con la ventana del escenario de volumen
+(23:05-23:18), que es además donde ocurre el colapso por timeouts descrito arriba — una explicación
+plausible es "distintos escenarios con perfiles de memoria muy distintos corriendo en secuencia", no
+necesariamente un leak dentro de un proceso estable. Pero los reinicios de contenedor y las cargas de
+trabajo tan distintas entre escenarios **también impiden descartar un leak real** con esta heurística
+de primera-mitad-vs-segunda-mitad — el propio script ya lo advertía ("no tratar como concluyente solo
+con esta heurística"). El pico de 494.8 MB en sí (vs. 245.11 MB del benchmark aislado sin carga) es
+consistente con un sistema bajo la saturación descrita arriba, con conexiones y trabajo en cola
+acumulándose — pero no cierra la pregunta de si también hay un leak independiente de eso. Pendiente:
+repetir el monitoreo de memoria dentro de un solo escenario sostenido (sin alternar con otros), para
+aislar la variable.
 
 **Cómo leer estos resultados para la tesis:**
 
@@ -356,8 +396,18 @@ sistema bajo la saturación descrita arriba, con conexiones y trabajo en cola ac
   (`packages/core/src/worker.ts`) específicamente durante el escenario de volumen, para confirmar o
   descartar la hipótesis de backpressure antes de proponer un fix.
 
-![logsguadian npm](cibersecurity-images/obj3-h1.png)
-![logsguadian npm](cibersecurity-images/obj3-h2.png)
+No hay captura de pantalla de la corrida Linux nativa (2026-09-26) — los números de la tabla de
+arriba vienen directamente de `summary.jsonl` y los `.parsed.json` por rep del artifact de
+`latency-benchmark.yml`, citados como JSON crudo en vez de captura.
+
+> **Las dos tablas siguientes (capturas `obj3-h1`/`obj3-h2`) son históricas — Docker
+> Desktop/macOS, variantes de PR #53, previas a la metodología Linux nativa de arriba.** Se
+> conservan solo como contexto de cómo evolucionó el aislamiento del I/O de SQLite; **no deben
+> leerse como el estado actual** (+485.1%/+278.1%/+10,174.6% en Linux, arriba, es el veredicto
+> vigente).
+
+![Histórico (Docker Desktop/macOS, variantes PR #53) — no es el benchmark Linux vigente](cibersecurity-images/obj3-h1.png)
+![Histórico (Docker Desktop/macOS, variantes PR #53) — no es el benchmark Linux vigente](cibersecurity-images/obj3-h2.png)
 
 > Cada número es el promedio de 3 corridas de Artillery de 60s/20req-s contra tráfico benigno
 > (login, ver posts, ver un post, ver perfil), mismo Docker image, cambiando solo `LOGSGUARDIAN_DISABLED`.
@@ -395,7 +445,7 @@ sistema bajo la saturación descrita arriba, con conexiones y trabajo en cola ac
 
 | Métrica | Estado | Evidencia |
 |---|---|---|
-| Cobertura ≥ 80 % por categoría de payload | Cumplida (85.0–100 % por categoría en Ronda 5, corpus limpio; xss pendiente ZAP) | ![logsguadian npm](cibersecurity-images/obj3-f.png), ![logsguadian npm](cibersecurity-images/obj3-g.png) |
+| Cobertura ≥ 80 % por categoría de payload | Cumplida para 3/4 categorías medidas (85.0–100 % en Ronda 5, corpus limpio); **xss sin medición real todavía** — el export de ZAP sigue pendiente, no es "cumplida" para esa clase | Tabla de Ronda 5 en OE3.1 arriba (`config3b-results.md` §Ronda 5). No hay captura de pantalla de Ronda 5 todavía — las únicas capturas disponibles (obj3-f/g, ver arriba) son de Ronda 4 (con fuga, histórica), no deben citarse para esta fila |
 | Paridad ONNX < 0.1 % | Cumplida: diferencia máxima ~1.0e-07 (RF) y ~2.4e-07 (IF), retrain 2026-09-26 | ![logsguadian npm](cibersecurity-images/obj3-k.png) `parity_report.json` y test de paridad |
 
 ---
@@ -413,11 +463,18 @@ sistema bajo la saturación descrita arriba, con conexiones y trabajo en cola ac
    `training/results/v11_test_results.json`.
 6. **Cerrado (2026-09-26):** workflow de latencia en Linux nativo corrido — reemplazadas las cifras de
    Docker Desktop/macOS por los resultados reales (peores de lo estimado: +485% normal, +278% ataque).
-7. **Nuevo, alta prioridad:** bajo el escenario de volumen (2010 filas), 14% de las requests con
+7. **Nuevo, alta prioridad:** bajo el escenario de volumen (2010 filas), 7.00% de las requests con
    logsguardian activo terminan en timeout (6.5-7.3s de latencia real, no solo un p95 alto) — 0
    timeouts en cualquier otro escenario/condición. Hipótesis de causa raíz (backpressure del pool de
    workers combinado con una ruta sin paginar) sin confirmar — requiere instrumentación dedicada antes
    de proponer un fix. Independiente del veredicto formal de Δp95, pero potencialmente más serio.
+8. **Nuevo:** el `rf.onnx`/`if.onnx` vendorizado en `logSguarDian-vulnerable-project` (usado para el
+   benchmark de latencia) no coincide por hash con el `rf_v11`/`if_v10` final de PR #79 — mismo shape,
+   generación distinta. Sincronizar el vendor y volver a correr `latency-benchmark.yml` antes de citar
+   estos números como finales.
+9. **Nuevo:** el heurístico de memoria (`possibleLeak: true`) sigue inconcluso — ni confirmado ni
+   descartado, por la mezcla de escenarios y reinicios de contenedor dentro de la misma ventana
+   muestreada. Repetir el monitoreo dentro de un solo escenario sostenido.
 8. Ronda 5 (corpus limpio) solo cubrió Config 2; faltan Config 1 baseline y las variantes con WAF
    (3a/3b) con el mismo corpus, y el export real de ZAP para xss.
 
