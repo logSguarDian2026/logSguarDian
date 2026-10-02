@@ -1,0 +1,106 @@
+{
+  "sqli": {
+    "total": 40,
+    "blocked": 40,
+    "statusCounts": {
+      "403": 40
+    },
+    "predictedClasses": {
+      "sqli": 34,
+      "xss": 6
+    },
+    "byEndpoint": {
+      "GET /api/v2/passphrase/:username": {
+        "total": 40,
+        "blocked": 40
+      }
+    }
+  },
+  "xss": {
+    "total": 40,
+    "blocked": 36,
+    "statusCounts": {
+      "403": 36,
+      "409": 4
+    },
+    "predictedClasses": {
+      "cmdi": 5,
+      "xss": 23,
+      "sqli": 8
+    },
+    "byEndpoint": {
+      "POST /api/v2/users": {
+        "total": 40,
+        "blocked": 36
+      }
+    }
+  },
+  "path_traversal": {
+    "total": 40,
+    "blocked": 36,
+    "statusCounts": {
+      "403": 36,
+      "404": 4
+    },
+    "predictedClasses": {
+      "path_traversal": 31,
+      "sqli": 4,
+      "cmdi": 1
+    },
+    "byEndpoint": {
+      "POST /api/download": {
+        "total": 40,
+        "blocked": 36
+      }
+    }
+  },
+  "cmdi": {
+    "total": 40,
+    "blocked": 40,
+    "statusCounts": {
+      "403": 40
+    },
+    "predictedClasses": {
+      "path_traversal": 1,
+      "sqli": 36,
+      "xss": 3
+    },
+    "byEndpoint": {
+      "GET /api/v2/sysinfo/:command": {
+        "total": 40,
+        "blocked": 40
+      }
+    }
+  },
+  "benign": {
+    "total": 40,
+    "blocked": 30,
+    "statusCounts": {
+      "403": 30,
+      "404": 5,
+      "409": 5
+    },
+    "predictedClasses": {
+      "sqli": 27,
+      "cmdi": 3
+    },
+    "byEndpoint": {
+      "sqli-endpoint": {
+        "total": 10,
+        "blocked": 10
+      },
+      "xss-endpoint": {
+        "total": 10,
+        "blocked": 5
+      },
+      "path_traversal-endpoint": {
+        "total": 10,
+        "blocked": 5
+      },
+      "cmdi-endpoint": {
+        "total": 10,
+        "blocked": 10
+      }
+    }
+  }
+}
