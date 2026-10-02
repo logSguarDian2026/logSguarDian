@@ -20,6 +20,7 @@ Usage:
     python3 training/baselines/train_rf_if_current_split.py
 """
 import json
+from pathlib import Path
 
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier, IsolationForest
@@ -27,6 +28,8 @@ from sklearn.metrics import f1_score, classification_report
 from skl2onnx import to_onnx
 
 from common import load_split, rf_xy, if_xy, TARGET_NAMES, ATTACK_CLASSES, MODELS_OUT, RESULTS_OUT
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 RF_PARAMS = dict(n_estimators=30, max_depth=25, class_weight="balanced_subsample", random_state=42, n_jobs=-1)
 IF_PARAMS = dict(n_estimators=200, contamination=0.05, max_samples=4096, random_state=42, n_jobs=-1)
@@ -94,7 +97,7 @@ def main():
             "n_features": X_train.shape[1],
             "macro_f1_val": float(rf_macro_f1),
             "per_class_f1_val": {c: float(f) for c, f in zip(ATTACK_CLASSES, rf_per_class)},
-            "onnx_path": str(rf_onnx_path),
+            "onnx_path": str(rf_onnx_path.relative_to(REPO_ROOT)),
             "model_size_bytes": rf_onnx_path.stat().st_size,
         },
         "if": {
@@ -102,7 +105,7 @@ def main():
             "threshold": float(if_threshold),
             "val_recall": float(if_recall),
             "val_fp_rate": float(if_fp),
-            "onnx_path": str(if_onnx_path),
+            "onnx_path": str(if_onnx_path.relative_to(REPO_ROOT)),
             "model_size_bytes": if_onnx_path.stat().st_size,
         },
     }
