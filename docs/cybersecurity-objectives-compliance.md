@@ -34,7 +34,7 @@ del 2026-09-23 que resultó estar atada a un modelo huérfano (ver OE3.1).
 | Amenazas conocidas y anomalías | RF clasifica 4 clases + benigno; IF marca anomalías (`pass_anomaly`) |
 | Tiempo de ejecución sin bloquear el Event Loop | Inferencia en `worker_threads` (RF dedicado + pool de IF), `docs/architecture.md` |
 | Sin comprometer el rendimiento | Parcial: ver OE3.2 |
-| Generalización fuera del entorno de calibración | **Riesgo real, confirmado y cuantificado por dos investigaciones independientes.** Probado instalando la librería publicada en 4 apps de terceros nunca usadas en calibración ni entrenamiento (DVNA, node-api-goat, dvws-node — este estudio — y OWASP Juice Shop — investigación paralela, ver abajo). En las 3 primeras: recall alto en ataques reales (92.5-100% por clase) junto con 92.5-100% de falsos positivos en tráfico benigno — con bloqueo casi total en ambos lados, el alto recall por sí solo es evidencia débil de discriminación útil. **Causa raíz ya identificada y cuantificada a nivel de corpus** (`docs/limitations.md`, addendum "magnitud de la dependencia de RF en el User-Agent", mergeado desde `develop` el 2026-10-02): no es la longitud corta del UA, sino la *escasa representación de UAs largos/de navegador en el tráfico benigno de entrenamiento* — solo 0.4% de las filas benignas de `unified.jsonl` tienen UA >40 caracteres, frente a 33.3-97.7% en las clases de ataque. Validado en Juice Shop (624 requests, modo `monitor`): UA de navegador → 97.1% bloqueado (303/312); UA de curl → 39.4% (123/312), con solo sustituir el header. Consistente en dirección con el hallazgo de dvws-node de este estudio (UA de navegador real empeoró el FP de 75% a 92.5%) — ambas investigaciones, con apps y metodologías distintas, confirman que un UA largo/de navegador actúa como señal de ataque para el modelo. Evidencia de Juice Shop: `docs/findings-evidence/juice-shop-ua-bias/`. **Limitación metodológica de las 3 apps de este estudio:** la evidencia cruda ahora vive también en `docs/vulnerable-projects-tests/evidence/` dentro de este repo (copiada el 2026-10-02 desde los clones locales), que siguen sin commitear ni subir. Ver `docs/vulnerable-projects-tests/` para el detalle y las salvedades por app. |
+| Generalización fuera del entorno de calibración | **Riesgo real, observado en 4 apps de terceros nunca usadas en calibración ni entrenamiento** (DVNA, node-api-goat, dvws-node — este estudio — y OWASP Juice Shop — investigación paralela, ver abajo). En las 3 primeras: recall alto en ataques reales (92.5-100% por clase) junto con 92.5-100% de falsos positivos en tráfico benigno — con bloqueo casi total en ambos lados, el alto recall por sí solo es evidencia débil de discriminación útil; es compatible con un problema de calibración o sesgo del modelo frente a esta forma de tráfico, no con una causa ya aislada (ningún estudio corrió un barrido de `RF_THRESHOLD` que permita separar cuánto viene del umbral). **Hallazgo compatible entre dos investigaciones independientes, sin que esto aísle una causa exacta común a las 4 apps:** `docs/limitations.md` (addendum "magnitud de la dependencia de RF en el User-Agent", mergeado desde `develop` el 2026-10-02) cuantifica un sesgo de representación en el corpus de entrenamiento — solo 0.4% de las filas benignas de `unified.jsonl` tienen UA >40 caracteres, frente a 33.3-97.7% en las clases de ataque — y lo valida en Juice Shop (624 requests, modo `monitor`): con una cadena de UA de navegador específica, 97.1% bloqueado (303/312); con curl, 39.4% (123/312). El propio addendum acota ese resultado a esa cadena de navegador y reconoce que otros UA (Windows desktop, okhttp) no producen el mismo efecto en el caso que describe — no es una propiedad uniforme de "todo UA largo". El hallazgo de dvws-node de este estudio (UA de navegador real empeoró el FP de 75% a 92.5%) coincide en **dirección** con eso y refuta la hipótesis estrecha de que un UA corto es la causa exclusiva, pero no aísla por sí solo la misma causa que Juice Shop ni explica todos los falsos positivos de las 3 apps. Lo que puede afirmarse: los resultados son compatibles con el sesgo de representación de UA documentado; lo que no puede afirmarse todavía: que esa sea la causa exacta y exclusiva en las 3 apps de este estudio. Evidencia de Juice Shop: `docs/findings-evidence/juice-shop-ua-bias/`. **Limitación metodológica de las 3 apps de este estudio:** la evidencia cruda ahora vive también en `docs/vulnerable-projects-tests/evidence/` dentro de este repo (copiada el 2026-10-02 desde los clones locales), que siguen sin commitear ni subir; los JSON respaldan conteos de bloqueo por estado HTTP, no las confirmaciones manuales de explotación (hash extraído, archivo leído, comando ejecutado) narradas en cada `-results.md`, que no tienen captura de respuesta adjunta. Ver `docs/vulnerable-projects-tests/` para el detalle y las salvedades por app. |
 
 ![logsguadian npm](cibersecurity-images/obj0-a.png)
 ![logsguadian test and packages](cibersecurity-images/obj0-b.png)
@@ -139,11 +139,16 @@ el resultado final.
 > | cmdi | 8,970 | 0.9% |
 >
 > **Por qué SMOTE en cmdi:** tras el split, cmdi queda con ~6,279 muestras de entrenamiento — una
-> proporción benign:cmdi de ~63:1, muy por encima de lo que suele citarse como el punto donde
-> `class_weight='balanced'` por sí solo deja de ser suficiente (He & Garcia, 2009 — **pendiente:
-> verificar la cita textual exacta y el número de página antes de la defensa; "10:1" se usó aquí como
-> referencia aproximada, no una cita literal confirmada del paper**). Se aplicó SMOTE (Chawla et al., 2002,
-> `k_neighbors=5`) apuntando a 25,000 muestras de cmdi (6,279 reales + ~18,721 sintéticas).
+> proporción benign:cmdi de ~63:1 observada directamente en este dataset. Esa
+> proporción, por sí sola (sin apelar a ningún umbral externo), ya es motivo suficiente para probar si
+> `class_weight='balanced'` por sí solo basta o si hace falta una técnica adicional — que es exactamente
+> lo que el sweep de abajo mide empíricamente. **Nota bibliográfica:** una versión anterior de este
+> párrafo citaba un "punto de 10:1" atribuido a He & Garcia (2009) como si fuera una cifra de corte
+> verificada en esa fuente; no se ha confirmado la cita textual ni la página, así que se retira como
+> justificación numérica. La decisión de probar SMOTE aquí se apoya únicamente en el desbalance propio
+> observado (63:1) y en el resultado empírico del sweep, no en una frontera universal de la literatura
+> todavía sin verificar. Se aplicó SMOTE (Chawla et al., 2002, `k_neighbors=5`) apuntando a 25,000
+> muestras de cmdi (6,279 reales + ~18,721 sintéticas).
 >
 > **Resultado observado (sweep 2026-06-14):** SMOTE mejoró el F1 de cmdi solo +0.015 en profundidad 15
 > (0.593 → 0.608) y no mejoró nada en profundidad 20 (0.772 → 0.763). La ganancia fue marginal — la
@@ -317,6 +322,21 @@ verificada matemáticamente equivalente a la mediana simple para n=5):**
 | Normal (navegación benigna) | 2.49 ms | 14.57 ms | 12.08 ms | **+485.1 %** | 0 / 0 |
 | Ataque (benigno + payloads concurrentes) | 4.62 ms | 17.47 ms | 12.85 ms | **+278.1 %** | 0 / 0 |
 | **Volumen (2010 filas sembradas)** | 63.84 ms | **6,559.3 ms** | **~6.5 s** | **+10,174.6 %** | **1,824 timeouts / 26,048 requests (7.00 %)** |
+
+> **Nota metodológica — qué es exactamente este "p95".** El parser que produce estos valores
+> (`*.parsed.json` del artifact de `latency-benchmark.yml`) calcula cada p95 de la tabla como un
+> **promedio ponderado por conteo de los p95 de cada bucket** post-warmup de Artillery, no como un
+> percentil exacto recalculado sobre el conjunto completo de muestras de la corrida. El propio archivo
+> lo declara explícitamente: *"p50/p95/p99 are count-weighted averages of per-bucket percentiles from
+> post-warmup buckets only — see file header comment for why this is an approximation, not an exact
+> merge."* Un promedio de percentiles parciales no es, en general, idéntico al percentil calculado sobre
+> todas las muestras juntas. Esto no afecta la mediana de 5 corridas (esa agregación sí es exacta); afecta
+> la magnitud de cada p95 individual que entra a esa mediana. Es especialmente relevante en el escenario
+> de Volumen, donde el propio texto de abajo describe que el comportamiento cambia a lo largo de la
+> corrida (colapso hacia el final) — un promedio por bucket diluye esa variación en vez de capturar el
+> percentil real de cola sobre la corrida completa. Los números de la tabla son los que produce el
+> harness tal como está escrito, no una medición estadísticamente exacta del percentil agrupado; no se
+> recalculó un percentil exacto a partir de las muestras crudas para esta corrección.
 
 **Veredicto oficial: NO CUMPLIDO, por un margen mucho mayor al que se creía.** Ni la forma relativa ni
 la absoluta se acercan a cumplirse en ningún escenario — los números de Docker Desktop/macOS que
