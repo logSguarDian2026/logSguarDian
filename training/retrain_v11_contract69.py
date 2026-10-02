@@ -17,7 +17,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier, IsolationForest
 from sklearn.metrics import classification_report, f1_score
 
-REPO = Path("/Users/diego/Uvg/Proyecto de Graduacion/logSguarDian")
+REPO = Path(__file__).resolve().parents[1]
 SPLITS = REPO / "training" / "splits"
 MODELS = REPO / "training" / "models"
 RESULTS = REPO / "training" / "results"
@@ -162,8 +162,8 @@ print(f"RF max prob diff: {rf_max_diff}")
 print(f"IF max score diff: {if_max_diff}")
 
 report = {
-    "rf_onnx_path": str(MODELS / "rf.onnx"),
-    "if_onnx_path": str(MODELS / "if.onnx"),
+    "rf_onnx_path": str((MODELS / "rf.onnx").relative_to(REPO)),
+    "if_onnx_path": str((MODELS / "if.onnx").relative_to(REPO)),
     "target_opset": TARGET_OPSET,
     "rf_n_features": N_FEATURES,
     "if_n_features": IF_N_FEATURES,

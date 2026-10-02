@@ -1,6 +1,6 @@
 {
-  "rf_onnx_path": "/Users/diego/Uvg/Proyecto de Graduacion/logSguarDian/training/models/rf.onnx",
-  "if_onnx_path": "/Users/diego/Uvg/Proyecto de Graduacion/logSguarDian/training/models/if.onnx",
+  "rf_onnx_path": "training/models/rf.onnx",
+  "if_onnx_path": "training/models/if.onnx",
   "target_opset": 17,
   "rf_n_features": 69,
   "if_n_features": 63,

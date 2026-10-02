@@ -517,7 +517,7 @@ current values.
 These values must match exactly in:
 - `packages/core/src/middleware.ts` (`RF_THRESHOLDS`, decision-policy layer)
 - `packages/core/src/worker.ts` (runtime enforcement)
-- `packages/core/models/model-metadata.json` (metadata contract)
+- `packages/core/models/parity_report.json` (`threshold_if`, runtime IF threshold source)
 - `training/models/parity_report.json` (training provenance)
 
 Any change to either constant requires re-running the parity test suite
