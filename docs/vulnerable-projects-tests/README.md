@@ -35,17 +35,22 @@ recibe, el recall alto dice poco sobre si el sistema realmente *discrimina* ataq
 es principalmente un efecto de umbral agresivo, no de capacidad de distinción. Los dos números deben
 citarse juntos, nunca el recall solo como evidencia positiva aislada.
 
-**Hallazgo que acota (no descarta del todo) una hipótesis previa:** se sospechaba que el problema era
+**Hallazgo confirmado por una segunda investigación independiente:** se sospechaba que el problema era
 específicamente la *longitud corta* del header `User-Agent` (`ua_length` es la feature de mayor
-importancia del RF). La prueba en dvws-node refuta que sea *solo* eso: usar un User-Agent real de
-navegador **empeoró** la tasa de falsos positivos (75% → 92.5%) en vez de mejorarla, sobre esa app en
-particular. Esto no descarta una hipótesis más amplia de longitud/apariencia de `ua_length` en general
-— ese análisis se está trabajando por separado y debe reconciliarse con este hallazgo antes de redactar
-una conclusión única para la tesis (ver la salvedad en `docs/cybersecurity-objectives-compliance.md`,
-sección "Generalización fuera del entorno de calibración"). Lo que sí queda establecido aquí: el
-problema es más amplio que un solo header — contraseñas fuertes realistas (`MyP@ssw0rd`, `Tr0ub4dor`),
-listados normales autenticados, y peticiones GET simples sin query también se clasifican como
-`sqli`/`path_traversal` de forma inestable ante pequeños cambios de headers.
+importancia del RF). La prueba en dvws-node refutó que fuera *solo* eso: usar un User-Agent real de
+navegador **empeoró** la tasa de falsos positivos (75% → 92.5%) en vez de mejorarla. Una investigación
+paralela, mergeada desde `develop` el 2026-10-02 (`docs/limitations.md`, addendum sobre la dependencia
+de RF en el User-Agent, con OWASP Juice Shop como cuarta app), confirma y cuantifica la causa exacta:
+no es la longitud corta, sino que el tráfico benigno de entrenamiento apenas contiene UAs largos/de
+navegador (0.4% de las filas benignas de `unified.jsonl` vs. 33.3-97.7% en las clases de ataque) — el
+modelo aprendió, en la práctica, "UA largo = ataque". En Juice Shop, sustituir solo el UA (curl →
+navegador) subió el bloqueo de tráfico benigno de 39.4% a 97.1% (624 requests). Esto coincide en
+dirección exacta con el hallazgo de dvws-node de este documento — dos apps distintas, dos metodologías
+distintas, mismo patrón. Ver `docs/limitations.md` y `docs/findings-evidence/juice-shop-ua-bias/` para
+el detalle completo. Lo que además queda establecido aquí: el problema no se limita al header UA —
+contraseñas fuertes realistas (`MyP@ssw0rd`, `Tr0ub4dor`), listados normales autenticados, y peticiones
+GET simples sin query también se clasifican como `sqli`/`path_traversal` de forma inestable ante
+pequeños cambios de headers.
 
 **Clasificación de clase, aparte del bloqueo:** en las 3 apps, cuando el modelo sí bloquea un ataque
 real, la clase predicha (`attacks list`/`endpoints profile`) frecuentemente es incorrecta — `sqli`
