@@ -69,8 +69,22 @@ real de Chrome) dio:
 
 **4/5 bloqueadas.** El corpus benigno completo (50 muestras reales, reenviadas contra `/hexToRgb`)
 confirma el patrón a mayor escala: **50/50 bloqueadas** — 47 como `sqli`, 3 como `cmdi`. **Cero
-identificadas correctamente como benignas.** Con `mode: 'block'` y configuración por defecto,
-`logsguardian` bloquearía el 100% del tráfico legítimo de esta app.
+identificadas correctamente como benignas.**
+
+**Salvedad de muestra:** las 50 muestras del corpus "benigno" son 50 *valores* distintos reenviados
+contra el **mismo endpoint** (`/hexToRgb`), no 50 peticiones distribuidas entre los distintos
+endpoints de la app. El n=50 da robustez sobre la variación de contenido en ese endpoint puntual,
+no sobre la generalización entre rutas — para eso, la evidencia multi-endpoint es el chequeo de 5
+peticiones de arriba (`/hexToRgb`, `/cwe79/echo`, `/cwe73/read`, `/cwe78/childprocess`, `/`), que
+sí cubre endpoints distintos pero con n=5. Ambos chequeos apuntan en la misma dirección (bloqueo
+cercano al 100%), pero ninguno por sí solo es una muestra representativa de "todo el tráfico
+legítimo de esta app".
+
+Con `mode: 'block'` y configuración por defecto, `logsguardian` bloquearía efectivamente la
+totalidad del tráfico legítimo observado en esta app. Igual que en las otras dos apps, esto vuelve
+el recall alto en ataques (96-100%) poco informativo por sí solo: un modelo que bloquea
+prácticamente todo lo que recibe no está demostrando discriminación entre ataque y tráfico
+legítimo, solo un umbral mal calibrado para esta forma de tráfico.
 
 ## Problemas de integración
 
@@ -80,6 +94,9 @@ sorpresas, y `dbPath` se alineó explícitamente desde el inicio (ruta absoluta,
 ajuste real: como la app no usa bodies, todo el corpus se mapeó a query params de un solo campo
 (`text=`/`foo=`/`hex=`) en vez de JSON/form — se decodificó una vez cada payload pre-encodeado antes de
 re-encodearlo, para no doble-encodear.
+
+**Evidencia cruda copiada a este repo:** [`evidence/node-api-goat/`](evidence/node-api-goat/)
+(`run-attacks.js`, `results-before.json`, `results-after.json`).
 
 ## Archivos de la integración (en el clon, rama `feat/logsguardian-integration`, sin commitear)
 

@@ -16,7 +16,7 @@ forma nativa (`npm start`, puerto cambiado de 80→3000 vía `.env` para evitar 
 | Categoría | Endpoint | Auth |
 |---|---|---|
 | SQL Injection | `GET /api/v2/passphrase/:username` (Sequelize, interpolación directa) | No |
-| XSS | `POST /api/v2/users` (username reflejado sin escapar, `text/plain`, en la respuesta 409) | No |
+| XSS | `POST /api/v2/users` (username reflejado sin escapar en la respuesta 409) | No |
 | Path Traversal/LFI | `POST /api/download` (`filename` → `path.resolve()` sin sanitizar) | Sí (JWT) |
 | Command Injection | `GET /api/v2/sysinfo/:command` (→ `child_process.exec()`) | Sí (JWT) |
 
@@ -25,7 +25,13 @@ forma nativa (`npm start`, puerto cambiado de 80→3000 vía `.env` para evitar 
 - **SQLi:** `GET /api/v2/passphrase/' OR '1'='1` → volcó el hash de passphrase del admin.
 - **Command Injection:** `uname;id` → `uid=501(xtsebas) gid=20(staff)...` (ejecución real en el host).
 - **Path Traversal:** `filename=../../../../../../../../etc/passwd` → devolvió `/etc/passwd` completo.
-- **XSS:** registro con username `<script>alert(1)</script>` → reflejado crudo, sin escapar.
+- **XSS:** registro con username `<script>alert(1)</script>` → reflejado crudo, sin escapar, en el
+  cuerpo de la respuesta 409. **Confirma reflexión sin sanitizar, no ejecución confirmada en
+  navegador** — la respuesta se sirve con `Content-Type: text/plain`, que la mayoría de navegadores
+  no interpreta como HTML/JS ejecutable. Para elevar esto a XSS reflejado explotable haría falta un
+  sink que lo sirva como `text/html` (o un endpoint que lo re-renderice sin escapar en otra vista);
+  no se verificó ninguno de los dos en esta integración. Lo que se mide más abajo es la capacidad de
+  logsguardian de **detectar el payload en el request**, no la explotabilidad end-to-end.
 
 ## Resultados del corpus (40 payloads/clase, 200 total)
 
@@ -49,7 +55,15 @@ payload va en el segmento de la URL, así que cada request produce un `path` lit
 
 ## Falsos positivos — el peor de las 3 apps, y corrige una hipótesis previa
 
-De 5 peticiones benignas típicas (User-Agent real de Chrome), **3/5 (60%) bloqueadas**, todas
+**Recall alto en ataques (92.5-100%) junto con falsos positivos igualmente altos (92.5% sobre el
+corpus de 40) no es evidencia fuerte de que el sistema discrimine bien entre tráfico benigno y
+malicioso** — con un modelo que bloquea casi todo, el recall alto es, en gran parte, un efecto de
+umbral demasiado agresivo, no de capacidad de distinción. Los dos números deben leerse juntos, no
+por separado.
+
+Como muestra cualitativa adicional, pequeña y no representativa por sí sola (n=5, solo para
+ilustrar *qué tipo* de request benigna se bloquea — la cifra robusta es el 92.5% sobre n=40 arriba),
+de 5 peticiones benignas típicas (User-Agent real de Chrome), **3/5 (60%) bloqueadas**, todas
 mal-clasificadas como `path_traversal`:
 
 - `GET /api/v1/info` (GET simple, sin query/body) → **BLOQUEADO**
@@ -77,6 +91,10 @@ registrados, clasificados como `sqli` — reproducible en cualquier endpoint, no
   real contra el host, porque esta app corre nativa (no en contenedor) y el endpoint cmdi hace
   `exec()` real. Se neutralizaron reemplazando URLs/IPs externas por `127.0.0.1:1` antes de enviarlos
   (`defangCmdiPayload()`), documentado explícitamente en el script.
+
+**Evidencia cruda copiada a este repo:** [`evidence/dvws-node/`](evidence/dvws-node/)
+(`run-attacks.js`, `benign-fp-check.js`, `results-before.json`, `results-after.json`,
+`results-after-nodeua.json`).
 
 ## Archivos de la integración (en el clon, rama `feat/logsguardian-integration`, sin commitear)
 

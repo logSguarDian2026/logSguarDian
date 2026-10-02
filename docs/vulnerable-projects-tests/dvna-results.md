@@ -48,6 +48,16 @@ no sería confiable para un analista en este entorno.
 
 ## Falsos positivos — el hallazgo central: 5/5 peticiones legítimas bloqueadas
 
+**Nota de muestra:** n=5. No es una tasa de falsos positivos a nivel de población de tráfico
+benigno — es un chequeo deliberadamente dirigido a los flujos centrales de la app (home, login,
+búsqueda, listado). Su valor no viene del tamaño de la muestra sino de **qué** cubre: si esas 5
+rutas fallan, el flujo principal de uso está roto, independientemente de qué tan grande sea el
+denominador. Lo que sí es robusto es la reproducibilidad (dos corridas, mismo resultado
+determinístico) — no la generalización del "5/5 = 100%" a cualquier otro endpoint no probado.
+Tampoco deben leerse el recall alto en ataques (92.5-97.5%) y este 100% de FP como dos hallazgos
+independientes positivos: con el modelo bloqueando casi todo en ambos lados, el recall alto por sí
+solo dice poco sobre si el sistema realmente discrimina ataque de tráfico legítimo.
+
 Chequeo de 5 peticiones típicas y completamente benignas, User-Agent real de Chrome:
 
 | Petición | Resultado | Clase predicha |
@@ -81,6 +91,9 @@ de producción.
   reescrito, está fuera de las 4 categorías evaluadas), `bcrypt@1.0.3`→`^5.1.1` (misma API, sin cambio
   de comportamiento), `mysql2@1.4.2`→`^2.3.3` (handshake `ER_NOT_SUPPORTED_AUTH_MODE` con MySQL 5.7
   bajo emulación amd64).
+
+**Evidencia cruda copiada a este repo:** [`evidence/dvna/`](evidence/dvna/) (`run-corpus.js`,
+`fp-check.js`, `results-before.json`, `results-after.json`).
 
 ## Archivos de la integración (en el clon, rama `feat/logsguardian-integration`, sin commitear)
 
