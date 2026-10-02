@@ -12,7 +12,7 @@ del 2026-09-23 que resultó estar atada a un modelo huérfano (ver OE3.1).
 
 | Objetivo | Estado | Nota clave |
 |---|---|---|
-| Objetivo general | **Cumplido, con una salvedad** | Librería publicada en npm (`logsguardian@0.1.0`); la salvedad es la latencia (ver OE3.2) |
+| Objetivo general | **Cumplido, con dos salvedades** | Librería publicada en npm (`logsguardian@0.1.0`); salvedades: latencia (OE3.2) y generalización fuera de la app de calibración (falsos positivos 92.5-100% en 3 apps de terceros, ver abajo) |
 | OE1 — cuatro vectores, OWASP/MITRE | **Cumplido** en la implementación | La tabla OWASP/MITRE no existía en el repo; se propone abajo y debe validarse |
 | OE2 — dataset ≥ 100,000 muestras | **Cumplido** en tamaño (~383,000) | Balance resuelto por ponderación, no por conteos iguales; ver salvedades |
 | OE3.1 — F1 ≥ 0.80 en ≥ 3/4 categorías | **Cumplido** (4/4) | Lectura de test de `rf_v11` cerrada (macro F1 0.9776, checksum verificado) — ya no depende de `rf_v3` |
@@ -34,6 +34,7 @@ del 2026-09-23 que resultó estar atada a un modelo huérfano (ver OE3.1).
 | Amenazas conocidas y anomalías | RF clasifica 4 clases + benigno; IF marca anomalías (`pass_anomaly`) |
 | Tiempo de ejecución sin bloquear el Event Loop | Inferencia en `worker_threads` (RF dedicado + pool de IF), `docs/architecture.md` |
 | Sin comprometer el rendimiento | Parcial: ver OE3.2 |
+| Generalización fuera del entorno de calibración | **Riesgo real, no cumplido sin reservas.** Probado instalando la librería publicada (no una simulación) en 3 apps de terceros nunca usadas en calibración ni entrenamiento (DVNA, node-api-goat, dvws-node — stacks y formas de tráfico distintas entre sí). Resultado: detección de ataques reales alta (92.5-100% recall por clase), pero **92.5-100% de falsos positivos en tráfico benigno en las 3 apps**, incluido el login en dos de ellas. Descarta la hipótesis de que el problema sea solo `ua_length`/User-Agent corto (en una de las 3, usar un User-Agent real de navegador empeoró el resultado). Evidencia de que el threshold está calibrado contra `logSguarDian-vulnerable-project` específicamente y no generaliza — ver `docs/vulnerable-projects-tests/`. |
 
 ![logsguadian npm](cibersecurity-images/obj0-a.png)
 ![logsguadian test and packages](cibersecurity-images/obj0-b.png)
