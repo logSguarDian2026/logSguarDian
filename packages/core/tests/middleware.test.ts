@@ -245,6 +245,30 @@ describe("logsguardian — block mode", () => {
   });
 });
 
+describe("logsguardian — confidence range", () => {
+  // Observed from onnxruntime-node: float32 softmax rounding a hair above 1.
+  const OVERSHOOT_CONFIDENCE = 1.0000003576278687;
+  const SQLI_OVERSHOOT = [0.0, 0.0, 0.0, OVERSHOOT_CONFIDENCE, 0.0];
+
+  test("clamps a float32 softmax overshoot to exactly 1 in the logged event", async () => {
+    const dbPath = tmpDb();
+    const app = makeApp({ mode: "block", threshold: 0.70, timeoutMs: 500, dbPath });
+    mockResponse(SQLI_OVERSHOOT, IF_NORMAL);
+
+    const { status } = await httpGet(app, "/?id=1 OR 1=1");
+    await new Promise((r) => setTimeout(r, 100)); // allow async store.log() to flush
+
+    const db = new Database(dbPath, { readonly: true });
+    const row = db.prepare("SELECT confidence FROM detection_events WHERE id = 1").get() as
+      | { confidence: number }
+      | undefined;
+    db.close();
+
+    expect(status).toBe(403);
+    expect(row?.confidence).toBe(1);
+  });
+});
+
 describe("logsguardian — monitor mode", () => {
   test("does not return 403 even for high-confidence attack", async () => {
     const app = makeApp({ mode: "monitor", threshold: 0.70, timeoutMs: 500 });
