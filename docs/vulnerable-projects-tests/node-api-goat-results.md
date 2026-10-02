@@ -25,7 +25,13 @@ autenticación — la app no tiene sistema de auth en absoluto): CWE-95 (Eval In
 JS, distinto de OS command injection), CWE-502 (deserialización insegura, `node-serialize`), CWE-113
 (CRLF/header splitting), CWE-601 (open redirect), CWE-201 (exposición de información).
 
-## Confirmación "antes" (sin logsguardian) — evidencia real
+## Confirmación "antes" (sin logsguardian) — observación manual, sin captura adjunta
+
+**Nota de respaldo:** observación registrada manualmente al momento de la integración (2026-09-30), no
+un log de response body ni una captura de pantalla adjunta en `evidence/node-api-goat/`. Los JSON del
+corpus confirman estados HTTP y clases predichas, no el contenido de la respuesta — un 200 no prueba
+por sí solo que se leyó un archivo fuera del repo o que se ejecutó un comando. Tratar lo siguiente como
+observación preliminar:
 
 - **XSS:** `curl .../cwe79/echo?text=<script>alert(1)</script>` devolvió el script sin escapar en el HTML.
 - **Path traversal:** cruzando directorio se leyó `../logSguarDian/package.json` — un archivo **fuera
@@ -84,7 +90,10 @@ Con `mode: 'block'` y configuración por defecto, `logsguardian` bloquearía efe
 totalidad del tráfico legítimo observado en esta app. Igual que en las otras dos apps, esto vuelve
 el recall alto en ataques (96-100%) poco informativo por sí solo: un modelo que bloquea
 prácticamente todo lo que recibe no está demostrando discriminación entre ataque y tráfico
-legítimo, solo un umbral mal calibrado para esta forma de tráfico.
+legítimo. El patrón es compatible con un problema de calibración o sesgo del modelo frente a esta
+forma de tráfico (GET con un solo parámetro en query) — no se corrió un barrido de `RF_THRESHOLD`
+en esta integración, así que no puede afirmarse que el umbral específicamente sea la causa principal
+aislada, solo que el recall alto, leído solo, no es evidencia de discriminación útil.
 
 ## Problemas de integración
 

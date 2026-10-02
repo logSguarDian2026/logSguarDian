@@ -20,7 +20,13 @@ MySQL 5.7 en Docker (`--platform linux/amd64`, puerto host 3307) y la propia DVN
 | Command Injection | `POST /app/ping` | `address` | Confirmado — ejecutó `id` real en el host |
 | Path Traversal / LFI | — | — | **No existe en DVNA.** Auditado el código (`grep` de `readFile\|sendFile\|createReadStream\|res.download` en `routes/`, `core/`, `views/`, `server.js`): el único uso de rutas de archivo es `express.static('public')`, que Express sanea internamente. No se inventó un endpoint sustituto. |
 
-## Confirmación "antes" (sin logsguardian) — evidencia real, no asumida
+## Confirmación "antes" (sin logsguardian) — observación manual, sin captura adjunta
+
+**Nota de respaldo:** observación registrada manualmente al momento de la integración (2026-09-30), no
+un log de response body ni una captura de pantalla adjunta en `evidence/dvna/`. Los JSON del corpus
+(`results-before.json`/`results-after.json`) confirman estados HTTP y clases predichas, no el
+contenido de la respuesta — no son equivalentes a una prueba de explotación. Tratar lo siguiente como
+observación preliminar:
 
 - **SQLi:** `login=' UNION SELECT password,1 from Users where login='alice' -- //'` devolvió el hash
   bcrypt real de alice (`$2b$10$2aJV0bPY...`).
@@ -47,6 +53,14 @@ cayó en `sqli`. El bloqueo (seguridad) funciona; el triage por clase (`attacks 
 no sería confiable para un analista en este entorno.
 
 ## Falsos positivos — el hallazgo central: 5/5 peticiones legítimas bloqueadas
+
+**Nota de respaldo:** el script que generó este chequeo (`fp-check.js`) está incluido en
+[`evidence/dvna/`](evidence/dvna/), pero su salida de ejecución (los 5 códigos de estado reales,
+capturados en consola) no se guardó ni se adjuntó. La tabla de abajo es una observación manual
+registrada al momento de la integración (2026-09-30), reproducida dos veces según esa misma nota, no
+un archivo verificable de forma independiente desde este PR. Correrlo de nuevo (`node
+attack-sim/fp-check.js` contra el clon local) debería reproducir el mismo resultado si la observación
+es correcta; hasta entonces, trátese como preliminar.
 
 **Nota de muestra:** n=5. No es una tasa de falsos positivos a nivel de población de tráfico
 benigno — es un chequeo deliberadamente dirigido a los flujos centrales de la app (home, login,
