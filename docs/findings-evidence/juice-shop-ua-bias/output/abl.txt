@@ -1,0 +1,13 @@
+baseline             ben=0.30 cmd=0.07 pat=0.03 sql=0.47 xss=0.13
+ablate sqli_operator_count 1->0                ben=0.30 cmd=0.10 pat=0.03 sql=0.33 xss=0.23
+ablate ua_suspicious 1->0                      ben=0.17 cmd=0.07 pat=0.13 sql=0.47 xss=0.17
+ablate path_depth 3->2                         ben=0.33 cmd=0.03 pat=0.10 sql=0.47 xss=0.07
+ablate path_length 21->13                      ben=0.50 cmd=0.04 pat=0.03 sql=0.33 xss=0.10
+ablate uri_length 29->21                       ben=0.47 cmd=0.07 pat=0.07 sql=0.30 xss=0.10
+ablate special_char_ratio 0.14285714285714285->0 ben=0.27 cmd=0.03 pat=0.07 sql=0.53 xss=0.10
+path shape of /posts/search                    ben=0.69 cmd=0.00 pat=0.13 sql=0.17 xss=0.00
+/posts/products/search                         ben=0.30 cmd=0.07 pat=0.03 sql=0.40 xss=0.20
+/api/v1/items/search                           ben=0.27 cmd=0.10 pat=0.00 sql=0.47 xss=0.17
+/a/b/c                                         ben=0.43 cmd=0.05 pat=0.34 sql=0.11 xss=0.07
+browser UA, juice path                         ben=0.37 cmd=0.03 pat=0.03 sql=0.57 xss=0.00
+browser UA, /posts/search                      ben=0.45 cmd=0.03 pat=0.00 sql=0.52 xss=0.00

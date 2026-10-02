@@ -1,0 +1,24 @@
+
+## juice search "/rest/products/search?q=apple" nfeat 69
+benign=0.301 cmdi=0.067 path_traversal=0.033 sqli=0.467 xss=0.132
+payload_length=7  payload_entropy=2.521640636334662  uri_length=29  path_length=21  query_string_length=7  path_depth=3  query_param_count=1  special_char_ratio=0.14285714285714285  payload_token_count=1  sqli_operator_count=1  method_is_get=1  ua_present=1  ua_length=10  ua_suspicious=1
+
+## juice search empty "/rest/products/search?q=" nfeat 69
+benign=0.267 cmdi=0.100 path_traversal=0.167 sqli=0.433 xss=0.033
+payload_length=2  payload_entropy=0.9999999999971146  uri_length=24  path_length=21  query_string_length=2  path_depth=3  query_param_count=1  special_char_ratio=0.5  payload_token_count=1  sqli_operator_count=1  method_is_get=1  ua_present=1  ua_length=10  ua_suspicious=1
+
+## juice foo/search (passed) "/rest/foo/search?q=apple" nfeat 69
+benign=0.428 cmdi=0.037 path_traversal=0.100 sqli=0.367 xss=0.068
+payload_length=7  payload_entropy=2.521640636334662  uri_length=24  path_length=16  query_string_length=7  path_depth=3  query_param_count=1  special_char_ratio=0.14285714285714285  payload_token_count=1  sqli_operator_count=1  method_is_get=1  ua_present=1  ua_length=10  ua_suspicious=1
+
+## juice languages (passed) "/rest/languages?" nfeat 69
+benign=0.695 cmdi=0.008 path_traversal=0.240 sqli=0.042 xss=0.014
+payload_length=15  payload_entropy=3.240223928927425  uri_length=15  path_length=15  path_depth=2  special_char_ratio=0.13333333333333333  payload_token_count=1  path_separator_count=1  method_is_get=1  ua_present=1  ua_length=10  ua_suspicious=1
+
+## own app style "/posts/search?q=apple" nfeat 69
+benign=0.695 cmdi=0.004 path_traversal=0.133 sqli=0.167 xss=0.001
+payload_length=7  payload_entropy=2.521640636334662  uri_length=21  path_length=13  query_string_length=7  path_depth=2  query_param_count=1  special_char_ratio=0.14285714285714285  payload_token_count=1  sqli_operator_count=1  method_is_get=1  ua_present=1  ua_length=10  ua_suspicious=1
+
+## own app style no query "/posts?" nfeat 69
+benign=0.915 cmdi=0.004 path_traversal=0.067 sqli=0.001 xss=0.014
+payload_length=6  payload_entropy=2.2516291673806093  uri_length=6  path_length=6  path_depth=1  special_char_ratio=0.16666666666666666  payload_token_count=1  method_is_get=1  ua_present=1  ua_length=10  ua_suspicious=1

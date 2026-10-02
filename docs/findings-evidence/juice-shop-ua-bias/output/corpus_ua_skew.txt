@@ -1,0 +1,5 @@
+xss             n=  29897 UA>40:  33.3%
+cmdi            n=   9758 UA>40:  54.4%
+path_traversal  n=  16839 UA>40:  97.7%
+sqli            n= 227344 UA>40:  81.7%
+benign          n=  99245 UA>40:   0.4%
