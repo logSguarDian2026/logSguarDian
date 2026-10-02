@@ -783,3 +783,17 @@ be cleanly excised. The current calibration (accept the live
 pass_anomaly inflation as IF is non-blocking, log-enrichment
 only) remains the correct decision, now with both alternatives
 empirically closed rather than left as open future work.
+
+### Addendum: magnitud de la dependencia de RF en el User-Agent (integración con OWASP Juice Shop)
+
+La corrección anterior de este apartado documenta la dependencia de RF respecto al User-Agent en un caso puntual (`GET /profile`, 0.500 → 0.500 entre clases distintas). Una investigación posterior, realizada al integrar OWASP Juice Shop como segunda aplicación de prueba, cuantifica su magnitud.
+
+**Mecanismo.** Un barrido de ablation indica que la longitud de la ruta no es el factor principal: con un User-Agent tipo curl modula la probabilidad de sqli (cruza 0.35 alrededor de 16 caracteres de ruta con una sola `=` en la query), pero con un User-Agent de navegador (Chrome/macOS) la probabilidad supera 0.35 para toda longitud de ruta probada (10 a 28 caracteres). Sustituir únicamente el User-Agent, sin cambiar nada más, mueve la probabilidad de sqli de 0.17 a 0.52 en la misma búsqueda benigna (`GET /posts/search?q=apple`). Referer y Accept no alteran el resultado.
+
+**Sesgo del corpus.** Solo 0.4% de las filas benignas de `unified.jsonl` tienen un User-Agent largo (>40 caracteres, típico de un navegador), frente a 33.3% (xss), 54.4% (cmdi), 81.7% (sqli) y 97.7% (path_traversal) en las clases de ataque. El modelo se comporta, en la práctica, como si un User-Agent de navegador fuese evidencia de ataque. Esto es consistente con la brecha de representación ya descrita en §4 y §10, pero la medición a nivel de corpus no estaba documentada.
+
+**Validación en una aplicación independiente.** En un pase solo benigno en modo `monitor` contra OWASP Juice Shop (624 peticiones: 312 con User-Agent de navegador y 312 con curl; ~45 formas de ruta), 303 de 312 peticiones con User-Agent de navegador (97.1%) recibieron `verdict=block`, frente a 123 de 312 (39.4%) con curl. Con navegador, casi todas las peticiones GET sin query fueron clasificadas como `path_traversal` y las peticiones con `=` o cuerpo JSON como `sqli` o `cmdi`; con curl, el falso positivo se concentra en rutas con `=` en la query o cuerpo (sqli).
+
+**Alcance.** El resultado proviene de dos aplicaciones y de una única cadena de User-Agent de navegador; §10 ya documenta que otros User-Agent (Windows desktop, okhttp) no producen el mismo cambio en el caso de `/profile`. Muestra que el hallazgo no es un artefacto de la aplicación propia del proyecto, no que sea una propiedad uniforme para todo User-Agent. Las métricas de prueba reportadas en `class_metrics.json` siguen siendo válidas para la distribución en que fueron medidas.
+
+**Consecuencia.** La evaluación de Juice Shop se detiene en este punto: con esta tasa de falsos positivos, los resultados en modo `block` medirían cuántas peticiones bloquea el modelo en general, no su capacidad real de detección. No se genera corpus de ataque para esta aplicación. Evidencia: `docs/findings-evidence/juice-shop-ua-bias/`.

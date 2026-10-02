@@ -1,0 +1,11 @@
+/posts/search          curl, no extras                sqli 0.17 ben 0.69
+/posts/search          browser UA only                sqli 0.52 ben 0.45
+/posts/search          browser UA + referer           sqli 0.52 ben 0.45
+/posts/search          browser UA + accept            sqli 0.52 ben 0.45
+/posts/search          browser UA + referer + accept  sqli 0.52 ben 0.45
+/rest/products/search  curl, no extras                sqli 0.47 ben 0.30
+/rest/products/search  browser UA only                sqli 0.57 ben 0.37
+/rest/products/search  browser UA + referer           sqli 0.57 ben 0.37
+/rest/products/search  browser UA + accept            sqli 0.57 ben 0.37
+/rest/products/search  browser UA + referer + accept  sqli 0.57 ben 0.37
+payload_length=7 payload_entropy=2.521640636334662 uri_length=21 path_length=13 query_string_length=7 path_depth=2 query_param_count=1 special_char_ratio=0.14285714285714285 payload_token_count=1 sqli_operator_count=1 method_is_get=1 ua_present=1 ua_length=91
