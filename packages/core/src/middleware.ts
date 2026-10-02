@@ -232,7 +232,10 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
 
     const maxIdx = rfProbs.reduce((best, p, i) => (p > rfProbs[best] ? i : best), 0);
     const predicted_class = RF_CLASSES[maxIdx];
-    const confidence = rfProbs[maxIdx];
+    // onnxruntime-node's float32 softmax can round a fraction of a ULP above 1
+    // (e.g. 1.0000003576278687) — clamp so every consumer (telemetry, webhooks,
+    // event log) always sees a valid [0, 1] probability.
+    const confidence = Math.min(1, Math.max(0, rfProbs[maxIdx]));
     const is_attack = predicted_class !== "benign";
     const is_anomaly = ifScore !== undefined ? ifScore < IF_THRESHOLD : false;
     const if_score = ifScore ?? 0;
