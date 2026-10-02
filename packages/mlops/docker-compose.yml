@@ -1,0 +1,17 @@
+services:
+  collector:
+    build:
+      context: ../..
+      dockerfile: packages/mlops/Dockerfile
+    container_name: mlops-collector
+    restart: unless-stopped
+    ports:
+      - "4790:4790"
+    environment:
+      MLOPS_COLLECTOR_PORT: "4790"
+      MLOPS_COLLECTOR_DB: "/data/telemetry.db"
+    volumes:
+      - collector_data:/data
+
+volumes:
+  collector_data:
