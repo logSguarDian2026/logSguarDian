@@ -37,7 +37,7 @@ export interface MiddlewareOptions {
   timeoutMs?: number;
   /** Absolute path to the SQLite event log. Default: logsguardian.db in cwd. */
   dbPath?: string;
-  /** Absolute path to the directory containing rf.onnx, if.onnx, model-metadata.json. */
+  /** Absolute path to the directory containing rf.onnx, if.onnx, and parity_report.json (IF threshold source). */
   modelDir?: string;
   /** HTTP(S) URL to POST a JSON DetectionEvent when verdict is 'block' or 'pass_anomaly'. */
   webhookUrl?: string;
