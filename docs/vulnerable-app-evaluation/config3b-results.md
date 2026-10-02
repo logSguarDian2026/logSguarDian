@@ -135,7 +135,16 @@ every request reaches the app — giving a full attribution
 table for all 23 payloads (9 original + 14 evasion) without
 needing multiple WAF restart cycles.
 
-### Initial result: 21/23 (91.3%)
+### Initial result: 16/23 (69.6%)
+
+**Nota de corrección:** la cifra original de este encabezado
+(21/23, 91.3%) era aritméticamente inconsistente con el detalle
+reportado en esta misma sección (16 bloqueados + 7 no detectados
+= 23). Los datos crudos de esta ronda específica ya no existen
+(base de datos sobrescrita por ejecuciones posteriores) para
+re-verificar directamente, por lo que la corrección se basa en
+la consistencia aritmética del propio documento, no en una
+re-medición. Corregido a 16/23 (69.6%).
 
 All 9 Round 1 originals and all 14 Round 2 evasion variants
 were re-run against the app directly. CRS's audit log
