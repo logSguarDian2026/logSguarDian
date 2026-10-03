@@ -22,6 +22,13 @@ export const SELECT_PRESENT_TEST = /\bselect\b/i;
 // to subtract benign key=value structure out of sqli_operator_count.
 export const FORM_FIELD_COUNT = /(^|&)[a-zA-Z_][a-zA-Z0-9_]*=/g;
 
+// Quotes immediately adjacent (allowing whitespace) to a JSON structural
+// delimiter (: , { } [ ]) on either side - i.e. the quote marks around a
+// JSON key or string value, not quote characters appearing inside payload
+// content. Used to subtract benign JSON key/value quoting out of
+// quote_count, same principle as FORM_FIELD_COUNT for sqli_operator_count.
+export const JSON_KV_QUOTE_COUNT = /"(?=\s*[:,}\]])|(?<=[:,{\[]\s*)"/g;
+
 // ---- Grupo 5: XSS ----------------------------------------------------------
 export const XSS_MARKER_COUNT =
   /(<\s*script|<\s*\/\s*script|<\s*img|<\s*svg|<\s*iframe|<\s*body|<\s*input|on(?:error|load|click|mouseover|mouseout|focus|input|keyup|keydown)\s*=|javascript\s*:|alert\s*\(|confirm\s*\(|prompt\s*\(|document\.cookie|window\.location|eval\s*\(|innerHTML|src\s*=\s*["']?\s*javascript)/gi;
@@ -49,7 +56,7 @@ export const SUSPICIOUS_EXTENSION_COUNT = /\.(php\d?|aspx?|jspx?)\b/gi;
 
 // ---- Grupo 7: Command Injection -------------------------------------------
 export const SHELL_COMMAND_COUNT =
-  /\b(cat\b|ls\b|dir\b|id\b|whoami|wget\b|curl\b|bash\b|sh\b|chmod|chown|rm\b|cp\b|mv\b|ping\b|nc\b|ncat\b|netcat|python|perl|ruby|php\b|powershell|cmd\.exe|\/bin\/|\/etc\/passwd|\/etc\/shadow)/gi;
+  /\b(cat\b|ls\b|dir\b|id\b|whoami|wget\b|curl\b|bash\b|sh\b|chmod|chown|rm\b|cp\b|mv\b|ping\b|nc\b|ncat\b|netcat|python|perl|ruby|php\b|powershell|cmd\.exe|\/bin\/|\/etc\/passwd|\/etc\/shadow|certutil\b|wmic\b|reg\s+(add|query|delete)|net\s+(user|localgroup)|schtasks\b|rundll32\b|mshta\b|bitsadmin\b|Invoke-\w+|-enc\b|-EncodedCommand\b)/gi;
 
 export const COMMAND_SEPARATOR_COUNT = /(&&|\|\||[|;`])/g;
 export const REDIRECT_OPERATOR_COUNT = /(>>|<<|[><])/g;

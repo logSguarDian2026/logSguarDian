@@ -16,7 +16,9 @@ export type AttackClass = "benign" | "cmdi" | "path_traversal" | "sqli" | "xss";
  * the same way IF is (fire-and-forget, patches a comparison table after the
  * real response has already gone out). */
 export interface LogsguardianHandler extends RequestHandler {
-  close?: () => void;
+  close?: () => void | Promise<void>;
+  /** Resolves once every worker has loaded its model (or died). Call before close() to avoid closing mid-load. */
+  waitUntilReady?: () => Promise<void>;
   spawnCanaryWorker?: (candidateModelPath: string) => Promise<void>;
   closeCanaryWorker?: () => void;
 }
@@ -35,11 +37,11 @@ export interface MiddlewareOptions {
   timeoutMs?: number;
   /** Absolute path to the SQLite event log. Default: logsguardian.db in cwd. */
   dbPath?: string;
-  /** Absolute path to the directory containing rf.onnx, if.onnx, model-metadata.json. */
+  /** Absolute path to the directory containing rf.onnx, if.onnx, and parity_report.json (IF threshold source). */
   modelDir?: string;
   /** HTTP(S) URL to POST a JSON DetectionEvent when verdict is 'block' or 'pass_anomaly'. */
   webhookUrl?: string;
-  /** Opt-in: HTTP(S) URL of an MLOps telemetry collector. When set, every request's 73-feature vector is POSTed fire-and-forget (never the raw payload). Default: unset (disabled). */
+  /** Opt-in: HTTP(S) URL of an MLOps telemetry collector. When set, every request's 76-feature vector is POSTed fire-and-forget (never the raw payload). Default: unset (disabled). */
   telemetryUrl?: string;
   /** Identifier for this host in telemetry events, so a central collector can distinguish multiple deployments. Default: os.hostname(). */
   sourceId?: string;
@@ -79,7 +81,7 @@ export interface WorkerRequest {
 }
 
 /** Which model a worker in the pool is dedicated to. "canary" is an RF-shaped
- * candidate model evaluated in shadow (Fase 7) — same 67-feature input/output
+ * candidate model evaluated in shadow (Fase 7) — same 69-feature input/output
  * contract as "rf", never on the response critical path. */
 export type WorkerRole = "rf" | "if" | "canary";
 

@@ -11,7 +11,7 @@
  * patches the already-logged DetectionEvent row asynchronously instead.
  *
  * RF_CLASSES order: ["benign", "cmdi", "path_traversal", "sqli", "xss"]
- * IF_THRESHOLD = 0.002486040118540811  (below → anomaly)
+ * IF_THRESHOLD = 0.00806713286301003  (below → anomaly, if_v10)
  */
 import * as http from "http";
 import * as net from "net";
@@ -38,6 +38,9 @@ jest.mock("worker_threads", () => {
   const { EventEmitter } = require("events");
   class MockWorker extends EventEmitter {
     role: "rf" | "if" | "canary";
+    // -1 is what a real Worker reports once its thread has exited, which lets
+    // close() skip the shutdown handshake no mock will ever acknowledge.
+    threadId = -1;
     constructor(_scriptPath: unknown, opts: { workerData: { role: "rf" | "if" | "canary" } }) {
       super();
       this.role = opts.workerData.role;
@@ -85,8 +88,8 @@ function tmpDb(): string {
 // leaked-handle-corrupts-other-files' process.cwd() concern as smoke.test.ts.
 const middlewareInstances: import("../src/types").LogsguardianHandler[] = [];
 
-afterAll(() => {
-  for (const mw of middlewareInstances) mw.close?.();
+afterAll(async () => {
+  await Promise.all(middlewareInstances.map((mw) => mw.close?.()));
   for (const p of tmpDbs) { try { fs.unlinkSync(p); } catch { /* already removed */ } }
 });
 
@@ -239,6 +242,30 @@ describe("logsguardian — block mode", () => {
 
     const { status } = await httpGet(app, "/");
     expect(status).toBe(200);
+  });
+});
+
+describe("logsguardian — confidence range", () => {
+  // Observed from onnxruntime-node: float32 softmax rounding a hair above 1.
+  const OVERSHOOT_CONFIDENCE = 1.0000003576278687;
+  const SQLI_OVERSHOOT = [0.0, 0.0, 0.0, OVERSHOOT_CONFIDENCE, 0.0];
+
+  test("clamps a float32 softmax overshoot to exactly 1 in the logged event", async () => {
+    const dbPath = tmpDb();
+    const app = makeApp({ mode: "block", threshold: 0.70, timeoutMs: 500, dbPath });
+    mockResponse(SQLI_OVERSHOOT, IF_NORMAL);
+
+    const { status } = await httpGet(app, "/?id=1 OR 1=1");
+    await new Promise((r) => setTimeout(r, 100)); // allow async store.log() to flush
+
+    const db = new Database(dbPath, { readonly: true });
+    const row = db.prepare("SELECT confidence FROM detection_events WHERE id = 1").get() as
+      | { confidence: number }
+      | undefined;
+    db.close();
+
+    expect(status).toBe(403);
+    expect(row?.confidence).toBe(1);
   });
 });
 

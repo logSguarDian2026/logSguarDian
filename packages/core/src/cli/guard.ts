@@ -1,5 +1,6 @@
 import * as path from "path";
 import * as fs from "fs";
+import type Database from "better-sqlite3";
 import type { MiddlewareOptions } from "../types";
 
 export const CONFIG_FILENAME = "logsguardian.config.js";
@@ -76,4 +77,22 @@ export function dbPathMismatchHint(dbPath: string): string {
     `   A mismatch here never errors; the CLI just reads a different, valid,\n` +
     `   empty database than the one your app is writing to.)\n`
   );
+}
+
+/**
+ * True if `table` exists in the already-opened database.
+ *
+ * A dbPath mismatch (see dbPathMismatchHint above) doesn't always land on a
+ * file with the right schema and zero rows — it can land on a file that
+ * exists but was only ever touched by a *different* store class writing to
+ * the same physical `logsguardian.db` (e.g. WebhookStore, which creates the
+ * file on demand for its own `webhooks` table and has no reason to know
+ * about `detection_events`). Callers use this to fall back to an empty
+ * result set instead of letting `db.prepare(...)` throw
+ * `SqliteError: no such table` uncaught — the exact same dbPathMismatchHint
+ * message already covers this case, since from the user's perspective it's
+ * the same underlying problem (wrong dbPath), just caught one step earlier.
+ */
+export function tableExists(db: Database.Database, table: string): boolean {
+  return db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?`).get(table) !== undefined;
 }

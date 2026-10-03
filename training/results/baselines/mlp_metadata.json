@@ -1,0 +1,15 @@
+{
+  "architecture": "MLPClassifier(64, 32), StandardScaler + adam + backprop",
+  "n_features": 69,
+  "n_params_approx": 6725,
+  "macro_f1_val": 0.973393943618581,
+  "per_class_f1_val": {
+    "cmdi": 0.9148717948717948,
+    "path_traversal": 0.9768092762894842,
+    "sqli": 0.9948647422861406,
+    "xss": 0.9831081081081081
+  },
+  "model_size_bytes": 28910,
+  "latency_p50_ms": 0.006999995093792677,
+  "latency_p95_ms": 0.007374968845397234
+}

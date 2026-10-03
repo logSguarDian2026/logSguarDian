@@ -1,0 +1,120 @@
+{
+  "model": "../models/rf_candidate.onnx",
+  "results": {
+    "dashboard_200": {
+      "n": 200,
+      "pct_benign": 0.015,
+      "predicted_class_counts": {
+        "sqli": 145,
+        "path_traversal": 52,
+        "benign": 3
+      }
+    },
+    "dashboard_500": {
+      "n": 500,
+      "pct_benign": 0.01,
+      "predicted_class_counts": {
+        "sqli": 375,
+        "path_traversal": 120,
+        "benign": 5
+      }
+    },
+    "dashboard_1000": {
+      "n": 1000,
+      "pct_benign": 0.015,
+      "predicted_class_counts": {
+        "sqli": 759,
+        "path_traversal": 226,
+        "benign": 15
+      }
+    },
+    "dashboard_2000": {
+      "n": 2000,
+      "pct_benign": 0.0155,
+      "predicted_class_counts": {
+        "sqli": 1505,
+        "path_traversal": 460,
+        "benign": 31,
+        "cmdi": 4
+      }
+    },
+    "api_only_200": {
+      "n": 200,
+      "pct_benign": 0.22,
+      "predicted_class_counts": {
+        "sqli": 117,
+        "benign": 44,
+        "path_traversal": 23,
+        "cmdi": 16
+      }
+    },
+    "api_only_500": {
+      "n": 500,
+      "pct_benign": 0.198,
+      "predicted_class_counts": {
+        "sqli": 284,
+        "benign": 99,
+        "path_traversal": 77,
+        "cmdi": 40
+      }
+    },
+    "api_only_1000": {
+      "n": 1000,
+      "pct_benign": 0.209,
+      "predicted_class_counts": {
+        "sqli": 551,
+        "benign": 209,
+        "path_traversal": 153,
+        "cmdi": 87
+      }
+    },
+    "api_only_2000": {
+      "n": 2000,
+      "pct_benign": 0.2165,
+      "predicted_class_counts": {
+        "sqli": 1076,
+        "benign": 433,
+        "path_traversal": 312,
+        "cmdi": 179
+      }
+    },
+    "admin_panel_200": {
+      "n": 200,
+      "pct_benign": 0.17,
+      "predicted_class_counts": {
+        "sqli": 115,
+        "benign": 34,
+        "path_traversal": 51
+      }
+    },
+    "admin_panel_500": {
+      "n": 500,
+      "pct_benign": 0.152,
+      "predicted_class_counts": {
+        "sqli": 295,
+        "benign": 76,
+        "path_traversal": 129
+      }
+    },
+    "admin_panel_1000": {
+      "n": 1000,
+      "pct_benign": 0.158,
+      "predicted_class_counts": {
+        "sqli": 601,
+        "benign": 158,
+        "path_traversal": 240,
+        "cmdi": 1
+      }
+    },
+    "admin_panel_2000": {
+      "n": 2000,
+      "pct_benign": 0.1465,
+      "predicted_class_counts": {
+        "sqli": 1221,
+        "benign": 293,
+        "path_traversal": 485,
+        "cmdi": 1
+      }
+    }
+  }
+}

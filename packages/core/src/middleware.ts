@@ -56,6 +56,7 @@ import { WebhookStore } from "./webhook-store";
 import { CanaryStore } from "./canary-store";
 import { sendWebhook } from "./webhook";
 import { sendTelemetry } from "./telemetry";
+import { loadIfThreshold } from "./model-metadata";
 import type {
   AttackClass,
   CanaryComparison,
@@ -68,7 +69,6 @@ import type {
 } from "./types";
 
 const RF_THRESHOLD = 0.35;
-const IF_THRESHOLD = 0.002486040118540811;
 const RF_CLASSES: AttackClass[] = ["benign", "cmdi", "path_traversal", "sqli", "xss"];
 
 const DEFAULT_TIMEOUT_MS = 50;
@@ -154,6 +154,7 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
   const userThreshold = options.threshold;
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const modelDir = options.modelDir ?? DEFAULT_MODEL_DIR;
+  const ifThreshold = loadIfThreshold(modelDir);
   const webhookUrl = options.webhookUrl;
   const telemetryUrl = options.telemetryUrl;
   const sourceId = options.sourceId ?? os.hostname();
@@ -189,6 +190,19 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
   // retriggers onnxruntime-node's concurrent-call growth (see worker.ts).
   let readyIfWorkers: Worker[] = [];
   let nextIfWorkerIndex = 0;
+  let readinessWaiters: Array<() => void> = [];
+
+  function allWorkersReady(): boolean {
+    if (!rfWorker) return true;
+    return rfReady && readyIfWorkers.length === ifWorkers.length;
+  }
+
+  function notifyReadinessWaiters(): void {
+    if (!allWorkersReady()) return;
+    const waiters = readinessWaiters;
+    readinessWaiters = [];
+    waiters.forEach((resolve) => resolve());
+  }
 
   // Fase 7: canary/candidate model, on-demand only — never spawned by
   // default (see docs/results.md's real 4-worker memory measurement).
@@ -214,9 +228,12 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
 
     const maxIdx = rfProbs.reduce((best, p, i) => (p > rfProbs[best] ? i : best), 0);
     const predicted_class = RF_CLASSES[maxIdx];
-    const confidence = rfProbs[maxIdx];
+    // onnxruntime-node's float32 softmax can round a fraction of a ULP above 1
+    // (e.g. 1.0000003576278687) — clamp so every consumer (telemetry, webhooks,
+    // event log) always sees a valid [0, 1] probability.
+    const confidence = Math.min(1, Math.max(0, rfProbs[maxIdx]));
     const is_attack = predicted_class !== "benign";
-    const is_anomaly = ifScore !== undefined ? ifScore < IF_THRESHOLD : false;
+    const is_anomaly = ifScore !== undefined ? ifScore < ifThreshold : false;
     const if_score = ifScore ?? 0;
     const threshold = userThreshold ?? RF_THRESHOLD;
 
@@ -241,7 +258,7 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
     clearTimeout(pending_.cleanupTimer);
     pendingLogPatches.delete(requestId);
 
-    const is_anomaly = ifScore < IF_THRESHOLD;
+    const is_anomaly = ifScore < ifThreshold;
     const becomesAnomaly = is_anomaly && pending_.event.verdict === "pass";
     const webhookFired = becomesAnomaly && !!webhookUrl;
 
@@ -372,8 +389,9 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
     const workerPath = path.join(__dirname, "worker.js");
 
     rfWorker = new Worker(workerPath, { workerData: { role: "rf", modelDir } });
-    rfWorker.on("message", (msg: WorkerResponse | { ready: true; role: "rf" }) => {
-      if ("ready" in msg) { rfReady = true; return; }
+    rfWorker.on("message", (msg: WorkerResponse | { ready: true; role: "rf" } | { closed: true }) => {
+      if ("closed" in msg) return;
+      if ("ready" in msg) { rfReady = true; notifyReadinessWaiters(); return; }
       handleRfMessage(msg);
     });
     rfWorker.on("error", () => {
@@ -383,6 +401,7 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
       }
       rfWorker = null;
       rfReady = false;
+      notifyReadinessWaiters();
     });
     // Don't let this worker alone keep the process alive. It's still fully usable —
     // unref() only affects exit semantics, not message delivery — but without it, a
@@ -397,8 +416,9 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
 
     ifWorkers = Array.from({ length: IF_POOL_SIZE }, () => {
       const w = new Worker(workerPath, { workerData: { role: "if", modelDir } });
-      w.on("message", (msg: WorkerResponse | { ready: true; role: "if" }) => {
-        if ("ready" in msg) { readyIfWorkers.push(w); return; }
+      w.on("message", (msg: WorkerResponse | { ready: true; role: "if" } | { closed: true }) => {
+        if ("closed" in msg) return;
+        if ("ready" in msg) { readyIfWorkers.push(w); notifyReadinessWaiters(); return; }
         handleIfMessage(msg);
       });
       w.on("error", (err) => {
@@ -407,6 +427,7 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
         // never arrive, which is the same as an IF timeout (no-op — RF doesn't wait on it).
         ifWorkers = ifWorkers.filter((x) => x !== w);
         readyIfWorkers = readyIfWorkers.filter((x) => x !== w);
+        notifyReadinessWaiters();
       });
       w.unref(); // see the rfWorker.unref() comment above — same ordering requirement applies here
       return w;
@@ -457,6 +478,19 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
       if (!canaryStore) {
         try { canaryStore = new CanaryStore(options.dbPath); } catch { /* non-fatal; comparisons won't persist */ }
       }
+    });
+  }
+
+  /** Asks a worker to release its ONNX session, then terminates it once it
+   *  acknowledges. Resolves when the thread has exited. */
+  function shutdownWorker(worker: Worker): Promise<void> {
+    return new Promise((resolve) => {
+      if (worker.threadId === -1) return resolve();
+      worker.once("exit", () => resolve());
+      worker.on("message", (msg: { closed?: true }) => {
+        if (msg && msg.closed) void worker.terminate();
+      });
+      worker.postMessage({ shutdown: true });
     });
   }
 
@@ -662,28 +696,34 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
     trackForCanary();
   };
 
-  // Graceful shutdown: terminates the worker pool this call spawned. Not
+  // Graceful shutdown: releases each worker's ONNX session, then terminates the
+  // pool this call spawned. Resolves once every worker thread has exited. Not
   // needed by most consumers (workers are unref'd-equivalent from the
   // process's perspective — they don't block normal exit), but real apps
   // doing a clean SIGTERM shutdown, and tests that call logsguardian()
-  // directly and need to release the real worker_threads it spawns (rather
-  // than leaving them running until the process itself exits), need a way
+  // directly and need to release the real worker_threads it spawns, need a way
   // to reach them — nothing else exposes these closed-over references.
-  (logsguardianMiddleware as LogsguardianHandler).close = (): void => {
-    // Deliberately fire-and-forget, not awaited: onnxruntime-node's native
-    // addon has a known teardown race (the same "libc++abi ... Napi::Error"
-    // crash seen elsewhere in this project under --forceExit) that measurably
-    // triggers MORE often when terminate() is awaited (tested empirically —
-    // awaiting each worker's actual thread-exit confirmation, one at a time,
-    // gave the crash more chances to fire than just calling terminate() and
-    // moving on). Not fully understood why; not worth digging further into
-    // onnxruntime-node's native internals for a test-cleanup path.
-    rfWorker?.terminate();
-    for (const w of ifWorkers) w.terminate();
+  // Closing without releasing each worker's session first reliably aborted the
+  // process with a native "libc++abi ... Napi::Error" (exit 134) in the real
+  // middleware flow, even after every test already passed. The exact trigger is
+  // not isolated; this handshake is the verified fix for that flow.
+  (logsguardianMiddleware as LogsguardianHandler).close = async (): Promise<void> => {
+    const workers = [rfWorker, ...ifWorkers].filter((w): w is Worker => w !== null);
+    await Promise.all(workers.map(shutdownWorker));
     store?.close();
     webhookStore?.close();
     closeCanaryWorker();
   };
+
+  // Resolves once every worker has finished loading its model (or has died), i.e.
+  // once close() no longer risks hitting the mid-load native abort (see worker.ts).
+  // Known limit: no timeout and no failure path — a worker whose model fails to load
+  // never signals ready or error, so this hangs instead of rejecting.
+  (logsguardianMiddleware as LogsguardianHandler).waitUntilReady = (): Promise<void> =>
+    new Promise((resolve) => {
+      if (allWorkersReady()) return resolve();
+      readinessWaiters.push(resolve);
+    });
 
   (logsguardianMiddleware as LogsguardianHandler).spawnCanaryWorker = spawnCanaryWorker;
   (logsguardianMiddleware as LogsguardianHandler).closeCanaryWorker = closeCanaryWorker;

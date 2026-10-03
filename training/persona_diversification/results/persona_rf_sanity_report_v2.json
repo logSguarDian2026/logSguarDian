@@ -1,0 +1,125 @@
+{
+  "model": "/Users/diego/Uvg/Proyecto de Graduacion/logSguarDian/training/models/rf.onnx",
+  "results": {
+    "dashboard_200": {
+      "n": 200,
+      "pct_benign": 0.01,
+      "predicted_class_counts": {
+        "sqli": 146,
+        "path_traversal": 52,
+        "benign": 2
+      }
+    },
+    "dashboard_500": {
+      "n": 500,
+      "pct_benign": 0.006,
+      "predicted_class_counts": {
+        "sqli": 381,
+        "path_traversal": 116,
+        "benign": 3
+      }
+    },
+    "dashboard_1000": {
+      "n": 1000,
+      "pct_benign": 0.009,
+      "predicted_class_counts": {
+        "sqli": 763,
+        "path_traversal": 227,
+        "benign": 9,
+        "cmdi": 1
+      }
+    },
+    "dashboard_2000": {
+      "n": 2000,
+      "pct_benign": 0.009,
+      "predicted_class_counts": {
+        "sqli": 1519,
+        "path_traversal": 461,
+        "benign": 18,
+        "cmdi": 2
+      }
+    },
+    "api_only_200": {
+      "n": 200,
+      "pct_benign": 0.055,
+      "predicted_class_counts": {
+        "path_traversal": 60,
+        "sqli": 116,
+        "benign": 11,
+        "cmdi": 13
+      }
+    },
+    "api_only_500": {
+      "n": 500,
+      "pct_benign": 0.058,
+      "predicted_class_counts": {
+        "path_traversal": 161,
+        "sqli": 275,
+        "benign": 29,
+        "cmdi": 35
+      }
+    },
+    "api_only_1000": {
+      "n": 1000,
+      "pct_benign": 0.054,
+      "predicted_class_counts": {
+        "path_traversal": 315,
+        "sqli": 543,
+        "benign": 54,
+        "cmdi": 87,
+        "xss": 1
+      }
+    },
+    "api_only_2000": {
+      "n": 2000,
+      "pct_benign": 0.0605,
+      "predicted_class_counts": {
+        "path_traversal": 652,
+        "sqli": 1038,
+        "benign": 121,
+        "cmdi": 187,
+        "xss": 2
+      }
+    },
+    "admin_panel_200": {
+      "n": 200,
+      "pct_benign": 0.015,
+      "predicted_class_counts": {
+        "sqli": 129,
+        "path_traversal": 64,
+        "cmdi": 4,
+        "benign": 3
+      }
+    },
+    "admin_panel_500": {
+      "n": 500,
+      "pct_benign": 0.012,
+      "predicted_class_counts": {
+        "sqli": 324,
+        "path_traversal": 166,
+        "cmdi": 4,
+        "benign": 6
+      }
+    },
+    "admin_panel_1000": {
+      "n": 1000,
+      "pct_benign": 0.011,
+      "predicted_class_counts": {
+        "sqli": 673,
+        "path_traversal": 308,
+        "cmdi": 8,
+        "benign": 11
+      }
+    },
+    "admin_panel_2000": {
+      "n": 2000,
+      "pct_benign": 0.012,
+      "predicted_class_counts": {
+        "sqli": 1329,
+        "path_traversal": 627,
+        "cmdi": 20,
+        "benign": 24
+      }
+    }
+  }
+}

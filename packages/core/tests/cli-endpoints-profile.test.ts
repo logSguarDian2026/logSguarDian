@@ -4,6 +4,7 @@ import * as path from "path";
 import { runConfigInit } from "../src/cli/config-init";
 import { runEndpointsProfile } from "../src/cli/endpoints-profile";
 import { EventStore } from "../src/store";
+import { WebhookStore } from "../src/webhook-store";
 import type { DetectionEvent } from "../src/types";
 
 function withTempDir(fn: (dir: string) => void): void {
@@ -158,6 +159,26 @@ describe("endpoints profile", () => {
 
       const spy = jest.spyOn(console, "log").mockImplementation(() => {});
       runEndpointsProfile(["/api/login"]);
+      const output = spy.mock.calls.map((c) => c.join(" ")).join("\n");
+      spy.mockRestore();
+
+      expect(output).toContain("No detection events found for this route.");
+    });
+  });
+
+  test("table output: shows the dbPath-mismatch hint (not a crash) when the file exists but has no detection_events table", () => {
+    withTempDir((dir) => {
+      runConfigInit();
+      // Reproduces the real failure mode: a dbPath only ever touched by
+      // WebhookStore (e.g. `webhooks add` ran before the middleware did),
+      // which creates the file with a `webhooks` table but never
+      // `detection_events`. Previously this threw an uncaught SqliteError.
+      const webhooks = new WebhookStore(path.join(dir, "logsguardian.db"));
+      webhooks.add("https://example.com/hook");
+      webhooks.close();
+
+      const spy = jest.spyOn(console, "log").mockImplementation(() => {});
+      expect(() => runEndpointsProfile(["/api/login"])).not.toThrow();
       const output = spy.mock.calls.map((c) => c.join(" ")).join("\n");
       spy.mockRestore();
 

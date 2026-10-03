@@ -11,6 +11,7 @@ import {
   SQLI_COMMENT_COUNT,
   SQLI_OPERATOR_COUNT,
   FORM_FIELD_COUNT,
+  JSON_KV_QUOTE_COUNT,
   UNION_PRESENT_TEST,
   SELECT_PRESENT_TEST,
   XSS_MARKER_COUNT,
@@ -41,6 +42,8 @@ export function computeSqliFeatures(payload: string): Record<string, number> {
   const sqliKeywordCount = countMatches(payload, SQL_KEYWORDS_COUNT);
   const sqliOperatorCount = countMatches(payload, SQLI_OPERATOR_COUNT);
   const formFieldCount = countMatches(payload, FORM_FIELD_COUNT);
+  const quoteCount = countMatches(payload, /['"]/g);
+  const jsonKvQuoteCount = countMatches(payload, JSON_KV_QUOTE_COUNT);
 
   return {
     sqli_keyword_count: sqliKeywordCount,
@@ -51,7 +54,12 @@ export function computeSqliFeatures(payload: string): Record<string, number> {
     // sqli_operator_count without modifying that feature itself, so rows
     // that rely solely on sqli_operator_count keep their original signal.
     non_form_operator_count: Math.max(0, sqliOperatorCount - formFieldCount),
-    quote_count: countMatches(payload, /['"]/g),
+    quote_count: quoteCount,
+    // Additive only — subtracts benign JSON key/value quoting out of
+    // quote_count without modifying that feature itself, same principle as
+    // non_form_operator_count above. A quote-breakout payload's quote isn't
+    // adjacent to a JSON delimiter, so its signal survives the subtraction.
+    non_json_quote_count: Math.max(0, quoteCount - jsonKvQuoteCount),
     semicolon_count: countMatches(payload, /;/g),
     parenthesis_count: countMatches(payload, /[()]/g),
     union_present: UNION_PRESENT_TEST.test(payload) ? 1 : 0,
@@ -105,16 +113,36 @@ export function computePathTraversalFeatures(payload: string): Record<string, nu
   };
 }
 
-/** Grupo 7: marcadores de Command Injection (8 features). */
+/**
+ * Grupo 7: marcadores de Command Injection (10 features).
+ *
+ * distinct_shell_command_count / shell_to_path_ratio (9a/10a, no presentes
+ * en el notebook original) fueron anadidas para el gap de compound-command
+ * cmdi: payloads que encadenan varios comandos distintos tocando rutas
+ * sensibles (p.ej. `cat /etc/passwd && cat /etc/shadow`) empujaban la
+ * clasificacion hacia path_traversal porque las features de path dominaban
+ * sobre la senal de shell_command_count/subshell_count. shell_to_path_ratio
+ * queda alto para cmdi compuesto (comandos distintos dominan) y en 0 para
+ * path_traversal puro (sin comandos), sin modificar ninguna feature existente.
+ */
 export function computeCommandInjectionFeatures(payload: string): Record<string, number> {
+  const shellCommandMatches = payload.match(SHELL_COMMAND_COUNT) ?? [];
+  const distinctShellCommandCount = new Set(
+    shellCommandMatches.map((match) => match.toLowerCase())
+  ).size;
+  const traversalSequenceCount = countMatches(payload, TRAVERSAL_SEQUENCE_COUNT);
+  const pathSeparatorCount = countMatches(payload, PATH_SEPARATOR_COUNT);
+
   return {
     pipe_count: countMatches(payload, /\|/g),
     backtick_count: countMatches(payload, /`/g),
-    shell_command_count: countMatches(payload, SHELL_COMMAND_COUNT),
+    shell_command_count: shellCommandMatches.length,
     command_separator_count: countMatches(payload, COMMAND_SEPARATOR_COUNT),
     redirect_operator_count: countMatches(payload, REDIRECT_OPERATOR_COUNT),
     dollar_sign_count: countMatches(payload, /\$/g),
     subshell_count: countMatches(payload, SUBSHELL_COUNT),
     os_path_indicator: OS_PATH_INDICATOR_TEST.test(payload) ? 1 : 0,
+    distinct_shell_command_count: distinctShellCommandCount,
+    shell_to_path_ratio: distinctShellCommandCount / (traversalSequenceCount + pathSeparatorCount + 1),
   };
 }

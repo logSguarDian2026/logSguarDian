@@ -51,6 +51,16 @@ RussellMitchell intranet Apache logs, CAPEC multi-label payloads, etc.).
 
 `data/processed/` holds everything derived from those raw sources:
 
+> **Nota de versión (2026-09-10):** los conteos de features de esta sección (§2.1–2.2,
+> "72 features"/"1,155,302 rows") describen el pipeline original `data_manager/*.ipynb`
+> → `dataset_final.parquet` — **no confirmados contra el extractor actual (75 features,
+> rf_v11/if_v10)** y posiblemente ya no es el pipeline vigente: el CT/CI/CD pipeline
+> (`training/unify.py` + `training/ct_pipeline.py`) opera sobre columnas
+> `FEATURE_NAMES` directamente vía la CLI del extractor, un camino distinto que sí
+> refleja las 75 features actuales. No se reemplaza el número aquí por uno inventado —
+> ver `docs/STATUS.md` §2 (mismo hallazgo, sin número de reemplazo confirmado) y
+> `training/models/parity_report.json` para los conteos vigentes por modelo.
+
 - `data/processed/canonical/*.jsonl` — one JSONL file per source (9 total:
   `payloads_csv`, `payload_full`, `command_injection`, `xss_dataset`,
   `data_capec`, `modsec_learn`, `pt_wordlists`, `owasp_logs`,
@@ -94,14 +104,23 @@ RussellMitchell intranet Apache logs, CAPEC multi-label payloads, etc.).
 - `notebooks/02_baseline.ipynb` … `05_onnx_export.ipynb` — train the Random
   Forest (supervised) and Isolation Forest (unsupervised) models on
   `train.parquet`/`val.parquet`, then export both to ONNX.
-- `models/rf.onnx` (45 MB) and `models/if.onnx` (1 MB) — the trained models.
-  Both reduce the input vector from 72 to **66 features**: `status_code`
-  (unknown at request-intercept time) and the 5 Group 9 temporal features
-  are dropped before training.
+- `models/rf.onnx` and `models/if.onnx` — the trained models (currently
+  rf_v11/if_v10). Both reduce the input vector from the extractor's 75
+  features, but no longer to the same count: RF drops 6 (`status_code`,
+  unknown at request-intercept time, plus the 5 Group 9 temporal features)
+  for **69 features**; IF drops those same 6 plus 6 more (near-zero
+  variance on benign traffic) for **63 features** — see `docs/feature-spec.md`
+  for the exact lists. Vigente desde rf_v11/if_v10; ver
+  `training/models/parity_report.json` para la versión activa en cualquier
+  momento.
 - `models/parity_report.json` — F4.4 GATE result.
   `parity_passed: true`, `n_features: 66`, `target_opset: 17`,
   `rf_max_prob_diff: 9.81e-8`, `if_max_score_diff: 2.38e-7`,
-  `rf_onnx_output_index: 1`, `if_onnx_output_index: 1`. (rf_v3/if_v2 generation.)
+  `rf_onnx_output_index: 1`, `if_onnx_output_index: 1`. (rf_v3/if_v2 generation —
+  histórico. Valor actual, rf_v11/if_v10: `rf_n_features: 69`, `if_n_features: 63`,
+  `parity_passed: true`; el resto de las cifras de parity de este bullet no se
+  actualizaron para la versión vigente y deben leerse contra `parity_report.json`
+  directamente, no contra este documento.)
 - `models/if_v2_metadata.json` — Isolation Forest operating point:
   `threshold: 0.02901575`, `contamination: 0.05`, trained on benign-only data,
   `val_recall: 0.5596`, `val_fp_rate: 0.0800`.
@@ -174,7 +193,7 @@ src/
                              # to exist before running anything except `config init`)
 models/
 ├── rf.onnx, if.onnx      # Copied from training/models/ (git-ignored, synced before build/publish)
-└── model-metadata.json    # Consolidates parity_report.json (classes, ONNX output indices, thresholds)
+└── parity_report.json     # Copied from training/models/ (classes, ONNX output indices, threshold_if)
 tests/                     # Jest — middleware (worker-pool mocking, webhook dispatch, late-IF-patch
                            # behavior), store, CLI subcommands
 ```
@@ -206,8 +225,8 @@ training/splits/{train,val,test}.parquet  (RF: 67-feature vector, IF: 61-feature
    ▼  training/notebooks/02-05 (RandomForest, IsolationForest, ONNX export)
 training/models/{rf.onnx, if.onnx, parity_report.json}
    │
-   ▼  copied + consolidated into model-metadata.json
-packages/core/models/{rf.onnx, if.onnx, model-metadata.json}
+   ▼  copied by postbuild (parity_report.json supplies threshold_if)
+packages/core/models/{rf.onnx, if.onnx, parity_report.json}
 
 
 Runtime (consumer's Express app)
@@ -261,11 +280,13 @@ verdict (block / pass / pass_anomaly / timeout) -> SQLite event log + optional w
   are excluded from the vector actually passed to either ONNX model (see
   next item), so it does not affect runtime behavior, but it is a real
   property of the training data worth knowing about.
-- **73 vs 67/61 features (implemented)**: `packages/core/src/worker.ts`
-  extracts the full 73-dim vector, then slices it by feature name to 67
-  inputs for `rf.onnx` and 61 for `if.onnx` (RF's 67 minus 6 further
+- **75 vs 69/63 features (implemented; vigente desde rf_v11/if_v10 — ver
+  `training/models/parity_report.json` para la versión activa en cualquier
+  momento)**: `packages/core/src/worker.ts`
+  extracts the full 75-dim vector, then slices it by feature name to 69
+  inputs for `rf.onnx` and 63 for `if.onnx` (RF's 69 minus 6 further
   features confirmed to have zero/near-zero variance on benign traffic,
-  dropped only for IF — see `docs/decision-policy.md` §4 and
+  dropped only for IF — see `docs/feature-spec.md` and
   `docs/limitations.md`).
 - **`training/parsers/`** appears to be superseded by
   `data_manager/02_feature_engineering.ipynb` and is not referenced by any

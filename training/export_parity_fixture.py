@@ -7,16 +7,18 @@ produces the same numbers as onnxruntime (Python) on identical inputs.
 The Python sklearn->Python onnxruntime parity was already verified in
 05_onnx_export.ipynb.
 
-v8: RF and IF no longer share one input vector (see worker.ts) — RF takes
-67 features, IF takes 61 (RF's 67 minus 6 further features dropped for
-IsolationForest variance stabilization). Each model gets its own
-independently-sized synthetic input array.
+RF and IF do not share one input vector (see worker.ts): IF takes fewer
+features than RF (features dropped for IsolationForest variance
+stabilization). Each model gets its own independently-sized synthetic input
+array. The feature counts are not hardcoded here: they are read at runtime
+from rf_n_features / if_n_features in training/models/parity_report.json, so
+they follow whichever model version is currently promoted.
 
 Outputs:
   packages/core/tests/fixtures/parity_fixture.json
   {
-    "rf_inputs":    [[...67 float32s...], ...100 rows],
-    "if_inputs":    [[...61 float32s...], ...100 rows],
+    "rf_inputs":    [[...rf_n_features float32s...], ...100 rows],
+    "if_inputs":    [[...if_n_features float32s...], ...100 rows],
     "rf_expected":  [[5 probs],           ...100 rows],
     "if_expected":  [score,               ...100 values]
   }

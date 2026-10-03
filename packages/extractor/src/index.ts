@@ -1,11 +1,12 @@
 /**
- * Extractor canonico de 73 features para deteccion de SQLi, XSS,
+ * Extractor canonico de 76 features para deteccion de SQLi, XSS,
  * Path Traversal y Command Injection.
  *
  * Puerto fiel de extract_features() en
  * data_manager/02_feature_engineering.ipynb (celdas cd_01/cd_03/cd_04),
- * mas non_form_operator_count (73a feature, no presente en el notebook
- * original — ver packages/extractor/src/semantic.ts).
+ * mas non_form_operator_count, distinct_shell_command_count,
+ * shell_to_path_ratio y non_json_quote_count (4 features adicionales, no
+ * presentes en el notebook original — ver packages/extractor/src/semantic.ts).
  * Este es el UNICO lugar donde se calculan las features (R1 del plan
  * de ejecucion): tanto los datasets de entrenamiento (via CLI) como el
  * middleware Express en runtime deben usar esta implementacion.
@@ -24,7 +25,7 @@ import { scoreAttackSignalWithDecoding } from "./attack-signal-score";
 
 export * from "./types";
 
-/** Orden canonico de las 73 columnas (72 de FEATURE_COLS de cd_01 + non_form_operator_count). */
+/** Orden canonico de las 76 columnas (72 de FEATURE_COLS de cd_01 + non_form_operator_count, distinct_shell_command_count, shell_to_path_ratio, non_json_quote_count). */
 export const FEATURE_NAMES: readonly string[] = [
   // Grupo 1: longitudes (10)
   "payload_length", "payload_entropy", "uri_length", "path_length",
@@ -37,10 +38,11 @@ export const FEATURE_NAMES: readonly string[] = [
   // Grupo 3: encoding (7)
   "url_encoded_ratio", "encoded_char_freq", "double_encoded_count",
   "hex_escape_count", "unicode_escape_count", "html_entity_count", "base64_like_count",
-  // Grupo 4: SQLi (10)
+  // Grupo 4: SQLi (11)
   "sqli_keyword_count", "sqli_keyword_density", "sqli_comment_count",
   "sqli_operator_count", "non_form_operator_count", "quote_count",
-  "semicolon_count", "parenthesis_count", "union_present", "select_present",
+  "non_json_quote_count", "semicolon_count", "parenthesis_count",
+  "union_present", "select_present",
   // Grupo 5: XSS (9)
   "xss_marker_count", "xss_marker_density", "html_tag_count",
   "script_tag_present", "js_event_handler_count", "javascript_url_count",
@@ -49,10 +51,11 @@ export const FEATURE_NAMES: readonly string[] = [
   "traversal_sequence_count", "path_separator_count", "absolute_path_indicator",
   "sensitive_file_target", "sensitive_extension_count", "file_extension_suspicious",
   "dotdot_encoded_count",
-  // Grupo 7: Command Injection (8)
+  // Grupo 7: Command Injection (10)
   "pipe_count", "backtick_count", "shell_command_count",
   "command_separator_count", "redirect_operator_count",
   "dollar_sign_count", "subshell_count", "os_path_indicator",
+  "distinct_shell_command_count", "shell_to_path_ratio",
   // Grupo 8: HTTP request (9)
   "method_is_get", "method_is_post", "ua_present", "ua_length",
   "ua_suspicious", "content_type_encoded", "authorization_length",
@@ -62,8 +65,8 @@ export const FEATURE_NAMES: readonly string[] = [
   "error_rate_4xx_60s", "endpoint_diversity_60s",
 ];
 
-if (FEATURE_NAMES.length !== 73) {
-  throw new Error(`FEATURE_NAMES debe tener 73 elementos, tiene ${FEATURE_NAMES.length}`);
+if (FEATURE_NAMES.length !== 76) {
+  throw new Error(`FEATURE_NAMES debe tener 76 elementos, tiene ${FEATURE_NAMES.length}`);
 }
 
 /** Grupo 9: features temporales, requieren estado de sesion no disponible aqui. */
@@ -125,7 +128,7 @@ export function deriveRawPayload(req: CanonicalRequest): string {
 }
 
 /**
- * Extrae las 73 features de una peticion HTTP canonica.
+ * Extrae las 76 features de una peticion HTTP canonica.
  * Acepta un CanonicalRequest parcial; los campos ausentes se normalizan
  * a sus valores por defecto.
  */

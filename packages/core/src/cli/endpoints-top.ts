@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import Database from "better-sqlite3";
-import { requireConfig, parseFormat, dbPathMismatchHint } from "./guard";
+import { requireConfig, parseFormat, dbPathMismatchHint, tableExists } from "./guard";
 import type { MiddlewareOptions } from "../types";
 
 const DEFAULT_LIMIT = 10;
@@ -42,27 +42,38 @@ export function runEndpointsTop(args: string[]): void {
   }
 
   const db = new Database(dbPath, { readonly: true });
-  const rows = db
-    .prepare(
-      `
-      SELECT
-        path,
-        method,
-        COUNT(*) AS incident_count,
-        AVG(confidence) AS avg_confidence
-      FROM detection_events
-      WHERE verdict IN ('block', 'pass_anomaly')
-      GROUP BY path, method
-      ORDER BY incident_count DESC
-      LIMIT @limit
-      `
-    )
-    .all({ limit }) as Array<{
-      path: string;
-      method: string;
-      incident_count: number;
-      avg_confidence: number;
-    }>;
+  // The file can exist without this table — e.g. one only ever touched by
+  // WebhookStore for a mismatched dbPath (see guard.ts's tableExists doc).
+  // Treated as zero rows rather than letting the SELECT throw uncaught, so
+  // it falls into the same dbPathMismatchHint messaging below.
+  const rows: Array<{
+    path: string;
+    method: string;
+    incident_count: number;
+    avg_confidence: number;
+  }> = tableExists(db, "detection_events")
+    ? (db
+        .prepare(
+          `
+          SELECT
+            path,
+            method,
+            COUNT(*) AS incident_count,
+            AVG(confidence) AS avg_confidence
+          FROM detection_events
+          WHERE verdict IN ('block', 'pass_anomaly')
+          GROUP BY path, method
+          ORDER BY incident_count DESC
+          LIMIT @limit
+          `
+        )
+        .all({ limit }) as Array<{
+          path: string;
+          method: string;
+          incident_count: number;
+          avg_confidence: number;
+        }>)
+    : [];
   db.close();
 
   const ranked: EndpointRow[] = rows.map((r) => ({

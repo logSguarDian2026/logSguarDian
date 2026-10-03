@@ -581,6 +581,42 @@ this deployment profile, not as a substitute pass/fail verdict — the
 relative criterion is what PLAN.md specifies, and F6.5's gate requires
 reporting the measured value against it regardless.
 
+### Verdict (decision of 2026-09-19, option A: evaluate in absolute form) — SUPERSEDED 2026-09-26
+
+> **This decision was reversed on 2026-09-26** after the advisor rejected
+> evaluating the criterion in absolute form as a post-hoc metric change made
+> after seeing the result. The relative form is now reported as primary (the
+> form the protocol actually specifies), with the absolute form kept only as
+> complementary analysis — not as the pass/fail basis. See
+> `docs/cybersecurity-objectives-compliance.md` §OE3.2 for the current
+> verdict. Separately, the four measurements below (Docker Desktop/macOS,
+> PR #53 variants) are themselves superseded by a later Linux-native
+> benchmark (GitHub Actions `ubuntu-latest`, 2026-09-26, 5 runs/scenario):
+> normal +485.1%, attack +278.1%, volume +10,174.6% relative Δp95 — all
+> markedly worse than the Docker Desktop numbers here, which **understated**
+> the problem. This section is kept for the mechanism-isolation findings
+> (connection-pool contention, write-queue vs. SQLite I/O breakdown), not for
+> its cited percentages or its verdict.
+
+The criterion is evaluated in its absolute form, `Δp95 ≤ 5 ms` (PLAN.md F6.2),
+because the relative form is structurally unpassable against a ~4-5ms baseline
+(see above).
+
+| Environment | Absolute Δp95 | Verdict (≤ 5 ms) |
+|---|---|---|
+| Docker + Postgres reference app (shipped design) | ~7-9ms | **NOT MET** (exceeds by ~2-4ms) |
+| Bare Express, no Docker (§A24, async log-patch) | ~0.18ms (p95 0.119 → 0.300ms) | Met |
+
+**Official verdict: NOT MET in the reference environment, by a small absolute
+margin.** The relative form written in the protocol (≤ 5% / ≤ 10%) is also not
+met (+142% to +178% for the shipped variant) and is reported as not met for the
+mathematical reason above. Reinterpreting the metric does not turn the result
+into a pass; it changes what the result is reported against. Because the
+approved protocol states the relative form, this change of metric must be
+communicated to the advisor and declared in the final report as a justified
+deviation. The 7-9ms figure is a latency measurement only; CPU and throughput
+impact were not measured.
+
 ---
 
 ## F1.8 — Extractor Benchmark (CLOSED)

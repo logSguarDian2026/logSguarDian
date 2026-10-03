@@ -1,0 +1,18 @@
+
+UA: curl/8.7.1
+A) sweep path_length(+uri_length) only on juice vector, q=apple, depth fixed 3
+10:0.18  12:0.17  14:0.30  16:0.37  18:0.43  20:0.47  22:0.40  24:0.43  26:0.40  28:0.33  30:0.30
+B) real paths, 2 segments (/aaa/bbb...), q=apple
+10:0.18  12:0.17  14:0.30  16:0.37  18:0.43  20:0.47  22:0.40  24:0.43  26:0.43  28:0.40  30:0.33
+C) real paths, 3 segments
+10:0.18  12:0.17  14:0.30  16:0.37  18:0.43  20:0.47  22:0.40  24:0.43  26:0.40  28:0.33  30:0.30
+D) control: Juice path, no "=" (q-less)  sqli prob 0.13
+
+UA: Mozilla/5.0 
+A) sweep path_length(+uri_length) only on juice vector, q=apple, depth fixed 3
+10:0.61  12:0.57  14:0.47  16:0.54  18:0.57  20:0.57  22:0.51  24:0.47  26:0.40  28:0.40  30:0.34
+B) real paths, 2 segments (/aaa/bbb...), q=apple
+10:0.59  12:0.55  14:0.45  16:0.52  18:0.55  20:0.55  22:0.49  24:0.42  26:0.38  28:0.38  30:0.32
+C) real paths, 3 segments
+10:0.61  12:0.57  14:0.47  16:0.54  18:0.57  20:0.57  22:0.51  24:0.47  26:0.40  28:0.40  30:0.34
+D) control: Juice path, no "=" (q-less)  sqli prob 0.10
