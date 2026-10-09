@@ -39,7 +39,19 @@ signals not available at request interception time. Same 6 names still excluded 
 
 ---
 
-## 2. Final Model Performance (Test Set — R2 one-time read)
+## 2. Final Model Performance (Test Set — R2 one-time read; see Addendum 2026-10-09)
+
+> **Addendum (2026-10-09):** the rf_v11 test set was read three times, not once:
+> 2026-09-24 (commit `3086318`, `rf.onnx` `a7c015f5…`, IF threshold `0.00806713`, macro F1 0.9843);
+> 2026-09-25 (commit `fc47a5b`, `rf_current_split.onnx` `a4dddbb7…`, IF threshold `0.00420594`, macro F1 0.97763);
+> 2026-09-26 (commit `03de50f`, `rf.onnx` `25b407e6…`, IF threshold `0.00420594`, macro F1 0.97763).
+> The IF threshold changed from 0.00807 to 0.00421 between the first and the last read.
+>
+> **Addendum part 2 (2026-10-09):**
+> - (a) The 2026-09-24 read already used the test set re-locked on 2026-09-23 (`6d1fa68`, lock `7486c258…`, 57,481 rows). Source: `3086318:training/results/v11_test_results.json` (`lock_hash`, `n_test_rows`).
+> - (b) The v11 model committed in `734c24f` (2026-08-30) was trained before that re-lock, when the lock was `a3140ab3…` (`8cbe6c9`). The repository keeps no hashes or row counts for the training partition used by `734c24f`, so overlap between that training partition and the current test set cannot be ruled out from the repository.
+> - (c) The models read on 2026-09-25 (`fc47a5b`) and 2026-09-26 (`03de50f`) were retrained on the current partition. Evidence: the `03de50f` commit message says "Fresh retrain of rf_v11/if_v10 against the current, correctly re-locked split"; the `training/baselines/train_rf_if_current_split.py` docstring (added in `fc47a5b`) says it retrains "on the CURRENT train/val split". The `fc47a5b` commit message itself does not state this.
+> The "read exactly once" statement below is superseded by this addendum.
 
 > **R2 constraint:** These are the official thesis metrics. The (re-locked) test set
 > was read exactly once for this model generation. No retraining or retuning was
@@ -182,6 +194,8 @@ criterion is documented as a known, accepted, operationally-bounded failure
 
 #### 2.3.1 Recalibration to `IF_THRESHOLD = 0.02901575` (P2, CLOSED)
 
+> **Clarification (2026-10-09):** the threshold was selected on validation, but the calibration target was changed after a test failure had been observed. The first if_v2 threshold gave test FP 0.1011 (FAIL, see §2.3), and the recalibration target (FP ≤ 0.08) was set after that observation. The original text below is unchanged. The FP ≤ 0.06 criterion in `training/retrain_v11_contract69.py` (lines 96–109) belongs to the v11 retrain and is not the if_v2 record.
+
 Following the same path suggested above ("reopen PLAN.md task 3.5, recalibrate
 on val with a stricter target"), the threshold was recalibrated on val with
 target FP ≤ 0.08 (leaving headroom under the 0.10 gate for val→test drift).
@@ -235,6 +249,10 @@ anomaly-log coverage, not increased false blocking.
 
 #### 2.3.2 Recalibration to `IF_THRESHOLD = 0.00940951` (if_v5, CLOSED)
 
+> **Clarification (2026-10-09):** the threshold was selected on validation, but the calibration target was changed after a test failure had been observed. The if_v5 threshold 0.02868 gave test recall 0.7650 and FP 0.0811 (FAIL against FP ≤ 0.08). Only after that did the calibration target become FP ≤ 0.06, and 0.00940951 was selected on validation with that target. The original text below is unchanged. The same FP ≤ 0.06 criterion appears in `training/retrain_v11_contract69.py` (lines 96–109) for the v11 retrain.
+>
+> **Addendum (2026-10-09, part 3):** the word "gate" in "over the 0.08 gate by 0.0011" above refers to an internal calibration target, not a formal gate. The formal acceptance gate for the Isolation Forest false-positive rate is 10% (thesis objective OE2, `tesis/g-objetivos.tex`; the "0.10 gate" in §2.3.1). The 0.08 and 0.06 values are internal calibration targets set on validation. The measured 0.0811 was therefore above the internal 0.08 target and below the formal 10% limit.
+
 `if_v5` (retrained alongside `rf_v6` for the per-field body analysis fix,
 §4.x) was initially calibrated at threshold=0.02868 (val recall=0.7605,
 val FP=0.0784 — inside the FP≤0.08 target). Test-set confirmation failed:
@@ -271,6 +289,8 @@ trading recall (0.7744→0.6531, −12pp) for real margin against drift.
 
 Val→test drift on FP this time: −0.0003 (essentially none). No adjustment
 made after this read.
+
+> **Addendum (2026-10-09, part 4):** git history verifies two test-set reads for the if_v5 threshold decision: `877f129` (2026-07-24 22:21, initial confirmation at threshold 0.02868: recall 0.7650, FP 0.0811) and `7ad69e1` (2026-07-24 22:33, read after recalibration to 0.00940951: recall 0.6576, FP 0.0596). Both are documented only in commit messages and in this document, with no results JSON in the repository. The "third read" wording below is not supported at commit level: `173477d` repeats the figures of `7ad69e1` without a new evaluation. The original text is kept unchanged.
 
 **R2 note — this is a third test-set read for the if_v5 threshold decision**
 (first: the failing 0.02868 confirmation; second: this recalibration's
@@ -546,5 +566,5 @@ This allows dark-launch validation before switching to `'block'`.
 |----|------|--------|-----------------------|
 | P1 | RF_THRESHOLD — final value | **Seleccionado en validación; confirmación en test no verificable** | `0.35`, seleccionado con barrido en validación (meseta 0.10–0.30; 0.35 como borde conservador, §2.2.1). La confirmación en test de rf_v3 se afirma en `e74a8c6` (2026-07-23), cuyo lock (`df62619`) es anterior, pero el artefacto de esa lectura no está en el repositorio. Para rf_v11 el umbral no se recalibró; sus métricas de test se calculan por argmax. Superado por umbrales por clase, ver P4. |
 | P4 | Per-class RF thresholds (replaces global RF_THRESHOLD) | **CLOSED — §2.2.3** | `sqli: 0.45`, `xss/path_traversal/cmdi: 0.35` (unchanged from legacy). No retraining (rf_v7 unchanged). A full val-sweep (0.20–0.70) regressed E2E cmdi detection 96%→74-80% via cross-class spillover with no FP benefit; final decision moves only `sqli` off baseline, just above the `legit_post` residual FP (0.4005, §2.2.2). E2E: sqli 100%, xss 98%, path_traversal 99%, cmdi 95%, benign FP 2% — parity with baseline, `legit_post` now passes. |
-| P2 | IF recall and FP rate on test set | **CLOSED — recalibrated for if_v2 (§2.3.1), then again for if_v5 (§2.3.2)** | if_v2: threshold=0.02901575, test recall=0.5609, FP=0.0828, both PASS. if_v5 (retrained alongside rf_v6): initial threshold=0.02868 (val FP≤0.08 target) confirmed FAIL on test (FP=0.0811 > 0.08) — a real val→test drift caused by rf_v6's per-field body analysis reducing payload_length signal for multi-field attacks. Recalibrated on val with a stricter FP≤0.06 target to threshold=0.00940951; test-set confirmation: recall=0.6576 PASS, FP=0.0596 PASS, both simultaneously PASS, no further drift. Tradeoff: recall −0.209 vs if_v4 (0.8667→0.6576), accepted given IF holds no blocking authority. See §2.3.2 for the full sweep and the R2 triple-read note. |
+| P2 | IF recall and FP rate on test set | **CLOSED — recalibrated for if_v2 (§2.3.1), then again for if_v5 (§2.3.2)** | if_v2: threshold=0.02901575, test recall=0.5609, FP=0.0828, both PASS. if_v5 (retrained alongside rf_v6): initial threshold=0.02868 (val FP≤0.08 target) confirmed FAIL on test (FP=0.0811 > 0.08) — a real val→test drift caused by rf_v6's per-field body analysis reducing payload_length signal for multi-field attacks. Recalibrated on val with a stricter FP≤0.06 target to threshold=0.00940951; test-set confirmation: recall=0.6576 PASS, FP=0.0596 PASS, both simultaneously PASS, no further drift. Tradeoff: recall −0.209 vs if_v4 (0.8667→0.6576), accepted given IF holds no blocking authority. See §2.3.2 for the full sweep and the R2 triple-read note. Addendum (2026-10-09): git history verifies two test-set reads for the if_v5 threshold decision, `877f129` (initial confirmation, FP 0.0811) and `7ad69e1` (read after recalibration, FP 0.0596), documented only in commit messages and docs, with no results JSON. The "triple-read" wording is not supported at commit level, because `173477d` repeats the figures of `7ad69e1` without a new evaluation. |
 | P3 | Fail-open timeout — empirical p99 | **OPEN** | Provisional `50 ms`. Requires F6 Artillery benchmark (PLAN.md task 6.2). No per-inference latency data exists yet. |
