@@ -20,7 +20,7 @@ root-cause analysis that motivated this retrain. The full pipeline (unify → ex
 > de la generación rf_v3/if_v2 (cerrado 2026-06-20, ver encabezado de este documento) —
 > ambos modelos usaban 66 de las 72 features del extractor de esa época, el mismo
 > recorte para RF e IF. **No refleja el modelo actualmente en producción.** El modelo
-> vigente es rf_v11/if_v10: 69 features (RF) / 63 features (IF), de 75 totales — RF e IF
+> vigente es rf_v11/if_v10: 69 features (RF) / 63 features (IF), de 76 totales — RF e IF
 > ya no comparten el mismo recorte. Fuente viva en cualquier momento:
 > [`training/models/parity_report.json`](../training/models/parity_report.json)
 > (`rf_n_features`, `if_n_features`) y `docs/feature-spec.md`.
