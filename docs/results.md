@@ -796,9 +796,7 @@ gate; not investigated further.)
   was necessary but not sufficient; see `docs/limitations.md` §7 for the
   full account of why (confidence calibration shift, not a decode failure).
 
-**Open item carried forward:** `RF_THRESHOLD=0.35` was calibrated on val only.
-A one-time R2 confirmation read of the test set at this threshold is still
-pending — tracked in `docs/decision-policy.md` §6 (P1).
+**Open item carried forward:** `RF_THRESHOLD=0.35` se seleccionó con un barrido sobre validación. La confirmación en test de rf_v3 se afirma en `e74a8c6`, pero el artefacto no está en el repositorio: no verificable. Para rf_v11 el umbral no se recalibró (ver `docs/decision-policy.md` §6, P1).
 
 ---
 
