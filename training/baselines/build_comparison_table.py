@@ -54,7 +54,7 @@ rows = [
     ),
 ]
 
-print("| Modelo | Tipo | F1/Recall (test, R2 one-time read) | Latencia inferencia (p95) | Tamano modelo serializado |")
+print("| Modelo | Tipo | F1/Recall (test, R2 read; see addendum in docs/model-comparison.md) | Latencia inferencia (p95) | Tamano modelo serializado |")
 print("|--------|------|-------------------------------------|----------------------------|----------------------------|")
 for r in rows:
     print("| " + " | ".join(r) + " |")

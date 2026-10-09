@@ -39,7 +39,14 @@ signals not available at request interception time. Same 6 names still excluded 
 
 ---
 
-## 2. Final Model Performance (Test Set — R2 one-time read)
+## 2. Final Model Performance (Test Set — R2 one-time read; see Addendum 2026-10-09)
+
+> **Addendum (2026-10-09):** the rf_v11 test set was read three times, not once:
+> 2026-09-24 (commit `3086318`, `rf.onnx` `a7c015f5…`, IF threshold `0.00806713`, macro F1 0.9843);
+> 2026-09-25 (commit `fc47a5b`, `rf_current_split.onnx` `a4dddbb7…`, IF threshold `0.00420594`, macro F1 0.97763);
+> 2026-09-26 (commit `03de50f`, `rf.onnx` `25b407e6…`, IF threshold `0.00420594`, macro F1 0.97763).
+> The IF threshold changed from 0.00807 to 0.00421 between the first and the last read.
+> The "read exactly once" statement below is superseded by this addendum.
 
 > **R2 constraint:** These are the official thesis metrics. The (re-locked) test set
 > was read exactly once for this model generation. No retraining or retuning was

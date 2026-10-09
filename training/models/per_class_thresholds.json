@@ -1,4 +1,5 @@
 {
+  "_status": "HISTORICAL (2026-10-09): not loaded by any code in this repo. Production uses the global RF_THRESHOLD = 0.35 in packages/core/src/middleware.ts. Kept for provenance only.",
   "sqli": 0.45,
   "xss": 0.35,
   "path_traversal": 0.35,

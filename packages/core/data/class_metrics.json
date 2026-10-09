@@ -3,7 +3,7 @@
   "n_estimators": 30,
   "max_depth": 25,
   "eval_set": "test",
-  "eval_note": "R2 one-time read of the locked test set (7486c258692a3cc6...), evaluated on 2026-09-26 against rf.onnx (rf_v11), the model actually published in npm. Supersedes the rf_v3 figures previously frozen here since 2026-06 (see git history) and cited in docs/decision-policy.md sec 2.1 -- those numbers were for a model two generations behind the one shipped. Test set read exactly once for this evaluation; no retraining after observing these numbers.",
+  "eval_note": "R2 one-time read of the locked test set (7486c258692a3cc6...), evaluated on 2026-09-26 against rf.onnx (rf_v11), the model actually published in npm. Supersedes the rf_v3 figures previously frozen here since 2026-06 (see git history) and cited in docs/decision-policy.md sec 2.1 -- those numbers were for a model two generations behind the one shipped. Test set read exactly once for this evaluation; no retraining after observing these numbers. ADDENDUM 2026-10-09: this was not the only read. test.parquet was read three times for the rf_v11 generation (2026-09-24 commit 3086318; 2026-09-25 commit fc47a5b; 2026-09-26 commit 03de50f), with IF threshold 0.00807 in the first read and 0.00421 in the later ones.",
   "classes": {
     "benign": {
       "f1": 0.9984,

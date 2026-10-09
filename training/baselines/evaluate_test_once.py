@@ -15,6 +15,11 @@ model generation its own test-set confirmation, in a single read covering
 all four models, per the instruction not to spend a second, separate read
 on RF/IF alone.
 
+Addendum (2026-10-09): this claim is incorrect. The rf_v11 test set had already
+been read on 2026-09-24 (commit 3086318) and on 2026-09-26 (commit 03de50f), so
+this script was the second read of the rf_v11 generation, not the first. Its
+RF and IF numbers are for rf_current_split.onnx and the IF threshold 0.00421.
+
 Do not re-run this script casually. Re-running it against the same
 test.parquet is itself a second read of the locked partition and should be
 treated with the same care as any other R2 violation.
