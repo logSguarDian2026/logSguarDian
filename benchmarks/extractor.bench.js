@@ -113,30 +113,46 @@ const FIXTURES = [
 const WARMUP_ITERS = 200;
 const BENCH_ITERS = 2000;
 const NS_PER_MS = 1_000_000;
+const NS_PER_SECOND = 1_000_000_000;
 const MS_DECIMALS = 3;
 
 function round(value, decimals = MS_DECIMALS) {
   return Number(value.toFixed(decimals));
 }
 
-function elapsedMs(startNs) {
-  return Number(process.hrtime.bigint() - startNs) / NS_PER_MS;
+function nsToMs(ns) {
+  return round(ns / NS_PER_MS);
+}
+
+function elapsedNs(startNs) {
+  return Number(process.hrtime.bigint() - startNs);
 }
 
 function percentile(sortedTimes, p) {
   return sortedTimes[Math.floor(sortedTimes.length * p)];
 }
 
-function summarize(timesMs) {
-  const sorted = [...timesMs].sort((a, b) => a - b);
-  const mean = sorted.reduce((sum, t) => sum + t, 0) / sorted.length;
+function summarize(timesNs) {
+  const sorted = [...timesNs].sort((a, b) => a - b);
+  const meanNs = sorted.reduce((sum, t) => sum + t, 0) / sorted.length;
+  const p50 = percentile(sorted, 0.5);
+  const p95 = percentile(sorted, 0.95);
+  const p99 = percentile(sorted, 0.99);
+  const max = sorted[sorted.length - 1];
   return {
-    p50: round(percentile(sorted, 0.5)),
-    p95: round(percentile(sorted, 0.95)),
-    p99: round(percentile(sorted, 0.99)),
-    mean: round(mean),
-    max: round(sorted[sorted.length - 1]),
-    throughput: Math.round(1000 / mean),
+    p50: nsToMs(p50),
+    p95: nsToMs(p95),
+    p99: nsToMs(p99),
+    mean: nsToMs(meanNs),
+    max: nsToMs(max),
+    throughput: Math.round(NS_PER_SECOND / meanNs),
+    ns: {
+      p50: p50,
+      p95: p95,
+      p99: p99,
+      mean: Math.round(meanNs),
+      max: max,
+    },
   };
 }
 
@@ -156,7 +172,7 @@ function measureDirect(req, iters) {
   for (let i = 0; i < iters; i++) {
     const t0 = process.hrtime.bigint();
     extractFeatureVector(req);
-    times[i] = elapsedMs(t0);
+    times[i] = elapsedNs(t0);
   }
   return times;
 }
@@ -173,7 +189,7 @@ async function measureRoundTrip(worker, req, iters) {
   for (let i = 0; i < iters; i++) {
     const t0 = process.hrtime.bigint();
     await workerRoundTrip(worker, req);
-    times[i] = elapsedMs(t0);
+    times[i] = elapsedNs(t0);
   }
   return times;
 }
@@ -238,7 +254,7 @@ async function main() {
   printSeries("SERIES A — direct, extractFeatureVector() on the main thread", direct);
   printSeries("SERIES B — worker_roundtrip (postMessage -> extractor in worker -> response), NOT extraction cost", roundTrip);
 
-  const gate = direct.mixed.p95 <= GATE_P95_MS ? "PASS ✓" : "FAIL ✗";
+  const gate = direct.mixed.ns.p95 <= GATE_P95_MS * NS_PER_MS ? "PASS ✓" : "FAIL ✗";
   console.log(`\nGATE (series A, mixed p95 <= ${GATE_P95_MS} ms): ${gate}  — ${PLAN_CRITERION_LABEL}`);
 
   const file = writeResults({
