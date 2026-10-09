@@ -442,6 +442,8 @@ the raw sweep table above.
 
 ### 3.1 Decision Table (historical — see note above for current values)
 
+> **Aviso: tabla histórica.** Los valores de esta tabla (`RF_THRESHOLDS` por clase e `IF_THRESHOLD = 0.0445`) están superados. La política vigente es la de §3.2; los umbrales y la tabla de decisión actuales están en [docs/api.md](api.md).
+
 ```
 GIVEN  request: CanonicalRequest
        rf_probs: float[5]        // predict_proba output, indexed by rf_classes
@@ -500,7 +502,7 @@ documented here as the authoritative design record.
 
 **Current, as shipped (`middleware.ts`):** `RF_THRESHOLD = 0.35` (single global
 constant, not per-class — the per-class map below was removed, see the note
-at the top of §3), `IF_THRESHOLD = 0.002486040118540811` (if_v9). The table
+at the top of §3), `IF_THRESHOLD = 0.004205941820353609` (if_v10, `training/models/if_v10_metadata.json`). The table
 below is the snapshot as of rf_v7/if_v5 and is kept for provenance of *how*
 each round of recalibration was reasoned about — it is not the current
 runtime value. §2.2/§2.3 has the complete round-by-round history through the

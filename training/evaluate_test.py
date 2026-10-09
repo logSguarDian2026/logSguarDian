@@ -51,7 +51,7 @@ Design decisions (see .claude-plan.md "Fase 3" for the full rationale):
      precedent for it anywhere in this repo (zero prior occurrences of
      roc_auc_score).
 
-  5. The IF threshold (0.00806713286301003, from
+  5. The IF threshold (0.004205941820353609, from
      training/models/if_v10_metadata.json) is used as-is. It is NEVER
      recalibrated against test — doing so would violate the R2
      one-time-read discipline the whole point of this script is to

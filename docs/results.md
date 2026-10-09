@@ -276,7 +276,7 @@ Implementation: `packages/core/src/worker.ts` (merged PR #18)
 |-------------|----------------|--------|
 | Load rf.onnx + if.onnx at startup | `Promise.all([ort.InferenceSession.create(rf.onnx), ort.InferenceSession.create(if.onnx)])` | ✓ |
 | Inference latency < 3ms p95 | p50=0.823ms, p95=1.044ms, p99=1.130ms | PASS |
-| Decision policy per decision-policy.md | `RF_THRESHOLD=0.35`, `IF_THRESHOLD=0.02901575` (if_v2) applied in `middleware.ts` (IF log-only, not in worker.ts) | ✓ |
+| Decision policy per decision-policy.md | `RF_THRESHOLD=0.35`, `IF_THRESHOLD=0.02901575` (histórico, if_v2; vigente: `0.004205941820353609`, if_v10) applied in `middleware.ts` (IF log-only, not in worker.ts) | ✓ |
 | Fail-open on session load failure | `try/catch` around `await sessionsPromise` in the per-request handler replies `{id, error}` instead of crashing; `middleware.ts` also has `worker.on("error")` as a second fail-open layer | ✓ |
 | Feature reduction 72→66 | By name via `EXCLUDED_NAMES` set, mapped to `MODEL_INDICES` against `FEATURE_NAMES` | ✓ |
 | Parallel RF+IF inference | `Promise.all([rfSession.run(...), ifSession.run(...)])` | ✓ |
