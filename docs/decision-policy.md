@@ -46,6 +46,11 @@ signals not available at request interception time. Same 6 names still excluded 
 > 2026-09-25 (commit `fc47a5b`, `rf_current_split.onnx` `a4dddbb7…`, IF threshold `0.00420594`, macro F1 0.97763);
 > 2026-09-26 (commit `03de50f`, `rf.onnx` `25b407e6…`, IF threshold `0.00420594`, macro F1 0.97763).
 > The IF threshold changed from 0.00807 to 0.00421 between the first and the last read.
+>
+> **Addendum part 2 (2026-10-09):**
+> - (a) The 2026-09-24 read already used the test set re-locked on 2026-09-23 (`6d1fa68`, lock `7486c258…`, 57,481 rows). Source: `3086318:training/results/v11_test_results.json` (`lock_hash`, `n_test_rows`).
+> - (b) The v11 model committed in `734c24f` (2026-08-30) was trained before that re-lock, when the lock was `a3140ab3…` (`8cbe6c9`). The repository keeps no hashes or row counts for the training partition used by `734c24f`, so overlap between that training partition and the current test set cannot be ruled out from the repository.
+> - (c) The models read on 2026-09-25 (`fc47a5b`) and 2026-09-26 (`03de50f`) were retrained on the current partition. Evidence: the `03de50f` commit message says "Fresh retrain of rf_v11/if_v10 against the current, correctly re-locked split"; the `training/baselines/train_rf_if_current_split.py` docstring (added in `fc47a5b`) says it retrains "on the CURRENT train/val split". The `fc47a5b` commit message itself does not state this.
 > The "read exactly once" statement below is superseded by this addendum.
 
 > **R2 constraint:** These are the official thesis metrics. The (re-locked) test set
@@ -189,6 +194,8 @@ criterion is documented as a known, accepted, operationally-bounded failure
 
 #### 2.3.1 Recalibration to `IF_THRESHOLD = 0.02901575` (P2, CLOSED)
 
+> **Clarification (2026-10-09):** the threshold was selected on validation, but the calibration target was changed after a test failure had been observed. The first if_v2 threshold gave test FP 0.1011 (FAIL, see §2.3), and the recalibration target (FP ≤ 0.08) was set after that observation. The original text below is unchanged. The FP ≤ 0.06 criterion in `training/retrain_v11_contract69.py` (lines 96–109) belongs to the v11 retrain and is not the if_v2 record.
+
 Following the same path suggested above ("reopen PLAN.md task 3.5, recalibrate
 on val with a stricter target"), the threshold was recalibrated on val with
 target FP ≤ 0.08 (leaving headroom under the 0.10 gate for val→test drift).
@@ -241,6 +248,8 @@ authority (Section 3.1), the cost of this tradeoff is bounded to reduced
 anomaly-log coverage, not increased false blocking.
 
 #### 2.3.2 Recalibration to `IF_THRESHOLD = 0.00940951` (if_v5, CLOSED)
+
+> **Clarification (2026-10-09):** the threshold was selected on validation, but the calibration target was changed after a test failure had been observed. The if_v5 threshold 0.02868 gave test recall 0.7650 and FP 0.0811 (FAIL against FP ≤ 0.08). Only after that did the calibration target become FP ≤ 0.06, and 0.00940951 was selected on validation with that target. The original text below is unchanged. The same FP ≤ 0.06 criterion appears in `training/retrain_v11_contract69.py` (lines 96–109) for the v11 retrain.
 
 `if_v5` (retrained alongside `rf_v6` for the per-field body analysis fix,
 §4.x) was initially calibrated at threshold=0.02868 (val recall=0.7605,

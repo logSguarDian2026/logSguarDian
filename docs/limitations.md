@@ -797,3 +797,11 @@ La corrección anterior de este apartado documenta la dependencia de RF respecto
 **Alcance.** El resultado proviene de dos aplicaciones y de una única cadena de User-Agent de navegador; §10 ya documenta que otros User-Agent (Windows desktop, okhttp) no producen el mismo cambio en el caso de `/profile`. Muestra que el hallazgo no es un artefacto de la aplicación propia del proyecto, no que sea una propiedad uniforme para todo User-Agent. Las métricas de prueba reportadas en `class_metrics.json` siguen siendo válidas para la distribución en que fueron medidas.
 
 **Consecuencia.** La evaluación de Juice Shop se detiene en este punto: con esta tasa de falsos positivos, los resultados en modo `block` medirían cuántas peticiones bloquea el modelo en general, no su capacidad real de detección. No se genera corpus de ataque para esta aplicación. Evidencia: `docs/findings-evidence/juice-shop-ua-bias/`.
+
+## 11. Reproducibility notes: test-set provenance (rf_v11)
+
+These notes were added on 2026-10-09 and do not change any metric above.
+
+- **Synthetic share of cmdi in the test set.** `training/splits/test.parquet` has 1,468 `cmdi` rows. 261 of them (17.8%) have a `_source` starting with `synthetic_` (`synthetic_cmdi_minimal_context` 125, `synthetic_cmdi_compound` 75, `synthetic_cmdi_windows` 60, `synthetic_multifield` 1). No script in the repository generates these rows. The `.jsonl` files in `training/data_clean/` that hold them are git-ignored (`.gitignore` lines 42–44).
+- **Row count mismatch between inputs.** `training/data_clean/unified.jsonl` has 383,083 lines (sha256 `3e74be1b…`). `training/data_clean/features.parquet`, which `split.py` reads, has 383,202 rows (sha256 `1fff15ad…`). Train + val + test = 383,202. The difference of 119 is not explained by the repository.
+- **Source of the restored data.** Commit `6d1fa68` (2026-09-23) re-locked the test set "to match the restored rf_v11 generation", but its message gives no source for the restored data. The merge `461dbd6` (PR #76, `chore/restore-training-data`) has no body, and no commit records where the data came from.
