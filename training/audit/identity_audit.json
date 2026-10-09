@@ -1,0 +1,46 @@
+{
+  "onnx_comparison_on_val": {
+    "argmax_differences": 0,
+    "eval_set": "val",
+    "max_abs_probability_difference": 0.0,
+    "rf_current_split_onnx_sha256": "a4dddbb778d40b37ed934e2625c910806df75dee8732d179dcb4f2ff0e54bd54",
+    "rf_onnx_sha256": "25b407e649283606a231665a5a8c8ea1c2c7ad4fd0374a8945b3f119651b0870",
+    "rows": 57481
+  },
+  "parquet": {
+    "features": {
+      "rows": 383202,
+      "sha256": "1fff15ad2e31de6ee45fe120c8cd79cf2c36bed8cb2c428e84fb2bcd76b969ee"
+    },
+    "test": {
+      "rows": 57481,
+      "sha256": "3e93b7763732cbd5e23738fba5514d64b826d37635ccdf7f6ee941bce3cfe608"
+    },
+    "train": {
+      "rows": 268240,
+      "sha256": "979ad08b629b94e974fd80e1fa9ef8f4f146fc800151ca6cb8515898045b5592"
+    },
+    "val": {
+      "rows": 57481,
+      "sha256": "42b6a546e672d9961e45cf75895520590267bfdeeaaa8c4df95ab6e032970ad1"
+    }
+  },
+  "test_cmdi": {
+    "cmdi_rows": 1468,
+    "cmdi_rows_by_source": {
+      "capec": 645,
+      "command_injection": 71,
+      "mlops_telemetry_curated": 5,
+      "owasp_logs": 110,
+      "patt_cmdi_curated": 2,
+      "payload_full": 6,
+      "seclists_cmdi": 368,
+      "synthetic_cmdi_compound": 75,
+      "synthetic_cmdi_minimal_context": 125,
+      "synthetic_cmdi_windows": 60,
+      "synthetic_multifield": 1
+    },
+    "cmdi_synthetic_rows": 261
+  },
+  "test_lock_sha256_file": "7486c258692a3cc66fa0ef74087255b904a9ea4d41c8646bb7c0784b15aa4fd9"
+}
