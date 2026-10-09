@@ -245,7 +245,7 @@ Content-Type: application/json
 
 ## Feature extraction
 
-The middleware converts the Express `req` object to a `CanonicalRequest` (from `@logsguardian/extractor`). Feature extraction itself (`extractFeatureVector()`, 75 dimensions — vigente desde rf_v11/if_v10, ver `training/models/parity_report.json`) runs **inside each worker thread**, not on the main thread — the middleware only ships the `CanonicalRequest` across the worker boundary, keeping the extraction cost off the Node.js Event Loop entirely. Each worker slices the 75-dim vector down to what its own model expects (69 for RF, 63 for IF) by feature name.
+The middleware converts the Express `req` object to a `CanonicalRequest` (from `@logsguardian/extractor`). Feature extraction itself (`extractFeatureVector()`, 76 dimensions — vigente desde rf_v11/if_v10, ver `training/models/parity_report.json`) runs **inside each worker thread**, not on the main thread — the middleware only ships the `CanonicalRequest` across the worker boundary, keeping the extraction cost off the Node.js Event Loop entirely. Each worker slices the 76-dim vector down to what its own model expects (69 for RF, 63 for IF) by feature name.
 
 Request bodies are serialized the same way the query string already is (`URLSearchParams`, not `JSON.stringify`) — this avoids introducing structural characters (`{`, `}`, `:`, `"`) that ordinary form submissions don't otherwise contain and that earlier caused false positives on plain login/form POSTs.
 
