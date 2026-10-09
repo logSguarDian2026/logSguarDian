@@ -1,13 +1,18 @@
 /**
  * PLAN.md F1.8 — extractFeatureVector() latency benchmark
  *
- * Measures per-request extraction latency across representative payloads
- * for all 5 classes (benign, sqli, xss, path_traversal, cmdi).
- * Gate criterion: p95 <= 1ms per request (mixed traffic).
+ * Two series, reported separately and never mixed:
+ *   A. direct: extractFeatureVector() on the main thread (in-process cost).
+ *   B. worker_roundtrip: postMessage -> extractFeatureVector() in a
+ *      worker_thread -> response, timed on the main thread. It includes
+ *      structured-clone and message-passing cost, so it is not comparable
+ *      with series A as extraction cost.
  *
  * Serial measurement only (not burst-fire) — burst-fire measures queuing
  * artifacts, not per-request cost (see A15/A20 latency methodology note
- * in docs/results.md).
+ * in docs/results.md). Warmup iterations are discarded.
+ *
+ * Each run writes benchmarks/results/extractor-<timestamp>.json.
  *
  * Run from repo root (requires packages/extractor to be built):
  *   pnpm --filter @logsguardian/extractor build
@@ -16,10 +21,19 @@
 
 "use strict";
 
+const fs = require("fs");
+const os = require("os");
 const path = require("path");
+const { execSync } = require("child_process");
+const { Worker, isMainThread, parentPort } = require("worker_threads");
 const { extractFeatureVector, FEATURE_NAMES } = require(
   path.join(__dirname, "../packages/extractor/dist/index.js")
 );
+
+const ROOT = path.join(__dirname, "..");
+const RESULTS_DIR = path.join(__dirname, "results");
+const GATE_P95_MS = 1;
+const PLAN_CRITERION_LABEL = "PLAN.md F1.8: p95 <= 1ms per request";
 
 // CanonicalRequest.body is a string (not an object) — JSON bodies are
 // stringified the same way middleware.ts does before calling the extractor.
@@ -98,87 +112,148 @@ const FIXTURES = [
 
 const WARMUP_ITERS = 200;
 const BENCH_ITERS = 2000;
+const NS_PER_MS = 1_000_000;
+const MS_DECIMALS = 3;
+
+function round(value, decimals = MS_DECIMALS) {
+  return Number(value.toFixed(decimals));
+}
+
+function elapsedMs(startNs) {
+  return Number(process.hrtime.bigint() - startNs) / NS_PER_MS;
+}
 
 function percentile(sortedTimes, p) {
   return sortedTimes[Math.floor(sortedTimes.length * p)];
 }
 
-function measure(req, iters) {
+function summarize(timesMs) {
+  const sorted = [...timesMs].sort((a, b) => a - b);
+  const mean = sorted.reduce((sum, t) => sum + t, 0) / sorted.length;
+  return {
+    p50: round(percentile(sorted, 0.5)),
+    p95: round(percentile(sorted, 0.95)),
+    p99: round(percentile(sorted, 0.99)),
+    mean: round(mean),
+    max: round(sorted[sorted.length - 1]),
+    throughput: Math.round(1000 / mean),
+  };
+}
+
+function environment() {
+  return {
+    commit: execSync("git rev-parse HEAD", { cwd: ROOT }).toString().trim(),
+    node: process.version,
+    cpu: os.cpus()[0].model,
+    os: `${os.type()} ${os.release()}`,
+    platform: process.platform,
+    arch: process.arch,
+  };
+}
+
+function measureDirect(req, iters) {
   const times = new Array(iters);
   for (let i = 0; i < iters; i++) {
     const t0 = process.hrtime.bigint();
     extractFeatureVector(req);
-    const t1 = process.hrtime.bigint();
-    times[i] = Number(t1 - t0) / 1_000_000; // ns -> ms
+    times[i] = elapsedMs(t0);
   }
   return times;
 }
 
-function bench(label, req) {
-  measure(req, WARMUP_ITERS); // warmup — discarded
-
-  const times = measure(req, BENCH_ITERS).sort((a, b) => a - b);
-  const p50 = percentile(times, 0.5);
-  const p95 = percentile(times, 0.95);
-  const p99 = percentile(times, 0.99);
-  const mean = times.reduce((s, t) => s + t, 0) / times.length;
-  const throughput = Math.round(1000 / mean);
-
-  console.log(`\n  [${label}]`);
-  console.log(`  mean:       ${mean.toFixed(4)} ms`);
-  console.log(`  p50:        ${p50.toFixed(4)} ms`);
-  console.log(`  p95:        ${p95.toFixed(4)} ms`);
-  console.log(`  p99:        ${p99.toFixed(4)} ms`);
-  console.log(`  throughput: ${throughput.toLocaleString()} req/s`);
-
-  return { label, mean, p50, p95, p99, throughput };
+function workerRoundTrip(worker, req) {
+  return new Promise((resolve) => {
+    worker.once("message", resolve);
+    worker.postMessage(req);
+  });
 }
 
-function main() {
-  console.log("=== logSguarDian — Extractor Benchmark (F1.8) ===");
-  console.log(`Node ${process.version} | ${process.platform}/${process.arch}`);
-  console.log(`Fixtures: ${FIXTURES.length} | Warmup: ${WARMUP_ITERS} | Bench: ${BENCH_ITERS} iters each`);
-  console.log(`Feature vector dimension: ${FEATURE_NAMES.length}`);
-
-  const results = FIXTURES.map(({ label, req }) => bench(label, req));
-
-  // Mixed traffic pass — round-robin across all 5 fixtures, one combined
-  // sample of BENCH_ITERS, for a representative production-like number.
-  for (let i = 0; i < WARMUP_ITERS; i++) {
-    extractFeatureVector(FIXTURES[i % FIXTURES.length].req);
-  }
-  const mixedTimes = new Array(BENCH_ITERS);
-  for (let i = 0; i < BENCH_ITERS; i++) {
-    const req = FIXTURES[i % FIXTURES.length].req;
+async function measureRoundTrip(worker, req, iters) {
+  const times = new Array(iters);
+  for (let i = 0; i < iters; i++) {
     const t0 = process.hrtime.bigint();
-    extractFeatureVector(req);
-    const t1 = process.hrtime.bigint();
-    mixedTimes[i] = Number(t1 - t0) / 1_000_000;
+    await workerRoundTrip(worker, req);
+    times[i] = elapsedMs(t0);
   }
-  mixedTimes.sort((a, b) => a - b);
-  const mixedP50 = percentile(mixedTimes, 0.5);
-  const mixedP95 = percentile(mixedTimes, 0.95);
-  const mixedP99 = percentile(mixedTimes, 0.99);
-  const mixedMean = mixedTimes.reduce((s, t) => s + t, 0) / mixedTimes.length;
-  const mixedThroughput = Math.round(1000 / mixedMean);
-
-  console.log("\n=== SUMMARY ===");
-  console.log("Criterion (PLAN.md F1.8): p95 <= 1ms per request");
-  console.log("\n  Mixed traffic (all 5 classes, round-robin):");
-  console.log(`  mean:       ${mixedMean.toFixed(4)} ms`);
-  console.log(`  p50:        ${mixedP50.toFixed(4)} ms`);
-  console.log(`  p95:        ${mixedP95.toFixed(4)} ms`);
-  console.log(`  p99:        ${mixedP99.toFixed(4)} ms`);
-  console.log(`  throughput: ${mixedThroughput.toLocaleString()} req/s`);
-  console.log(`\n  GATE p95 <= 1ms: ${mixedP95 <= 1 ? "PASS ✓" : "FAIL ✗"}`);
-
-  console.log("\nHardware:");
-  console.log(`  Platform: ${process.platform}/${process.arch}`);
-  console.log(`  Node:     ${process.version}`);
-  const mem = process.memoryUsage();
-  console.log(`  RSS:      ${(mem.rss / 1024 / 1024).toFixed(1)} MB`);
-
-  return { results, mixed: { mean: mixedMean, p50: mixedP50, p95: mixedP95, p99: mixedP99, throughput: mixedThroughput } };
+  return times;
 }
 
-main();
+function mixedRequests(total) {
+  return Array.from({ length: total }, (_, i) => FIXTURES[i % FIXTURES.length].req);
+}
+
+async function runSeries(measureOne) {
+  const perFixture = {};
+  for (const { label, req } of FIXTURES) {
+    await measureOne(req, WARMUP_ITERS);
+    perFixture[label] = summarize(await measureOne(req, BENCH_ITERS));
+  }
+  await measureMixed(measureOne, WARMUP_ITERS);
+  perFixture.mixed = summarize(await measureMixed(measureOne, BENCH_ITERS));
+  return perFixture;
+}
+
+async function measureMixed(measureOne, iters) {
+  const requests = mixedRequests(iters);
+  const times = new Array(iters);
+  for (let i = 0; i < iters; i++) {
+    times[i] = (await measureOne(requests[i], 1))[0];
+  }
+  return times;
+}
+
+function startWorker() {
+  return new Worker(__filename);
+}
+
+function printSeries(title, series) {
+  console.log(`\n=== ${title} ===`);
+  for (const [label, s] of Object.entries(series)) {
+    console.log(`  [${label}]`);
+    console.log(`    p50: ${s.p50.toFixed(3)} ms | p95: ${s.p95.toFixed(3)} ms | p99: ${s.p99.toFixed(3)} ms`);
+    console.log(`    mean: ${s.mean.toFixed(3)} ms | max: ${s.max.toFixed(3)} ms | throughput: ${s.throughput.toLocaleString()} req/s`);
+  }
+}
+
+function writeResults(payload) {
+  fs.mkdirSync(RESULTS_DIR, { recursive: true });
+  const stamp = payload.timestamp.replace(/[:.]/g, "-");
+  const file = path.join(RESULTS_DIR, `extractor-${stamp}.json`);
+  fs.writeFileSync(file, JSON.stringify(payload, null, 2) + "\n");
+  return file;
+}
+
+async function main() {
+  const timestamp = new Date().toISOString();
+  console.log(`=== logSguarDian — Extractor Benchmark (F1.8) ===`);
+  console.log(`${timestamp} | Node ${process.version} | ${process.platform}/${process.arch}`);
+  console.log(`Fixtures: ${FIXTURES.length} | Warmup: ${WARMUP_ITERS} | Bench: ${BENCH_ITERS} iters each | Vector: ${FEATURE_NAMES.length} features`);
+
+  const direct = await runSeries(async (req, iters) => measureDirect(req, iters));
+
+  const worker = startWorker();
+  const roundTrip = await runSeries((req, iters) => measureRoundTrip(worker, req, iters));
+  await worker.terminate();
+
+  printSeries("SERIES A — direct, extractFeatureVector() on the main thread", direct);
+  printSeries("SERIES B — worker_roundtrip (postMessage -> extractor in worker -> response), NOT extraction cost", roundTrip);
+
+  const gate = direct.mixed.p95 <= GATE_P95_MS ? "PASS ✓" : "FAIL ✗";
+  console.log(`\nGATE (series A, mixed p95 <= ${GATE_P95_MS} ms): ${gate}  — ${PLAN_CRITERION_LABEL}`);
+
+  const file = writeResults({
+    timestamp,
+    environment: { ...environment(), warmup_iters: WARMUP_ITERS, bench_iters: BENCH_ITERS },
+    series: {
+      direct: { execution: "main thread", fixtures: direct },
+      worker_roundtrip: { execution: "worker_threads round-trip, timed on main thread", fixtures: roundTrip },
+    },
+  });
+  console.log(`\nResults written to ${path.relative(ROOT, file)}`);
+}
+
+if (isMainThread) {
+  main();
+} else {
+  parentPort.on("message", (req) => parentPort.postMessage(extractFeatureVector(req)));
+}
