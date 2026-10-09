@@ -178,7 +178,7 @@ The middleware applies this policy per request (full rationale and calibration h
 ```
 rf_classes   = ['benign', 'cmdi', 'path_traversal', 'sqli', 'xss']
 RF_THRESHOLD = 0.35     // single global threshold; overridable via options.threshold
-IF_THRESHOLD = 0.002486040118540811
+IF_THRESHOLD = 0.004205941820353609   // if_v10, training/models/if_v10_metadata.json
 
 predicted_class = rf_classes[argmax(rf_probs)]
 confidence      = max(rf_probs)

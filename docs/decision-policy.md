@@ -1,6 +1,6 @@
 # Decision Policy — logSguarDian
 
-**Status: COMPLETE — closed 2026-06-20, retrained (rf_v3/if_v2) after E2E fixes**  
+**Status: COMPLETE — última revisión 2026-10-09 (ver `git log`), retrained (rf_v3/if_v2) after E2E fixes**  
 **Corresponds to:** PLAN.md task 3.7
 
 **Retrain context:** rf_v2/if_v1 were replaced by rf_v3/if_v2 after two fixes found
@@ -129,26 +129,9 @@ from GATE FAIL (xss 70%, cmdi 34%, both under 80%) to **GATE PASS**: sqli
 99–100%, xss 94%, path_traversal 100%, cmdi 95%, benign FP 2%. See
 `docs/results.md` §F5.7 for the full table.
 
-#### 2.2.2 Test-set confirmation (R2 one-time read, CLOSED)
+#### 2.2.2 Confirmación en conjunto de prueba (no verificable)
 
-`RF_THRESHOLD=0.35` was confirmed with a single, final read of `test.parquet`
-(41,905 attacks, 18,042 benign). No adjustment was made after observing these
-numbers, per R2.
-
-| Metric | Value |
-|--------|-------|
-| Precision | 0.9996 |
-| Recall | 0.9989 |
-| Missed attacks | 48 / 41,905 |
-| sqli detection | 34,073/34,085 (100.0%) |
-| xss detection | 4,436/4,463 (99.4%) |
-| path_traversal detection | 2,521/2,526 (99.8%) |
-| cmdi detection | 827/831 (99.5%) |
-| benign FP | 15/18,042 (0.1%) |
-
-Consistent with the val-set sweep (precision 0.9996, recall 0.9990) — no
-material generalization gap. Precision comfortably clears the > 0.999
-criterion. `RF_THRESHOLD=0.35` is now final for the thesis.
+El umbral RF_THRESHOLD = 0.35 se seleccionó con un barrido sobre el conjunto de validación (meseta entre 0.10 y 0.30; se eligió 0.35 como borde conservador). El commit e74a8c6 (2026-07-23) afirma una confirmación en el conjunto de prueba bloqueado de rf_v3, cuyo lock (df62619) es anterior. El repositorio no conserva el artefacto de esa lectura. Para rf_v11 el umbral se mantuvo sin recalibrar, y las métricas de prueba (v11_test_results.json) se calculan por argmax, sin umbral de confianza.
 
 ### 2.3 Isolation Forest — if.onnx
 
@@ -442,6 +425,8 @@ the raw sweep table above.
 
 ### 3.1 Decision Table (historical — see note above for current values)
 
+> **Aviso: tabla histórica.** Los valores de esta tabla (`RF_THRESHOLDS` por clase e `IF_THRESHOLD = 0.0445`) están superados. La política vigente es la de §3.2; los umbrales y la tabla de decisión actuales están en [docs/api.md](api.md).
+
 ```
 GIVEN  request: CanonicalRequest
        rf_probs: float[5]        // predict_proba output, indexed by rf_classes
@@ -500,7 +485,7 @@ documented here as the authoritative design record.
 
 **Current, as shipped (`middleware.ts`):** `RF_THRESHOLD = 0.35` (single global
 constant, not per-class — the per-class map below was removed, see the note
-at the top of §3), `IF_THRESHOLD = 0.002486040118540811` (if_v9). The table
+at the top of §3), `IF_THRESHOLD = 0.004205941820353609` (if_v10, `training/models/if_v10_metadata.json`). The table
 below is the snapshot as of rf_v7/if_v5 and is kept for provenance of *how*
 each round of recalibration was reasoned about — it is not the current
 runtime value. §2.2/§2.3 has the complete round-by-round history through the
@@ -559,7 +544,7 @@ This allows dark-launch validation before switching to `'block'`.
 
 | ID | Item | Status | Resolved value / note |
 |----|------|--------|-----------------------|
-| P1 | RF_THRESHOLD — final value | **CLOSED — recalibrated for rf_v3 and confirmed on test set** | `0.35` — val: precision=0.9996, recall=0.9990. Test (R2 one-time read): precision=0.9996, recall=0.9989, 48 missed attacks, benign FP=0.1%. Recalibrated after E2E (F5.7) showed 0.70 under-detecting xss (70%) and cmdi (34%) live; test-set confirmation shows no generalization gap from val. Superseded by per-class thresholds, see P4. |
+| P1 | RF_THRESHOLD — final value | **Seleccionado en validación; confirmación en test no verificable** | `0.35`, seleccionado con barrido en validación (meseta 0.10–0.30; 0.35 como borde conservador, §2.2.1). La confirmación en test de rf_v3 se afirma en `e74a8c6` (2026-07-23), cuyo lock (`df62619`) es anterior, pero el artefacto de esa lectura no está en el repositorio. Para rf_v11 el umbral no se recalibró; sus métricas de test se calculan por argmax. Superado por umbrales por clase, ver P4. |
 | P4 | Per-class RF thresholds (replaces global RF_THRESHOLD) | **CLOSED — §2.2.3** | `sqli: 0.45`, `xss/path_traversal/cmdi: 0.35` (unchanged from legacy). No retraining (rf_v7 unchanged). A full val-sweep (0.20–0.70) regressed E2E cmdi detection 96%→74-80% via cross-class spillover with no FP benefit; final decision moves only `sqli` off baseline, just above the `legit_post` residual FP (0.4005, §2.2.2). E2E: sqli 100%, xss 98%, path_traversal 99%, cmdi 95%, benign FP 2% — parity with baseline, `legit_post` now passes. |
 | P2 | IF recall and FP rate on test set | **CLOSED — recalibrated for if_v2 (§2.3.1), then again for if_v5 (§2.3.2)** | if_v2: threshold=0.02901575, test recall=0.5609, FP=0.0828, both PASS. if_v5 (retrained alongside rf_v6): initial threshold=0.02868 (val FP≤0.08 target) confirmed FAIL on test (FP=0.0811 > 0.08) — a real val→test drift caused by rf_v6's per-field body analysis reducing payload_length signal for multi-field attacks. Recalibrated on val with a stricter FP≤0.06 target to threshold=0.00940951; test-set confirmation: recall=0.6576 PASS, FP=0.0596 PASS, both simultaneously PASS, no further drift. Tradeoff: recall −0.209 vs if_v4 (0.8667→0.6576), accepted given IF holds no blocking authority. See §2.3.2 for the full sweep and the R2 triple-read note. |
 | P3 | Fail-open timeout — empirical p99 | **OPEN** | Provisional `50 ms`. Requires F6 Artillery benchmark (PLAN.md task 6.2). No per-inference latency data exists yet. |
