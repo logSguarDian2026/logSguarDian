@@ -1,0 +1,121 @@
+{
+  "timestamp": "2026-10-09T23:26:22.216Z",
+  "environment": {
+    "commit": "b0337ecfe4847faed543b97293e4b44d8ff9b746",
+    "node": "v25.6.0",
+    "cpu": "Apple M5",
+    "os": "Darwin 27.0.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "warmup_iters": 200,
+    "bench_iters": 2000
+  },
+  "series": {
+    "direct": {
+      "execution": "main thread",
+      "fixtures": {
+        "benign": {
+          "p50": 0.009,
+          "p95": 0.015,
+          "p99": 0.04,
+          "mean": 0.012,
+          "max": 1.143,
+          "throughput": 85745
+        },
+        "sqli": {
+          "p50": 0.009,
+          "p95": 0.012,
+          "p99": 0.033,
+          "mean": 0.01,
+          "max": 0.051,
+          "throughput": 104052
+        },
+        "xss": {
+          "p50": 0.01,
+          "p95": 0.013,
+          "p99": 0.035,
+          "mean": 0.011,
+          "max": 0.233,
+          "throughput": 91949
+        },
+        "path_traversal": {
+          "p50": 0.007,
+          "p95": 0.01,
+          "p99": 0.027,
+          "mean": 0.008,
+          "max": 0.115,
+          "throughput": 124666
+        },
+        "cmdi": {
+          "p50": 0.009,
+          "p95": 0.011,
+          "p99": 0.031,
+          "mean": 0.009,
+          "max": 0.053,
+          "throughput": 106730
+        },
+        "mixed": {
+          "p50": 0.01,
+          "p95": 0.013,
+          "p99": 0.035,
+          "mean": 0.01,
+          "max": 0.052,
+          "throughput": 98638
+        }
+      }
+    },
+    "worker_roundtrip": {
+      "execution": "worker_threads round-trip, timed on main thread",
+      "fixtures": {
+        "benign": {
+          "p50": 0.021,
+          "p95": 0.03,
+          "p99": 0.045,
+          "mean": 0.023,
+          "max": 0.188,
+          "throughput": 43958
+        },
+        "sqli": {
+          "p50": 0.021,
+          "p95": 0.027,
+          "p99": 0.038,
+          "mean": 0.022,
+          "max": 0.066,
+          "throughput": 46049
+        },
+        "xss": {
+          "p50": 0.022,
+          "p95": 0.03,
+          "p99": 0.044,
+          "mean": 0.023,
+          "max": 0.123,
+          "throughput": 43416
+        },
+        "path_traversal": {
+          "p50": 0.016,
+          "p95": 0.026,
+          "p99": 0.037,
+          "mean": 0.018,
+          "max": 0.053,
+          "throughput": 56604
+        },
+        "cmdi": {
+          "p50": 0.021,
+          "p95": 0.027,
+          "p99": 0.041,
+          "mean": 0.022,
+          "max": 0.118,
+          "throughput": 45479
+        },
+        "mixed": {
+          "p50": 0.021,
+          "p95": 0.03,
+          "p99": 0.045,
+          "mean": 0.022,
+          "max": 0.171,
+          "throughput": 44573
+        }
+      }
+    }
+  }
+}
