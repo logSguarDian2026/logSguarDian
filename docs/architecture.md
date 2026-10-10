@@ -170,7 +170,7 @@ from the vector before calling either ONNX model — see §6.
 
 The publishable middleware package. Fully implemented — detection, CLI, and
 event/webhook storage are all in place; what remains before the first npm
-publish is docs/packaging polish, not core logic.
+publish is docs/packaging polish, not core logic. Adenda (2026-10-09): `logsguardian` 0.1.0 ya se publicó en npm el 2026-08-30 con rf_v10/if_v9.
 
 ```
 package.json        # name "logsguardian" (unscoped), files: ["dist","models","data"]
