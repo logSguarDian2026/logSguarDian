@@ -1,6 +1,17 @@
 """
-One-time R2 test-set read for rf_v11 / if_v10 — the models actually
-published in npm (see training/models/parity_report.json).
+One-time R2 test-set read for rf_v11 / if_v10 — the current, canonical
+training-pipeline models in training/models/ (see
+training/models/parity_report.json). These are NOT the models published in
+npm: logsguardian@0.1.0 was published 2026-08-30T05:07:31Z, before the
+rf_v11 retrain (commit 734c24f, later the same day) and long before this
+script's 2026-09-26 read. Verified 2026-10-09 by downloading the actual
+published tarball from the npm registry: its bundled rf.onnx/if.onnx
+checksum (180837255d.../5de374a7f1...) matches none of the generations
+read by this script. The npm package has not been republished since
+0.1.0 — anyone running `npm install logsguardian` today gets a model
+generation older than rf_v11/if_v10. Every "published in npm" claim below
+and in eval_note strings this script writes predates that verification and
+is wrong; read it as "the current training/models/ pair" instead.
 
 Addendum (2026-10-09): this was not the first or only read. test.parquet was
 read three times for the rf_v11 generation: 2026-09-24 (commit 3086318,
