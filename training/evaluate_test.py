@@ -2,6 +2,14 @@
 One-time R2 test-set read for rf_v11 / if_v10 — the models actually
 published in npm (see training/models/parity_report.json).
 
+Addendum (2026-10-09): this was not the first or only read. test.parquet was
+read three times for the rf_v11 generation: 2026-09-24 (commit 3086318,
+rf.onnx a7c015f5..., IF threshold 0.00806713), 2026-09-25 (commit fc47a5b,
+rf_current_split.onnx a4dddbb7..., IF threshold 0.00420594) and 2026-09-26
+(commit 03de50f, rf.onnx 25b407e6..., IF threshold 0.00420594). The IF
+threshold changed from 0.00807 to 0.00421 between the first and the last read.
+Any "single" or "first" read wording in this file is superseded by this addendum.
+
 Why this script exists: every metric previously cited in
 docs/decision-policy.md sec 2.1 (and mirrored into
 training/models/class_metrics.json) comes from rf_v3, two generations
@@ -51,7 +59,7 @@ Design decisions (see .claude-plan.md "Fase 3" for the full rationale):
      precedent for it anywhere in this repo (zero prior occurrences of
      roc_auc_score).
 
-  5. The IF threshold (0.00806713286301003, from
+  5. The IF threshold (0.004205941820353609, from
      training/models/if_v10_metadata.json) is used as-is. It is NEVER
      recalibrated against test — doing so would violate the R2
      one-time-read discipline the whole point of this script is to

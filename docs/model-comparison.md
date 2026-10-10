@@ -94,6 +94,7 @@ Confirmed, with one caveat, not glossed over:
   quantile-spaced thresholds (`np.quantile(scores, linspace(0,1,300))`)
   found 0.9148 recall at FP=0.0557 — line-for-line the same selection rule,
   correctly applied to a differently-shaped score distribution.
+- **Addendum (2026-10-09):** the rf_v11 test set was read three times (2026-09-24 commit `3086318`; 2026-09-25 commit `fc47a5b`, this script; 2026-09-26 commit `03de50f`). The "first test-set confirmation" and "single read" statements below are superseded.
 - **R2 (locked test set, one-time read)**: `evaluate_test_once.py` is the
   single script that reads `test.parquet`. It scores all four models in one
   execution and writes `test_set_comparison.json`. This is also the first
@@ -112,7 +113,7 @@ Confirmed, with one caveat, not glossed over:
 
 ## 3. Comparative table
 
-| Modelo | Tipo | F1/Recall (test, R2 one-time read) | Latencia inferencia (p95) | Tamano modelo serializado |
+| Modelo | Tipo | F1/Recall (test, R2 read; see addendum above) | Latencia inferencia (p95) | Tamano modelo serializado |
 |--------|------|-------------------------------------|----------------------------|----------------------------|
 | Random Forest (rf_v11) | Supervisado | Macro F1=0.9776 (cmdi=0.924, path_traversal=0.983, sqli=0.996, xss=0.988) | 0.0062 ms | 8.49 MB |
 | MLP | Supervisado | Macro F1=0.9719 (cmdi=0.907, path_traversal=0.974, sqli=0.995, xss=0.986) | 0.0074 ms | 28.2 KB |

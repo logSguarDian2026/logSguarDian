@@ -53,11 +53,11 @@ RussellMitchell intranet Apache logs, CAPEC multi-label payloads, etc.).
 
 > **Nota de versión (2026-09-10):** los conteos de features de esta sección (§2.1–2.2,
 > "72 features"/"1,155,302 rows") describen el pipeline original `data_manager/*.ipynb`
-> → `dataset_final.parquet` — **no confirmados contra el extractor actual (75 features,
+> → `dataset_final.parquet` — **no confirmados contra el extractor actual (76 features,
 > rf_v11/if_v10)** y posiblemente ya no es el pipeline vigente: el CT/CI/CD pipeline
 > (`training/unify.py` + `training/ct_pipeline.py`) opera sobre columnas
 > `FEATURE_NAMES` directamente vía la CLI del extractor, un camino distinto que sí
-> refleja las 75 features actuales. No se reemplaza el número aquí por uno inventado —
+> refleja las 76 features actuales. No se reemplaza el número aquí por uno inventado —
 > ver `docs/STATUS.md` §2 (mismo hallazgo, sin número de reemplazo confirmado) y
 > `training/models/parity_report.json` para los conteos vigentes por modelo.
 
@@ -105,10 +105,11 @@ RussellMitchell intranet Apache logs, CAPEC multi-label payloads, etc.).
   Forest (supervised) and Isolation Forest (unsupervised) models on
   `train.parquet`/`val.parquet`, then export both to ONNX.
 - `models/rf.onnx` and `models/if.onnx` — the trained models (currently
-  rf_v11/if_v10). Both reduce the input vector from the extractor's 75
-  features, but no longer to the same count: RF drops 6 (`status_code`,
-  unknown at request-intercept time, plus the 5 Group 9 temporal features)
-  for **69 features**; IF drops those same 6 plus 6 more (near-zero
+  rf_v11/if_v10). Both reduce the input vector from the extractor's 76
+  features, but no longer to the same count: RF drops 7 (`status_code`,
+  unknown at request-intercept time; the 5 Group 9 temporal features; and
+  `non_json_quote_count`, additive-only pending retrain) for **69 features**;
+  IF drops those same 7 plus 6 more (near-zero
   variance on benign traffic) for **63 features** — see `docs/feature-spec.md`
   for the exact lists. Vigente desde rf_v11/if_v10; ver
   `training/models/parity_report.json` para la versión activa en cualquier
@@ -280,10 +281,10 @@ verdict (block / pass / pass_anomaly / timeout) -> SQLite event log + optional w
   are excluded from the vector actually passed to either ONNX model (see
   next item), so it does not affect runtime behavior, but it is a real
   property of the training data worth knowing about.
-- **75 vs 69/63 features (implemented; vigente desde rf_v11/if_v10 — ver
+- **76 vs 69/63 features (implemented; vigente desde rf_v11/if_v10 — ver
   `training/models/parity_report.json` para la versión activa en cualquier
   momento)**: `packages/core/src/worker.ts`
-  extracts the full 75-dim vector, then slices it by feature name to 69
+  extracts the full 76-dim vector, then slices it by feature name to 69
   inputs for `rf.onnx` and 63 for `if.onnx` (RF's 69 minus 6 further
   features confirmed to have zero/near-zero variance on benign traffic,
   dropped only for IF — see `docs/feature-spec.md` and

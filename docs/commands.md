@@ -242,7 +242,7 @@ logSguarDian — Attack Inspect: SQLI
   ────────────────────────────────────────
   F1 Score (test set): 99.5%
   Precision: 99.5%  Recall: 99.5%
-  Note: Official locked test-set numbers (R2 one-time read, 2026-06-20) — docs/decision-policy.md §2.1. Test set read exactly once; no retraining after observing these numbers.
+  Note: Official locked test-set numbers (R2 one-time read, 2026-06-20) — docs/decision-policy.md §2.1. Test set read exactly once; no retraining after observing these numbers. ADDENDUM 2026-10-09: the date above (2026-06-20) and the single-read claim refer to rf_v3 (see `docs/decision-policy.md` §2.2.2). The rf_v11 test set was read on 2026-09-24, 2026-09-25 and 2026-09-26 (see `docs/decision-policy.md` §2).
 
   TOP FEATURES (overall RF importance)
   ────────────────────────────────────────

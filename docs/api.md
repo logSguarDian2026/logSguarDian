@@ -178,7 +178,7 @@ The middleware applies this policy per request (full rationale and calibration h
 ```
 rf_classes   = ['benign', 'cmdi', 'path_traversal', 'sqli', 'xss']
 RF_THRESHOLD = 0.35     // single global threshold; overridable via options.threshold
-IF_THRESHOLD = 0.002486040118540811
+IF_THRESHOLD = 0.004205941820353609   // if_v10, training/models/if_v10_metadata.json
 
 predicted_class = rf_classes[argmax(rf_probs)]
 confidence      = max(rf_probs)
@@ -245,7 +245,7 @@ Content-Type: application/json
 
 ## Feature extraction
 
-The middleware converts the Express `req` object to a `CanonicalRequest` (from `@logsguardian/extractor`). Feature extraction itself (`extractFeatureVector()`, 75 dimensions — vigente desde rf_v11/if_v10, ver `training/models/parity_report.json`) runs **inside each worker thread**, not on the main thread — the middleware only ships the `CanonicalRequest` across the worker boundary, keeping the extraction cost off the Node.js Event Loop entirely. Each worker slices the 75-dim vector down to what its own model expects (69 for RF, 63 for IF) by feature name.
+The middleware converts the Express `req` object to a `CanonicalRequest` (from `@logsguardian/extractor`). Feature extraction itself (`extractFeatureVector()`, 76 dimensions — vigente desde rf_v11/if_v10, ver `training/models/parity_report.json`) runs **inside each worker thread**, not on the main thread — the middleware only ships the `CanonicalRequest` across the worker boundary, keeping the extraction cost off the Node.js Event Loop entirely. Each worker slices the 76-dim vector down to what its own model expects (69 for RF, 63 for IF) by feature name.
 
 Request bodies are serialized the same way the query string already is (`URLSearchParams`, not `JSON.stringify`) — this avoids introducing structural characters (`{`, `}`, `:`, `"`) that ordinary form submissions don't otherwise contain and that earlier caused false positives on plain login/form POSTs.
 
