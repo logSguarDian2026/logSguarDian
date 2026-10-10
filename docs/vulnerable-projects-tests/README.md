@@ -9,6 +9,8 @@ y necesaria: **¿generaliza esa calibración a una app cualquiera, o está sobre
 
 **Adenda (2026-10-09):** Juice Shop y `logSguarDian-vulnerable-project` dependen de `logsguardian` mediante `file:vendor/*.tgz` locales (ver su `package.json`), no del registro npm. Para dvna, node-api-goat y dvws-node no está verificado: sus `package.json` no están en este repositorio.
 
+**Adenda 2 (2026-10-09):** verificado directamente en los 3 clones locales (`/Users/xtsebas/Universidad/{dvna,node-api-goat,dvws-node}`). Los tres declaran `"logsguardian": "^0.1.0"` (semver, no `file:`), ninguno tiene `.npmrc` con un registro alternativo, y los tres `package-lock.json` resuelven a `https://registry.npmjs.org/logsguardian/-/logsguardian-0.1.0.tgz` con integridad idéntica. **Confirmado: las 3 apps de este documento corrieron contra el paquete real publicado en npm**, el mismo checksum que Ronda 5 (`180837255d.../5de374a7f1...`), no contra `training/models/`.
+
 **Fecha:** 2026-09-30. **Metodología:** integración real de `npm install logsguardian` en cada app (no
 simulada), confirmación de explotabilidad real antes de proteger, corpus de ataque compartido
 (`e2e/fixtures/test_payloads.jsonl`, 500 payloads, 100/clase, ya usado y validado en el resto de este
