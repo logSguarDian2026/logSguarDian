@@ -265,20 +265,38 @@ histórica pero no reemplazada. Hay que sincronizarla por separado.
   generado con sqlmap (sqli), generadores propios no derivados de SecLists (path_traversal, cmdi), y
   filtrado por exclusión contra el corpus de entrenamiento completo antes de incluir cualquier payload.
 
-  | Categoría | Ronda 4 (con fuga) | Ronda 5 (limpia) |
-  |---|---|---|
-  | sqli | 98.7 % | 100.0 % |
-  | path_traversal | 98.5 % | **85.0 %** |
-  | cmdi | 100.0 % (fuga) | **91.5 %** (real) |
-  | xss | 97.3 % | placeholder — ZAP manual pendiente, no citable |
+  > **Corrección del 2026-10-09, revertida el mismo día — el hallazgo real es más serio.** Se había
+  > escrito aquí que la corrida original de Ronda 5 (commit `79224e1`) usaba un modelo "equivocado"
+  > (checksum `180837255d.../5de374a7f1...`, distinto del par canónico `25b407e6.../5be28ee8...` de
+  > `training/models/`) y que re-correr contra el canónico era "la corrección". **Era al revés.**
+  > Se descargó el tarball real publicado en npm (`npm pack logsguardian@0.1.0` contra el registro,
+  > shasum verificado contra `dist.shasum`) y sus modelos empaquetados son exactamente
+  > `180837255d.../5de374a7f1...` — el mismo checksum que Ronda 5 (y Rondas 1-4) ya usaban. El publish
+  > de `0.1.0` ocurrió 2026-08-30T05:07:31Z, **antes** del retrain de `rf_v11` (`734c24f`, esa misma
+  > tarde) y mucho antes del fix del 26 de septiembre que produjo el par `25b407e6.../5be28ee8...`
+  > actual en `training/models/`. **El paquete nunca se republicó — `npm install logsguardian` hoy
+  > instala una generación anterior a `rf_v11`/`if_v10`.** Esto significa que las cifras de OE3.1
+  > (F1 macro 0.9776, más abajo) describen un modelo que nunca llegó a publicarse; ver el nuevo riesgo
+  > abierto más abajo.
 
-  cmdi 91.5 % es la tasa de detección real contra payloads que el modelo nunca vio; el 100 % anterior
-  era memorización de plantilla. path_traversal bajó (85.0 % vs. 98.5 %) no por fuga (0 coincidencias
-  confirmadas) sino porque este corpus es más diverso en encoding — hallazgo genuino, no artefacto de
-  medición. Las variantes con WAF (3a/3b) y el baseline (Config 1) no se re-corrieron con este corpus
-  todavía. Fuente: repo `logSguarDian-vulnerable-project`, `docs/config3b-results.md` §Ronda 5 (ruta
-  corregida — la carpeta `docs/vulnerable-app-evaluation/` ya no existe, el repo hermano aplanó sus
-  docs directo a `docs/`).
+  | Categoría | Ronda 4 (con fuga) | **Ronda 5, paquete publicado (vigente)** | Ronda 5, `training/models/` sin publicar (referencia) |
+  |---|---|---|---|
+  | sqli | 98.7 % | **100.0 %** | 99.5 % |
+  | path_traversal | 98.5 % | **85.0 %** | 95.0 % |
+  | cmdi | 100.0 % (fuga) | **91.5 %** | 96.0 % |
+  | xss | 97.3 % | placeholder — ZAP manual pendiente, no citable | placeholder — sin cambio |
+
+  La columna "vigente" es la que describe lo que cualquiera obtiene hoy con `npm install logsguardian`
+  — esa es la que corresponde citar para el objetivo de "librería npm". La de la derecha es una
+  referencia aparte: qué haría el modelo actual de `training/models/` (no publicado) sobre el mismo
+  corpus — también re-corrida el 2026-10-09, en la misma rama
+  (`fix/round5-correct-model-rerun` en `logSguarDian-vulnerable-project`), pero no sustituye a la
+  primera. Las explicaciones de por qué cmdi/path_traversal difieren de Ronda 4 (memorización de
+  plantilla vs. corpus más diverso en encoding) se escribieron contra la columna vigente y siguen
+  siendo correctas sin cambios. Las variantes con WAF (3a/3b) y el baseline (Config 1) siguen sin
+  re-correrse con este corpus. Fuente: repo `logSguarDian-vulnerable-project`, `docs/config3b-results.md`
+  §Ronda 5 (ruta corregida — la carpeta `docs/vulnerable-app-evaluation/` ya no existe, el repo hermano
+  aplanó sus docs directo a `docs/`).
 
 De los 40 ataques que el WAF dejó pasar en Ronda 4 (con fuga), logsguardian detuvo 37 de forma
 independiente — este hallazgo de defensa en profundidad no depende de la fuga de cmdi (viene
@@ -465,7 +483,7 @@ arriba vienen directamente de `summary.jsonl` y los `.parsed.json` por rep del a
 
 | Métrica | Estado | Evidencia |
 |---|---|---|
-| Cobertura ≥ 80 % por categoría de payload | Cumplida para 3/4 categorías medidas (85.0–100 % en Ronda 5, corpus limpio); **xss sin medición real todavía** — el export de ZAP sigue pendiente, no es "cumplida" para esa clase | Tabla de Ronda 5 en OE3.1 arriba (`config3b-results.md` §Ronda 5). No hay captura de pantalla de Ronda 5 todavía — las únicas capturas disponibles (obj3-f/g, ver arriba) son de Ronda 4 (con fuga, histórica), no deben citarse para esta fila |
+| Cobertura ≥ 80 % por categoría de payload | Cumplida para 3/4 categorías medidas (85.0–100.0 % en Ronda 5, corpus limpio, paquete publicado — verificado 2026-10-09 contra el tarball real de npm); **xss sin medición real todavía** — el export de ZAP sigue pendiente, no es "cumplida" para esa clase | Tabla de Ronda 5 en OE3.1 arriba (`config3b-results.md` §Ronda 5). No hay captura de pantalla de Ronda 5 todavía — las únicas capturas disponibles (obj3-f/g, ver arriba) son de Ronda 4 (con fuga, histórica), no deben citarse para esta fila |
 | Paridad ONNX < 0.1 % | Cumplida: diferencia máxima ~1.0e-07 (RF) y ~2.4e-07 (IF), retrain 2026-09-26 | ![logsguadian npm](cibersecurity-images/obj3-k.png) `parity_report.json` y test de paridad |
 
 ---
@@ -495,8 +513,22 @@ arriba vienen directamente de `summary.jsonl` y los `.parsed.json` por rep del a
 9. **Nuevo:** el heurístico de memoria (`possibleLeak: true`) sigue inconcluso — ni confirmado ni
    descartado, por la mezcla de escenarios y reinicios de contenedor dentro de la misma ventana
    muestreada. Repetir el monitoreo dentro de un solo escenario sostenido.
-8. Ronda 5 (corpus limpio) solo cubrió Config 2; faltan Config 1 baseline y las variantes con WAF
-   (3a/3b) con el mismo corpus, y el export real de ZAP para xss.
+10. Ronda 5 (corpus limpio) solo cubrió Config 2; faltan Config 1 baseline y las variantes con WAF
+    (3a/3b) con el mismo corpus, y el export real de ZAP para xss.
+11. **Nuevo (2026-10-09), alta prioridad — el paquete publicado no es el modelo que OE3.1 evalúa.**
+    `logsguardian@0.1.0` en el registro de npm (verificado descargando el tarball real, no una copia
+    local) empaqueta `rf.onnx`/`if.onnx` con checksum `180837255d.../5de374a7f1...` — una generación
+    anterior a `rf_v11`/`if_v10` (`25b407e6.../5be28ee8...`). El publish ocurrió 2026-08-30, antes del
+    retrain de `rf_v11` y mucho antes del fix de procedencia del 26 de septiembre. **Las cifras de
+    OE3.1 (F1 macro 0.9776, verificadas contra PR #79) describen un modelo que nunca se publicó.** Lo
+    que sí está verificado contra el paquete real: la cobertura de Ronda 5 (85.0-100.0%, ver arriba),
+    porque esa corrida usa el mismo modelo que el tarball de npm. Pendiente: decidir si se publica una
+    nueva versión de npm con el par `rf_v11`/`if_v10` actual antes de la defensa, o si se declara
+    explícitamente en la tesis que las cifras de clasificación (OE3.1) y el paquete instalable
+    (`npm install logsguardian`) corresponden a generaciones de modelo distintas. Relacionado con el
+    ítem 8: el `IF_THRESHOLD` hardcodeado en ese mismo tarball (`0.00806713286301003`) también es el
+    valor pre-recalibración, no el vigente (`0.004205941820353609`) — mismo problema de raíz, un
+    publish desactualizado.
 
 ## Artefactos citados
 
