@@ -227,7 +227,7 @@ logsguardian attacks inspect cmdi --format json
 
 Requires a `<type>` positional argument — one of `sqli`, `xss`, `path_traversal`, `cmdi`. Exits with code 1 if the argument is missing or not one of these four (`benign` is not an attack type and is not accepted here, same as `attacks list`/`attacks summary`).
 
-**Detection rate:** per-class precision/recall/F1 loaded from `training/models/class_metrics.json` (bundled into the npm package as `data/class_metrics.json`, refreshed by the `postbuild` script). These are the official **locked test-set** numbers (R2 one-time read, 2026-06-20) from `docs/decision-policy.md` §2.1 — `eval_set` and the accompanying `eval_note` are always shown alongside the score.
+**Detection rate:** per-class precision/recall/F1 loaded from `training/models/class_metrics.json` (bundled into the npm package as `data/class_metrics.json`, refreshed by the `postbuild` script). These are the official **locked test-set** numbers (R2 one-time read, 2026-06-20) from `docs/decision-policy.md` §2.1 — `eval_set` and the accompanying `eval_note` are always shown alongside the score. Adenda (2026-10-09): el `class_metrics.json` del paquete npm 0.1.0 (mismo contenido que el de `dc2aaa6`) declara `model: rf_v3`, no datos v10; el de `develop` declara `rf_v11`.
 
 **Top features:** the 5 highest-ranked entries from `training/models/feature_importance.json` (also bundled as `data/feature_importance.json`), by mean impurity decrease. This is the **overall Random Forest importance**, not per-class — per-class importance hasn't been extracted from `rf_v2.pkl` (present on local disk but git-ignored, not committed). The same top-5 list is shown for every attack type, with a visible note clarifying this.
 

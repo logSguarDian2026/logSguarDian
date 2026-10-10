@@ -104,3 +104,5 @@ Assumes: capec parser fixed, owasp benign re-parsed, russellmitchell cleaned.
 | F3 (training) | ML | Blocked on F2 |
 | F4 (ONNX export) | ML | Blocked on F3 |
 | F5–F7 (middleware, benchmarks, npm) | Library engineer | Blocked on F4 |
+
+Adenda (2026-10-09): `logsguardian` 0.1.0 ya se publicó en npm el 2026-08-30 con rf_v10/if_v9; la fila npm de arriba está desactualizada.

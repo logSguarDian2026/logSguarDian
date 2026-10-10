@@ -3,7 +3,7 @@
   "n_estimators": 30,
   "max_depth": 25,
   "eval_set": "test",
-  "eval_note": "R2 one-time read of the locked test set (7486c258692a3cc6...), evaluated on 2026-09-26 against rf.onnx (rf_v11), the model actually published in npm. Supersedes the rf_v3 figures previously frozen here since 2026-06 (see git history) and cited in docs/decision-policy.md sec 2.1 -- those numbers were for a model two generations behind the one shipped. Test set read exactly once for this evaluation; no retraining after observing these numbers.",
+  "eval_note": "R2 one-time read of the locked test set (7486c258692a3cc6...), evaluated on 2026-09-26 against rf.onnx (rf_v11), the model actually published in npm. Supersedes the rf_v3 figures previously frozen here since 2026-06 (see git history) and cited in docs/decision-policy.md sec 2.1 -- those numbers were for a model two generations behind the one shipped. Test set read exactly once for this evaluation; no retraining after observing these numbers. Adenda (2026-10-09): los ONNX evaluados son los de training/models (commit 03de50f; rf 25b407e6, if 5be28ee8), no los publicados en npm. La versión 0.1.0 de npm (publicada 2026-08-30) contiene rf_v10/if_v9 (rf 18083725, if 5de374a7).",
   "classes": {
     "benign": {
       "f1": 0.9984,
