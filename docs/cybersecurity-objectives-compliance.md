@@ -540,9 +540,15 @@ arriba vienen directamente de `summary.jsonl` y los `.parsed.json` por rep del a
    sobre los otros dos) tampoco permite descartarlo del todo. Sigue sin hacerse una corrida realmente
    aislada de un solo escenario sostenido ≥30 min sin alternar con otros — ese es el pendiente real que
    cerraría la pregunta.
-10. **Cerrado (2026-10-10):** el export real de ZAP para xss ya está hecho (ver OE3.1 arriba) — ya no
-    es un pendiente. **Sigue abierto:** Ronda 5 (corpus limpio) solo cubrió Config 2; faltan Config 1
-    baseline y las variantes con WAF (3a/3b) con el mismo corpus.
+10. **Cerrado (2026-10-10).** El export real de ZAP para xss ya está hecho (ver OE3.1 arriba). Las 4
+    configuraciones (1, 2, 3a, 3b) ya están medidas contra el corpus limpio de Ronda 5 — Config 1
+    confirma 0% en todo (sanity check), Config 3a (solo WAF, rama `feat/waf-modsecurity-crs`) da
+    99.5/98.5/68.0/100% para sqli/path_traversal/cmdi/xss, y Config 3b (capas) 100/100/98.5/100%.
+    Hallazgo real: cmdi es donde el WAF solo es claramente más débil que logsguardian solo (68.0% vs
+    91.5%) — lo opuesto de sqli/path_traversal, donde el WAF solo rinde ligeramente mejor — y la capa
+    combinada supera a ambos por separado en cmdi (98.5%), consistente con el hallazgo cualitativo de
+    Ronda 4 (defensa en profundidad real, no redundante) pero ahora sobre un corpus sin fuga. Detalle
+    completo: `logSguarDian-vulnerable-project/docs/config3b-results.md` §"Cross-config comparison".
 11. **Nuevo (2026-10-09), alta prioridad — el paquete publicado no es el modelo que OE3.1 evalúa.**
     `logsguardian@0.1.0` en el registro de npm (verificado descargando el tarball real, no una copia
     local) empaqueta `rf.onnx`/`if.onnx` con checksum `180837255d.../5de374a7f1...` — una generación
