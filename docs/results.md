@@ -276,7 +276,7 @@ Implementation: `packages/core/src/worker.ts` (merged PR #18)
 |-------------|----------------|--------|
 | Load rf.onnx + if.onnx at startup | `Promise.all([ort.InferenceSession.create(rf.onnx), ort.InferenceSession.create(if.onnx)])` | ✓ |
 | Inference latency < 3ms p95 | p50=0.823ms, p95=1.044ms, p99=1.130ms | PASS |
-| Decision policy per decision-policy.md | `RF_THRESHOLD=0.35`, `IF_THRESHOLD=0.02901575` (if_v2) applied in `middleware.ts` (IF log-only, not in worker.ts) | ✓ |
+| Decision policy per decision-policy.md | `RF_THRESHOLD=0.35`, `IF_THRESHOLD=0.02901575` (histórico, if_v2; vigente: `0.004205941820353609`, if_v10) applied in `middleware.ts` (IF log-only, not in worker.ts) | ✓ |
 | Fail-open on session load failure | `try/catch` around `await sessionsPromise` in the per-request handler replies `{id, error}` instead of crashing; `middleware.ts` also has `worker.on("error")` as a second fail-open layer | ✓ |
 | Feature reduction 72→66 | By name via `EXCLUDED_NAMES` set, mapped to `MODEL_INDICES` against `FEATURE_NAMES` | ✓ |
 | Parallel RF+IF inference | `Promise.all([rfSession.run(...), ifSession.run(...)])` | ✓ |
@@ -796,9 +796,7 @@ gate; not investigated further.)
   was necessary but not sufficient; see `docs/limitations.md` §7 for the
   full account of why (confidence calibration shift, not a decode failure).
 
-**Open item carried forward:** `RF_THRESHOLD=0.35` was calibrated on val only.
-A one-time R2 confirmation read of the test set at this threshold is still
-pending — tracked in `docs/decision-policy.md` §6 (P1).
+**Open item carried forward:** `RF_THRESHOLD=0.35` se seleccionó con un barrido sobre validación. La confirmación en test de rf_v3 se afirma en `e74a8c6`, pero el artefacto no está en el repositorio: no verificable. Para rf_v11 el umbral no se recalibró (ver `docs/decision-policy.md` §6, P1).
 
 ---
 

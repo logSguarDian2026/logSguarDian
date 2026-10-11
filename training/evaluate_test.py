@@ -1,6 +1,25 @@
 """
-One-time R2 test-set read for rf_v11 / if_v10 — the models actually
-published in npm (see training/models/parity_report.json).
+One-time R2 test-set read for rf_v11 / if_v10 — the current, canonical
+training-pipeline models in training/models/ (see
+training/models/parity_report.json). These are NOT the models published in
+npm: logsguardian@0.1.0 was published 2026-08-30T05:07:31Z, before the
+rf_v11 retrain (commit 734c24f, later the same day) and long before this
+script's 2026-09-26 read. Verified 2026-10-09 by downloading the actual
+published tarball from the npm registry: its bundled rf.onnx/if.onnx
+checksum (180837255d.../5de374a7f1...) matches none of the generations
+read by this script. The npm package has not been republished since
+0.1.0 — anyone running `npm install logsguardian` today gets a model
+generation older than rf_v11/if_v10. Every "published in npm" claim below
+and in eval_note strings this script writes predates that verification and
+is wrong; read it as "the current training/models/ pair" instead.
+
+Addendum (2026-10-09): this was not the first or only read. test.parquet was
+read three times for the rf_v11 generation: 2026-09-24 (commit 3086318,
+rf.onnx a7c015f5..., IF threshold 0.00806713), 2026-09-25 (commit fc47a5b,
+rf_current_split.onnx a4dddbb7..., IF threshold 0.00420594) and 2026-09-26
+(commit 03de50f, rf.onnx 25b407e6..., IF threshold 0.00420594). The IF
+threshold changed from 0.00807 to 0.00421 between the first and the last read.
+Any "single" or "first" read wording in this file is superseded by this addendum.
 
 Why this script exists: every metric previously cited in
 docs/decision-policy.md sec 2.1 (and mirrored into
@@ -51,7 +70,7 @@ Design decisions (see .claude-plan.md "Fase 3" for the full rationale):
      precedent for it anywhere in this repo (zero prior occurrences of
      roc_auc_score).
 
-  5. The IF threshold (0.00806713286301003, from
+  5. The IF threshold (0.004205941820353609, from
      training/models/if_v10_metadata.json) is used as-is. It is NEVER
      recalibrated against test — doing so would violate the R2
      one-time-read discipline the whole point of this script is to

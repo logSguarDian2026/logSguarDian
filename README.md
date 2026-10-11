@@ -2,7 +2,7 @@
 
 > RASP middleware for Node.js/Express — detects SQL Injection, XSS, Path Traversal, and Command Injection in real time using a hybrid ML model, no dedicated security team required.
 
-**Status: pre-release.** Detection, CLI, and evaluation are functionally complete; this repo is in a final polish pass (docs, packaging, message copy) before the first npm publish.
+**Status: pre-release.** Detection, CLI, and evaluation are functionally complete; this repo is in a final polish pass (docs, packaging, message copy) before the first npm publish. Adenda (2026-10-09): `logsguardian@0.1.0` se publicó en npm el 2026-08-30 con los modelos rf_v10/if_v9.
 
 ---
 
@@ -69,6 +69,8 @@ logsGuarDian addresses this gap by providing:
 ## Installation
 
 > Not yet published to npm. See [packages/core](packages/core) for the workspace package in the meantime.
+>
+> Adenda (2026-10-09): `logsguardian@0.1.0` se publicó en npm el 2026-08-30 (modelos rf_v10/if_v9); la nota anterior está desactualizada.
 
 ```bash
 npm install logsguardian

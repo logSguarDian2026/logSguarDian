@@ -34,7 +34,7 @@ del 2026-09-23 que resultó estar atada a un modelo huérfano (ver OE3.1).
 | Amenazas conocidas y anomalías | RF clasifica 4 clases + benigno; IF marca anomalías (`pass_anomaly`) |
 | Tiempo de ejecución sin bloquear el Event Loop | Inferencia en `worker_threads` (RF dedicado + pool de IF), `docs/architecture.md` |
 | Sin comprometer el rendimiento | Parcial: ver OE3.2 |
-| Generalización fuera del entorno de calibración | **Riesgo real, observado en 4 apps de terceros nunca usadas en calibración ni entrenamiento** (DVNA, node-api-goat, dvws-node — este estudio — y OWASP Juice Shop — investigación paralela, ver abajo). En las 3 primeras: recall alto en ataques reales (92.5-100% por clase) junto con 92.5-100% de falsos positivos en tráfico benigno — con bloqueo casi total en ambos lados, el alto recall por sí solo es evidencia débil de discriminación útil; es compatible con un problema de calibración o sesgo del modelo frente a esta forma de tráfico, no con una causa ya aislada (ningún estudio corrió un barrido de `RF_THRESHOLD` que permita separar cuánto viene del umbral). **Hallazgo compatible entre dos investigaciones independientes, sin que esto aísle una causa exacta común a las 4 apps:** `docs/limitations.md` (addendum "magnitud de la dependencia de RF en el User-Agent", mergeado desde `develop` el 2026-10-02) cuantifica un sesgo de representación en el corpus de entrenamiento — solo 0.4% de las filas benignas de `unified.jsonl` tienen UA >40 caracteres, frente a 33.3-97.7% en las clases de ataque — y lo valida en Juice Shop (624 requests, modo `monitor`): con una cadena de UA de navegador específica, 97.1% bloqueado (303/312); con curl, 39.4% (123/312). El propio addendum acota ese resultado a esa cadena de navegador y reconoce que otros UA (Windows desktop, okhttp) no producen el mismo efecto en el caso que describe — no es una propiedad uniforme de "todo UA largo". El hallazgo de dvws-node de este estudio (UA de navegador real empeoró el FP de 75% a 92.5%) coincide en **dirección** con eso y refuta la hipótesis estrecha de que un UA corto es la causa exclusiva, pero no aísla por sí solo la misma causa que Juice Shop ni explica todos los falsos positivos de las 3 apps. Lo que puede afirmarse: los resultados son compatibles con el sesgo de representación de UA documentado; lo que no puede afirmarse todavía: que esa sea la causa exacta y exclusiva en las 3 apps de este estudio. Evidencia de Juice Shop: `docs/findings-evidence/juice-shop-ua-bias/`. **Limitación metodológica de las 3 apps de este estudio:** la evidencia cruda ahora vive también en `docs/vulnerable-projects-tests/evidence/` dentro de este repo (copiada el 2026-10-02 desde los clones locales), que siguen sin commitear ni subir; los JSON respaldan conteos de bloqueo por estado HTTP, no las confirmaciones manuales de explotación (hash extraído, archivo leído, comando ejecutado) narradas en cada `-results.md`, que no tienen captura de respuesta adjunta. Ver `docs/vulnerable-projects-tests/` para el detalle y las salvedades por app. |
+| Generalización fuera del entorno de calibración | **Riesgo real, observado en 4 apps de terceros nunca usadas en calibración ni entrenamiento** (DVNA, node-api-goat, dvws-node — este estudio — y OWASP Juice Shop — investigación paralela, ver abajo). En las 3 primeras: recall alto en ataques reales (92.5-100% por clase) junto con 92.5-100% de falsos positivos en tráfico benigno — con bloqueo casi total en ambos lados, el alto recall por sí solo es evidencia débil de discriminación útil; es compatible con un problema de calibración o sesgo del modelo frente a esta forma de tráfico, no con una causa ya aislada (ningún estudio corrió un barrido de `RF_THRESHOLD` que permita separar cuánto viene del umbral). **Hallazgo compatible entre dos investigaciones independientes, sin que esto aísle una causa exacta común a las 4 apps:** `docs/limitations.md` (addendum "magnitud de la dependencia de RF en el User-Agent", mergeado desde `develop` el 2026-10-02) cuantifica un sesgo de representación en el corpus de entrenamiento — solo 0.4% de las filas benignas de `unified.jsonl` tienen UA >40 caracteres, frente a 33.3-97.7% en las clases de ataque — y lo valida en Juice Shop (624 requests, modo `monitor`): con una cadena de UA de navegador específica, 97.1% bloqueado (303/312); con curl, 39.4% (123/312). El propio addendum acota ese resultado a esa cadena de navegador y reconoce que otros UA (Windows desktop, okhttp) no producen el mismo efecto en el caso que describe — no es una propiedad uniforme de "todo UA largo". El hallazgo de dvws-node de este estudio (UA de navegador real empeoró el FP de 75% a 92.5%) coincide en **dirección** con eso y refuta la hipótesis estrecha de que un UA corto es la causa exclusiva, pero no aísla por sí solo la misma causa que Juice Shop ni explica todos los falsos positivos de las 3 apps. Lo que puede afirmarse: los resultados son compatibles con el sesgo de representación de UA documentado; lo que no puede afirmarse todavía: que esa sea la causa exacta y exclusiva en las 3 apps de este estudio. Evidencia de Juice Shop: `docs/findings-evidence/juice-shop-ua-bias/`. **Procedencia del paquete en las 3 apps, confirmada (2026-10-09):** una revisión paralela había marcado como "no verificado" si DVNA/node-api-goat/dvws-node instalaron `logsguardian` desde el registro real de npm o desde un tarball local (sus `package.json` no viven en este repo). Verificado directamente en los 3 clones: los tres declaran `"logsguardian": "^0.1.0"` (rango semver, no `file:`), sin `.npmrc` que redirija el registro, y los tres `package-lock.json` tienen `resolved: https://registry.npmjs.org/logsguardian/-/logsguardian-0.1.0.tgz` con la misma integridad — **confirmado: las 3 apps corrieron contra el paquete real publicado** (`180837255d.../5de374a7f1...`, el mismo que Ronda 5), no contra `training/models/`. **Limitación metodológica de las 3 apps de este estudio:** la evidencia cruda ahora vive también en `docs/vulnerable-projects-tests/evidence/` dentro de este repo (copiada el 2026-10-02 desde los clones locales), que siguen sin commitear ni subir; los JSON respaldan conteos de bloqueo por estado HTTP, no las confirmaciones manuales de explotación (hash extraído, archivo leído, comando ejecutado) narradas en cada `-results.md`, que no tienen captura de respuesta adjunta. Ver `docs/vulnerable-projects-tests/` para el detalle y las salvedades por app. |
 
 ![logsguadian npm](cibersecurity-images/obj0-a.png)
 ![logsguadian test and packages](cibersecurity-images/obj0-b.png)
@@ -265,20 +265,52 @@ histórica pero no reemplazada. Hay que sincronizarla por separado.
   generado con sqlmap (sqli), generadores propios no derivados de SecLists (path_traversal, cmdi), y
   filtrado por exclusión contra el corpus de entrenamiento completo antes de incluir cualquier payload.
 
-  | Categoría | Ronda 4 (con fuga) | Ronda 5 (limpia) |
-  |---|---|---|
-  | sqli | 98.7 % | 100.0 % |
-  | path_traversal | 98.5 % | **85.0 %** |
-  | cmdi | 100.0 % (fuga) | **91.5 %** (real) |
-  | xss | 97.3 % | placeholder — ZAP manual pendiente, no citable |
+  > **Corrección del 2026-10-09, revertida el mismo día — el hallazgo real es más serio.** Se había
+  > escrito aquí que la corrida original de Ronda 5 (commit `79224e1`) usaba un modelo "equivocado"
+  > (checksum `180837255d.../5de374a7f1...`, distinto del par canónico `25b407e6.../5be28ee8...` de
+  > `training/models/`) y que re-correr contra el canónico era "la corrección". **Era al revés.**
+  > Se descargó el tarball real publicado en npm (`npm pack logsguardian@0.1.0` contra el registro,
+  > shasum verificado contra `dist.shasum`) y sus modelos empaquetados son exactamente
+  > `180837255d.../5de374a7f1...` — el mismo checksum que Ronda 5 (y Rondas 1-4) ya usaban. El publish
+  > de `0.1.0` ocurrió 2026-08-30T05:07:31Z, **antes** del retrain de `rf_v11` (`734c24f`, esa misma
+  > tarde) y mucho antes del fix del 26 de septiembre que produjo el par `25b407e6.../5be28ee8...`
+  > actual en `training/models/`. **El paquete nunca se republicó — `npm install logsguardian` hoy
+  > instala una generación anterior a `rf_v11`/`if_v10`.** Esto significa que las cifras de OE3.1
+  > (F1 macro 0.9776, más abajo) describen un modelo que nunca llegó a publicarse; ver el nuevo riesgo
+  > abierto más abajo.
 
-  cmdi 91.5 % es la tasa de detección real contra payloads que el modelo nunca vio; el 100 % anterior
-  era memorización de plantilla. path_traversal bajó (85.0 % vs. 98.5 %) no por fuga (0 coincidencias
-  confirmadas) sino porque este corpus es más diverso en encoding — hallazgo genuino, no artefacto de
-  medición. Las variantes con WAF (3a/3b) y el baseline (Config 1) no se re-corrieron con este corpus
-  todavía. Fuente: repo `logSguarDian-vulnerable-project`, `docs/config3b-results.md` §Ronda 5 (ruta
-  corregida — la carpeta `docs/vulnerable-app-evaluation/` ya no existe, el repo hermano aplanó sus
-  docs directo a `docs/`).
+  | Categoría | Ronda 4 (con fuga) | **Ronda 5, paquete publicado (vigente)** | Ronda 5, `training/models/` sin publicar (referencia) |
+  |---|---|---|---|
+  | sqli | 98.7 % | **100.0 %** | 99.5 % |
+  | path_traversal | 98.5 % | **85.0 %** | 95.0 % |
+  | cmdi | 100.0 % (fuga) | **91.5 %** | 96.0 % |
+  | xss | 97.3 % | **1/1 (100.0 %) — real, n=1** | 1/1 (100.0 %) — real, n=1 |
+
+  **XSS ya no es placeholder (actualizado 2026-10-10).** Resultado real vía OWASP ZAP Active Scan
+  (API REST de ZAP, autenticado como alice, sin navegador manual): de 538 alertas totales, **1 sola
+  es XSS** — `POST /profile`, campo `bio`, payload `</div><scrIpt>alert(1);</scRipt><div>`, riesgo
+  alto. `POST /posts` (`content`/`title`) se escaneó con la misma política y salió limpio — no
+  vulnerable. Funcionalmente es **XSS persistente/almacenado** (`bio` se guarda en la tabla de
+  usuarios y se re-renderiza en cada vista del perfil), aunque la regla de ZAP que disparó se llama
+  "Reflected" — no distingue el caso. **n=1 es intencional, no un placeholder a medio llenar:** el
+  Active Scan de ZAP reporta una alerta por parámetro confirmado vulnerable, no cada payload que
+  prueba — rellenarlo con variantes inventadas hasta llegar a n=200 (como el placeholder anterior)
+  habría tergiversado lo que realmente se confirmó explotable en esta app. No es comparable en peso
+  estadístico a sqli/path_traversal/cmdi (n=200 cada una). Evidencia cruda:
+  `logSguarDian-vulnerable-project/attack-sim/zap-evidence/` (reporte JSON de ZAP + export completo
+  de alertas).
+
+  La columna "vigente" es la que describe lo que cualquiera obtiene hoy con `npm install logsguardian`
+  — esa es la que corresponde citar para el objetivo de "librería npm". La de la derecha es una
+  referencia aparte: qué haría el modelo actual de `training/models/` (no publicado) sobre el mismo
+  corpus — también re-corrida el 2026-10-09, en la misma rama
+  (`fix/round5-correct-model-rerun` en `logSguarDian-vulnerable-project`), pero no sustituye a la
+  primera. Las explicaciones de por qué cmdi/path_traversal difieren de Ronda 4 (memorización de
+  plantilla vs. corpus más diverso en encoding) se escribieron contra la columna vigente y siguen
+  siendo correctas sin cambios. Las variantes con WAF (3a/3b) y el baseline (Config 1) siguen sin
+  re-correrse con este corpus. Fuente: repo `logSguarDian-vulnerable-project`, `docs/config3b-results.md`
+  §Ronda 5 (ruta corregida — la carpeta `docs/vulnerable-app-evaluation/` ya no existe, el repo hermano
+  aplanó sus docs directo a `docs/`).
 
 De los 40 ataques que el WAF dejó pasar en Ronda 4 (con fuga), logsguardian detuvo 37 de forma
 independiente — este hallazgo de defensa en profundidad no depende de la fuga de cmdi (viene
@@ -465,7 +497,7 @@ arriba vienen directamente de `summary.jsonl` y los `.parsed.json` por rep del a
 
 | Métrica | Estado | Evidencia |
 |---|---|---|
-| Cobertura ≥ 80 % por categoría de payload | Cumplida para 3/4 categorías medidas (85.0–100 % en Ronda 5, corpus limpio); **xss sin medición real todavía** — el export de ZAP sigue pendiente, no es "cumplida" para esa clase | Tabla de Ronda 5 en OE3.1 arriba (`config3b-results.md` §Ronda 5). No hay captura de pantalla de Ronda 5 todavía — las únicas capturas disponibles (obj3-f/g, ver arriba) son de Ronda 4 (con fuga, histórica), no deben citarse para esta fila |
+| Cobertura ≥ 80 % por categoría de payload | Cumplida para sqli/path_traversal/cmdi (85.0–100.0 % en Ronda 5, corpus limpio, paquete publicado — verificado 2026-10-09 contra el tarball real de npm); **xss cumplida en el único caso confirmado (1/1), pero con n=1 — no es la misma fuerza estadística que las otras tres categorías (n=200 cada una)** — ver OE3.1 arriba para el detalle y la salvedad completa | Tabla de Ronda 5 en OE3.1 arriba (`config3b-results.md` §Ronda 5, actualizado 2026-10-10). No hay captura de pantalla de Ronda 5 todavía — las únicas capturas disponibles (obj3-f/g, ver arriba) son de Ronda 4 (con fuga, histórica), no deben citarse para esta fila |
 | Paridad ONNX < 0.1 % | Cumplida: diferencia máxima ~1.0e-07 (RF) y ~2.4e-07 (IF), retrain 2026-09-26 | ![logsguadian npm](cibersecurity-images/obj3-k.png) `parity_report.json` y test de paridad |
 
 ---
@@ -488,15 +520,49 @@ arriba vienen directamente de `summary.jsonl` y los `.parsed.json` por rep del a
    timeouts en cualquier otro escenario/condición. Hipótesis de causa raíz (backpressure del pool de
    workers combinado con una ruta sin paginar) sin confirmar — requiere instrumentación dedicada antes
    de proponer un fix. Independiente del veredicto formal de Δp95, pero potencialmente más serio.
-8. **Nuevo:** el `rf.onnx`/`if.onnx` vendorizado en `logSguarDian-vulnerable-project` (usado para el
-   benchmark de latencia) no coincide por hash con el `rf_v11`/`if_v10` final de PR #79 — mismo shape,
-   generación distinta. Sincronizar el vendor y volver a correr `latency-benchmark.yml` antes de citar
-   estos números como finales.
-9. **Nuevo:** el heurístico de memoria (`possibleLeak: true`) sigue inconcluso — ni confirmado ni
-   descartado, por la mezcla de escenarios y reinicios de contenedor dentro de la misma ventana
-   muestreada. Repetir el monitoreo dentro de un solo escenario sostenido.
-8. Ronda 5 (corpus limpio) solo cubrió Config 2; faltan Config 1 baseline y las variantes con WAF
-   (3a/3b) con el mismo corpus, y el export real de ZAP para xss.
+8. **Confirmado y archivado (2026-10-09), sigue sin re-correrse.** El `rf.onnx`/`if.onnx` del
+   benchmark de latencia (commit `f15a9e8`, corrida CI 36276690236) es `a7c015f5.../3cf8e45c...` —
+   no coincide con el `rf_v11`/`if_v10` de PR #79 (`25b407e6.../5be28ee8...`) **ni** con el publicado
+   en npm (`180837255d.../5de374a7f1...`, ver ítem 11) — es una cuarta generación distinta de las tres
+   ya documentadas. Evidencia cruda archivada en
+   `logSguarDian-vulnerable-project/docs/evidence/latency-linux-2026-09-26.tgz`
+   (SHA-256 `b96d901408547331fb4859a5dac4810abdb1caaeb2f15f3378877c2290187cec`), con el hash del modelo
+   documentado explícitamente en `docs/evidence/README.md`. Sincronizar el vendor y volver a correr
+   `latency-benchmark.yml` sigue pendiente antes de citar estos números como finales.
+9. **Parcialmente resuelto (2026-10-09) — mejor cuantificado, todavía no aislado por escenario.** El
+   análisis original (`possibleLeak: true`, heurístico de primera-mitad-vs-segunda-mitad sobre toda la
+   ventana) quedó superado por `docs/evidence/resources_summary.md` del mismo repo: segmenta las 374
+   muestras de memoria/CPU por repetición y escenario (ventana A: periodo medido, primeros 15s
+   descartados; ventana B: repetición completa). El incremento activo-menos-baseline es consistente
+   entre escenarios (+332 MB normal, +332 MB ataque, +376 MB volumen) — no crece de forma monótona de
+   forma dramática a lo largo de la secuencia, lo cual es compatible con "overhead fijo del worker pool
+   al activarse" más que con un leak que crece sin límite. El incremento algo mayor en volumen (+44 MB
+   sobre los otros dos) tampoco permite descartarlo del todo. Sigue sin hacerse una corrida realmente
+   aislada de un solo escenario sostenido ≥30 min sin alternar con otros — ese es el pendiente real que
+   cerraría la pregunta.
+10. **Cerrado (2026-10-10).** El export real de ZAP para xss ya está hecho (ver OE3.1 arriba). Las 4
+    configuraciones (1, 2, 3a, 3b) ya están medidas contra el corpus limpio de Ronda 5 — Config 1
+    confirma 0% en todo (sanity check), Config 3a (solo WAF, rama `feat/waf-modsecurity-crs`) da
+    99.5/98.5/68.0/100% para sqli/path_traversal/cmdi/xss, y Config 3b (capas) 100/100/98.5/100%.
+    Hallazgo real: cmdi es donde el WAF solo es claramente más débil que logsguardian solo (68.0% vs
+    91.5%) — lo opuesto de sqli/path_traversal, donde el WAF solo rinde ligeramente mejor — y la capa
+    combinada supera a ambos por separado en cmdi (98.5%), consistente con el hallazgo cualitativo de
+    Ronda 4 (defensa en profundidad real, no redundante) pero ahora sobre un corpus sin fuga. Detalle
+    completo: `logSguarDian-vulnerable-project/docs/config3b-results.md` §"Cross-config comparison".
+11. **Nuevo (2026-10-09), alta prioridad — el paquete publicado no es el modelo que OE3.1 evalúa.**
+    `logsguardian@0.1.0` en el registro de npm (verificado descargando el tarball real, no una copia
+    local) empaqueta `rf.onnx`/`if.onnx` con checksum `180837255d.../5de374a7f1...` — una generación
+    anterior a `rf_v11`/`if_v10` (`25b407e6.../5be28ee8...`). El publish ocurrió 2026-08-30, antes del
+    retrain de `rf_v11` y mucho antes del fix de procedencia del 26 de septiembre. **Las cifras de
+    OE3.1 (F1 macro 0.9776, verificadas contra PR #79) describen un modelo que nunca se publicó.** Lo
+    que sí está verificado contra el paquete real: la cobertura de Ronda 5 (85.0-100.0%, ver arriba),
+    porque esa corrida usa el mismo modelo que el tarball de npm. Pendiente: decidir si se publica una
+    nueva versión de npm con el par `rf_v11`/`if_v10` actual antes de la defensa, o si se declara
+    explícitamente en la tesis que las cifras de clasificación (OE3.1) y el paquete instalable
+    (`npm install logsguardian`) corresponden a generaciones de modelo distintas. Relacionado con el
+    ítem 8: el `IF_THRESHOLD` hardcodeado en ese mismo tarball (`0.00806713286301003`) también es el
+    valor pre-recalibración, no el vigente (`0.004205941820353609`) — mismo problema de raíz, un
+    publish desactualizado.
 
 ## Artefactos citados
 
