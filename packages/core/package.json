@@ -1,6 +1,6 @@
 {
   "name": "logsguardian",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Middleware RASP de deteccion de amenazas (SQLi, XSS, Path Traversal, Command Injection) para Node.js/Express, con inferencia ONNX (Random Forest + Isolation Forest)",
   "keywords": [
     "rasp",
