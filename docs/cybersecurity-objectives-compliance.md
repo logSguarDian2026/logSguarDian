@@ -284,7 +284,21 @@ histórica pero no reemplazada. Hay que sincronizarla por separado.
   | sqli | 98.7 % | **100.0 %** | 99.5 % |
   | path_traversal | 98.5 % | **85.0 %** | 95.0 % |
   | cmdi | 100.0 % (fuga) | **91.5 %** | 96.0 % |
-  | xss | 97.3 % | placeholder — ZAP manual pendiente, no citable | placeholder — sin cambio |
+  | xss | 97.3 % | **1/1 (100.0 %) — real, n=1** | 1/1 (100.0 %) — real, n=1 |
+
+  **XSS ya no es placeholder (actualizado 2026-10-10).** Resultado real vía OWASP ZAP Active Scan
+  (API REST de ZAP, autenticado como alice, sin navegador manual): de 538 alertas totales, **1 sola
+  es XSS** — `POST /profile`, campo `bio`, payload `</div><scrIpt>alert(1);</scRipt><div>`, riesgo
+  alto. `POST /posts` (`content`/`title`) se escaneó con la misma política y salió limpio — no
+  vulnerable. Funcionalmente es **XSS persistente/almacenado** (`bio` se guarda en la tabla de
+  usuarios y se re-renderiza en cada vista del perfil), aunque la regla de ZAP que disparó se llama
+  "Reflected" — no distingue el caso. **n=1 es intencional, no un placeholder a medio llenar:** el
+  Active Scan de ZAP reporta una alerta por parámetro confirmado vulnerable, no cada payload que
+  prueba — rellenarlo con variantes inventadas hasta llegar a n=200 (como el placeholder anterior)
+  habría tergiversado lo que realmente se confirmó explotable en esta app. No es comparable en peso
+  estadístico a sqli/path_traversal/cmdi (n=200 cada una). Evidencia cruda:
+  `logSguarDian-vulnerable-project/attack-sim/zap-evidence/` (reporte JSON de ZAP + export completo
+  de alertas).
 
   La columna "vigente" es la que describe lo que cualquiera obtiene hoy con `npm install logsguardian`
   — esa es la que corresponde citar para el objetivo de "librería npm". La de la derecha es una
@@ -483,7 +497,7 @@ arriba vienen directamente de `summary.jsonl` y los `.parsed.json` por rep del a
 
 | Métrica | Estado | Evidencia |
 |---|---|---|
-| Cobertura ≥ 80 % por categoría de payload | Cumplida para 3/4 categorías medidas (85.0–100.0 % en Ronda 5, corpus limpio, paquete publicado — verificado 2026-10-09 contra el tarball real de npm); **xss sin medición real todavía** — el export de ZAP sigue pendiente, no es "cumplida" para esa clase | Tabla de Ronda 5 en OE3.1 arriba (`config3b-results.md` §Ronda 5). No hay captura de pantalla de Ronda 5 todavía — las únicas capturas disponibles (obj3-f/g, ver arriba) son de Ronda 4 (con fuga, histórica), no deben citarse para esta fila |
+| Cobertura ≥ 80 % por categoría de payload | Cumplida para sqli/path_traversal/cmdi (85.0–100.0 % en Ronda 5, corpus limpio, paquete publicado — verificado 2026-10-09 contra el tarball real de npm); **xss cumplida en el único caso confirmado (1/1), pero con n=1 — no es la misma fuerza estadística que las otras tres categorías (n=200 cada una)** — ver OE3.1 arriba para el detalle y la salvedad completa | Tabla de Ronda 5 en OE3.1 arriba (`config3b-results.md` §Ronda 5, actualizado 2026-10-10). No hay captura de pantalla de Ronda 5 todavía — las únicas capturas disponibles (obj3-f/g, ver arriba) son de Ronda 4 (con fuga, histórica), no deben citarse para esta fila |
 | Paridad ONNX < 0.1 % | Cumplida: diferencia máxima ~1.0e-07 (RF) y ~2.4e-07 (IF), retrain 2026-09-26 | ![logsguadian npm](cibersecurity-images/obj3-k.png) `parity_report.json` y test de paridad |
 
 ---
@@ -526,8 +540,9 @@ arriba vienen directamente de `summary.jsonl` y los `.parsed.json` por rep del a
    sobre los otros dos) tampoco permite descartarlo del todo. Sigue sin hacerse una corrida realmente
    aislada de un solo escenario sostenido ≥30 min sin alternar con otros — ese es el pendiente real que
    cerraría la pregunta.
-10. Ronda 5 (corpus limpio) solo cubrió Config 2; faltan Config 1 baseline y las variantes con WAF
-    (3a/3b) con el mismo corpus, y el export real de ZAP para xss.
+10. **Cerrado (2026-10-10):** el export real de ZAP para xss ya está hecho (ver OE3.1 arriba) — ya no
+    es un pendiente. **Sigue abierto:** Ronda 5 (corpus limpio) solo cubrió Config 2; faltan Config 1
+    baseline y las variantes con WAF (3a/3b) con el mismo corpus.
 11. **Nuevo (2026-10-09), alta prioridad — el paquete publicado no es el modelo que OE3.1 evalúa.**
     `logsguardian@0.1.0` en el registro de npm (verificado descargando el tarball real, no una copia
     local) empaqueta `rf.onnx`/`if.onnx` con checksum `180837255d.../5de374a7f1...` — una generación
