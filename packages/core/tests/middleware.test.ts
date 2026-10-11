@@ -245,6 +245,34 @@ describe("logsguardian — block mode", () => {
   });
 });
 
+describe("logsguardian — query string encoding", () => {
+  // Regression test for a bug found via training/audit/breakdown_config2.py's
+  // path_traversal breakdown: Express already percent-decodes req.query once.
+  // Rebuilding the query string with `new URLSearchParams(req.query).toString()`
+  // re-encoded any literal "%" left over from that decode, silently adding an
+  // extra layer of percent-encoding on top of whatever the client sent — so a
+  // double-encoded traversal payload (`%252e%252e%252f`) arrived at the feature
+  // extractor triple-encoded, past what TRAVERSAL_SEQUENCE_COUNT recognizes.
+  test("canonical.query matches the raw wire query string, not a re-encoded one", async () => {
+    const app = makeApp({ mode: "block", threshold: 0.70, timeoutMs: 500 });
+    let capturedQuery: string | undefined;
+    const rf = mockWorkersByRole.rf!;
+    rf.postMessage = (msg: unknown) => {
+      const { id, canonical } = msg as WorkerRequest;
+      capturedQuery = canonical.query;
+      setImmediate(() =>
+        rf.emit("message", { id, role: "rf", rfProbs: BENIGN_HIGH } as WorkerResponse)
+      );
+    };
+    mockIfResponse(IF_NORMAL);
+
+    const doubleEncoded = "%252e%252e%252fetc%2fpasswd";
+    await httpGet(app, `/?file=${doubleEncoded}`);
+
+    expect(capturedQuery).toBe(`file=${doubleEncoded}`);
+  });
+});
+
 describe("logsguardian — confidence range", () => {
   // Observed from onnxruntime-node: float32 softmax rounding a hair above 1.
   const OVERSHOOT_CONFIDENCE = 1.0000003576278687;
