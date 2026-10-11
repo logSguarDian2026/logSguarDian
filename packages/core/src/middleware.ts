@@ -568,9 +568,30 @@ export function logsguardian(options: MiddlewareOptions = {}): LogsguardianHandl
     next: NextFunction
   ): Promise<void> {
     const t0 = Date.now();
-    const queryString = typeof req.query === "string"
-      ? req.query
-      : new URLSearchParams(req.query as Record<string, string>).toString();
+    // Use the raw query string straight off the wire instead of re-deriving it from
+    // req.query (which Express already percent-decoded once). Rebuilding it via
+    // `new URLSearchParams(req.query).toString()` re-encodes any literal `%` left over
+    // from that decode, silently adding an extra layer of percent-encoding on top of
+    // whatever the client actually sent. For an attacker who deliberately double- or
+    // triple-encodes a payload (e.g. `%252e%252e%252f` for path traversal), that extra
+    // layer pushes the payload past what TRAVERSAL_SEQUENCE_COUNT and friends recognize,
+    // producing a false negative that has nothing to do with detection capability —
+    // see training/audit/breakdown_config2.py's path_traversal breakdown, where misses
+    // concentrate almost entirely in the double_encoding/overlong_utf8 buckets.
+    const rawUrl = req.originalUrl ?? req.url;
+    const queryString = rawUrl
+      ? (() => {
+          const queryIndex = rawUrl.indexOf("?");
+          return queryIndex >= 0 ? rawUrl.slice(queryIndex + 1) : "";
+        })()
+      // Fall back to the old (re-encoding) derivation only when neither raw-URL field
+      // is available at all — e.g. a synthetic request object built by hand in a test,
+      // not a real Express request. Real traffic always has originalUrl/url, so this
+      // branch does not reintroduce the double-encoding bug for anything the model
+      // actually sees in production.
+      : (typeof req.query === "string"
+          ? req.query
+          : new URLSearchParams(req.query as Record<string, string>).toString());
     const userAgent = (req.headers["user-agent"] as string) ?? "";
     const clientIp = req.ip ?? "";
 
