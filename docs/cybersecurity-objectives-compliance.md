@@ -549,20 +549,25 @@ arriba vienen directamente de `summary.jsonl` y los `.parsed.json` por rep del a
     combinada supera a ambos por separado en cmdi (98.5%), consistente con el hallazgo cualitativo de
     Ronda 4 (defensa en profundidad real, no redundante) pero ahora sobre un corpus sin fuga. Detalle
     completo: `logSguarDian-vulnerable-project/docs/config3b-results.md` §"Cross-config comparison".
-11. **Nuevo (2026-10-09), alta prioridad — el paquete publicado no es el modelo que OE3.1 evalúa.**
-    `logsguardian@0.1.0` en el registro de npm (verificado descargando el tarball real, no una copia
-    local) empaqueta `rf.onnx`/`if.onnx` con checksum `180837255d.../5de374a7f1...` — una generación
-    anterior a `rf_v11`/`if_v10` (`25b407e6.../5be28ee8...`). El publish ocurrió 2026-08-30, antes del
-    retrain de `rf_v11` y mucho antes del fix de procedencia del 26 de septiembre. **Las cifras de
-    OE3.1 (F1 macro 0.9776, verificadas contra PR #79) describen un modelo que nunca se publicó.** Lo
-    que sí está verificado contra el paquete real: la cobertura de Ronda 5 (85.0-100.0%, ver arriba),
-    porque esa corrida usa el mismo modelo que el tarball de npm. Pendiente: decidir si se publica una
-    nueva versión de npm con el par `rf_v11`/`if_v10` actual antes de la defensa, o si se declara
-    explícitamente en la tesis que las cifras de clasificación (OE3.1) y el paquete instalable
-    (`npm install logsguardian`) corresponden a generaciones de modelo distintas. Relacionado con el
-    ítem 8: el `IF_THRESHOLD` hardcodeado en ese mismo tarball (`0.00806713286301003`) también es el
-    valor pre-recalibración, no el vigente (`0.004205941820353609`) — mismo problema de raíz, un
-    publish desactualizado.
+11. **Cerrado (2026-10-11) — se publicó `0.1.1` con el modelo correcto.** `logsguardian@0.1.0` (publicado
+    2026-08-30) empaquetaba `rf.onnx`/`if.onnx` con checksum `180837255d.../5de374a7f1...` — una
+    generación anterior a `rf_v11`/`if_v10`, describiendo un modelo distinto al que OE3.1 evalúa
+    (F1 macro 0.9776). **`logsguardian@0.1.1` (2026-10-11) ya empaqueta el par canónico
+    `rf_v11`/`if_v10` (`25b407e6.../5be28ee8...`)** — verificado instalando el paquete real desde el
+    registro (`npm install logsguardian@0.1.1`, sin tarball local) y comprobando el checksum dentro
+    del contenedor. También incluye el fix de doble-encoding de query string
+    (`fix/query-double-encoding-traversal`, ver más abajo) y el `IF_THRESHOLD` dinámico vía
+    `parity_report.json` (ya no hardcodeado) — cierra también la mitad relacionada del ítem 8.
+    **Verificación de impacto real (2026-10-11):** se reinstaló `0.1.1` real en
+    `logSguarDian-vulnerable-project` (sin override de `modelDir`, usando los modelos que trae el
+    paquete) y se re-corrió el corpus de Ronda 5. path_traversal subió de 85.0% (paquete viejo) a
+    95.0% (solo por el modelo correcto) a **100.0% (200/200)** tras encontrar y corregir un segundo
+    bug, independiente, en el harness de pruebas (`run_large_corpus.py` re-codificaba payloads que ya
+    venían pre-encoded, agregando una capa de más). cmdi bajó de 96.0% a 92.5% con el harness
+    corregido — número más honesto, no una regresión: el bug del harness también corrompía payloads
+    de evasión de cmdi con separadores pre-encoded (`%0a`, `%26`, etc.), y algunos de esos payloads
+    corrompidos se bloqueaban por casualidad. Detalle completo:
+    `logSguarDian-vulnerable-project/docs/config3b-results.md` §"`logsguardian@0.1.1` verification".
 
 ## Artefactos citados
 
