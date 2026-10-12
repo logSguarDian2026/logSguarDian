@@ -150,8 +150,8 @@ dominant class:
    most of the degradation.
 2. **Genuine style-driven generalization failure (the `synthetic_nav`
    outlier).** `synthetic_nav` holds the *smallest* class share of any
-   source (0.9% of benign) yet produces the *worst* LOSO score by a wide
-   margin (F1 0.0027) — the opposite of what volume alone predicts. It is a
+   source (0.9% of benign) yet produced the *worst* LOSO score by a wide
+   margin in the original sweep (F1 0.0027). 0.0027 is the pre-correction value (synthetic_nav excluded, synthetic_nav_ecommerce not yet in the corpus). After synthetic_nav_ecommerce was added (2026-09-06) the re-run gives 0.2916 (training/models/loso_results.json). The correlations in this section were computed with 0.0027 and were not recomputed. This is the opposite of what volume alone predicts. It is a
    template-generated benign set whose structured, low-entropy navigation
    paths don't resemble any of the other benign sources; removing it removes
    a whole *style* of benign request, not a meaningful volume of examples.

@@ -422,10 +422,9 @@ Per-class calibration was done on val set, with a single confirmation
 read on the E2E/test-derived fixture set (R2 discipline — see §2.2.2 for
 why test-set peeking is bounded to one-shot reads).
 
-`training/models/per_class_thresholds.json` and the `RF_THRESHOLDS` map
-in `packages/core/src/middleware.ts` both hold the final minimal-touch
+`training/models/per_class_thresholds.json` holds the final minimal-touch
 values (`sqli: 0.45, xss: 0.35, path_traversal: 0.35, cmdi: 0.35`), not
-the raw sweep table above.
+the raw sweep table above. middleware.ts defines a single global RF_THRESHOLD = 0.35; the per-class map from the rf_v7 sweep (§2.2.3) was superseded and is not deployed.
 
 ---
 
@@ -436,12 +435,31 @@ the raw sweep table above.
 > unnecessary once `non_form_operator_count` landed (v8) and was **removed** —
 > a single global `RF_THRESHOLD = 0.35` has been in effect since. `IF_THRESHOLD`
 > has been recalibrated several more times since the `0.0445`/`0.00940951`
-> values below (if_v5/if_v6) — the value actually shipped today is
-> `0.002486040118540811` (if_v9, `middleware.ts`). The decision *shape*
+> values below (if_v5/if_v6) — the value shipped in `logsguardian@0.1.0` is
+> `0.002486040118540811` (if_v9, `dist/middleware.js:95`); from `logsguardian@0.1.1`
+> on, the IF threshold is read at runtime from the model's `parity_report.json`
+> (see the tables below). The statements at §3 (deployed IF threshold 0.002486)
+> and §4 (0.004205) refer to those two different package states. The decision *shape*
 > (RF sole blocking authority, IF log-only) is unchanged; only the threshold
 > values and the RF-thresholds-are-per-class premise below are historical.
 > See `docs/api.md` for the current, code-accurate decision table, and §2.2/§2.3
 > above for the full recalibration history including these later rounds.
+
+### IF threshold by model
+
+| Model | IF threshold | Source file (`threshold` field) |
+|-------|--------------|---------------------------------|
+| if_v9 | `0.002486040118540811` | `training/models/if_v9_metadata.json` |
+| if_v10 | `0.004205941820353609` | `training/models/if_v10_metadata.json` |
+
+#### Published npm package → IF threshold
+
+| Package | IF threshold | Source |
+|---------|--------------|--------|
+| `logsguardian@0.1.0` (npm, published 2026-08-30) | `0.002486040118540811` (constant `IF_THRESHOLD`) | `dist/middleware.js:95`; tgz SHA-256 `c5c1a1da…` |
+| `logsguardian@0.1.1` (npm, published 2026-10-11 UTC) | `0.004205941820353609` (read from `models/parity_report.json` `threshold_if`) | `dist/middleware.js:118`; `dist/model-metadata.js:20-40` |
+
+`middleware.ts:157` calls `loadIfThreshold()` (`packages/core/src/model-metadata.ts:15`), which reads `threshold_if` from `parity_report.json` in the model directory, not from the `if_v*_metadata.json` files. In the repo, `training/models/parity_report.json` currently holds `threshold_if = 0.004205941820353609` (`if_v10` / `rf_v11`).
 
 ### 3.1 Decision Table (historical — see note above for current values)
 
@@ -505,7 +523,7 @@ documented here as the authoritative design record.
 
 **Current, as shipped (`middleware.ts`):** `RF_THRESHOLD = 0.35` (single global
 constant, not per-class — the per-class map below was removed, see the note
-at the top of §3), `IF_THRESHOLD = 0.004205941820353609` (if_v10, `training/models/if_v10_metadata.json`). The table
+at the top of §3), the IF threshold is read at runtime by `loadIfThreshold()` from `threshold_if` in `parity_report.json` (`0.004205941820353609`, if_v10, `training/models/parity_report.json`). The table
 below is the snapshot as of rf_v7/if_v5 and is kept for provenance of *how*
 each round of recalibration was reasoned about — it is not the current
 runtime value. §2.2/§2.3 has the complete round-by-round history through the
