@@ -824,6 +824,8 @@ untouched. Script: `training/loso_validation.py`. Results:
 | capec | 289,287 | cmdi, path_traversal, sqli, xss | 0.1671 | Poor generalization |
 | synthetic_nav | 5,150 | benign | 0.0027 | Poor generalization |
 
+> 0.0027 is the pre-correction value (synthetic_nav excluded, synthetic_nav_ecommerce not yet in the corpus). After synthetic_nav_ecommerce was added (2026-09-06) the re-run gives 0.2916 (training/models/loso_results.json). The correlations in this section were computed with 0.0027 and were not recomputed.
+
 **Findings: the corpus is dominated by 1–2 "mega-sources" per class, not a
 diverse pool of interchangeable sources.** Per-class share of the full corpus:
 
@@ -838,8 +840,8 @@ diverse pool of interchangeable sources.** Per-class share of the full corpus:
 Holding out `capec` or `modsec_learn` therefore does not simulate "a new,
 unseen source of similar diversity" — it removes 85–93% of a class's entire
 training signal, which is why every LOSO score is far below rf_v7's in-corpus
-macro F1 (0.9682, §2.1 `decision-policy.md`). `synthetic_nav`'s catastrophic
-0.0027 is the clearest single artifact: it is a synthetic, template-generated
+macro F1 (0.9682, §2.1 `decision-policy.md`). `synthetic_nav`'s severe
+0.0027 (pre-correction value; see the note above) is the clearest single artifact: it is a synthetic, template-generated
 benign navigation set with a payload style (structured, low-entropy,
 repetitive paths) that none of the other five benign-containing sources
 (scraped/production traffic, curated payload lists) reproduce — without it in
@@ -879,6 +881,8 @@ share of its dominant class in the full corpus.
 | synthetic_nav | 0.0027 | benign | 0.9% |
 | xss_dataset | 0.4063 | xss | 19.7% |
 
+> 0.0027 is the pre-correction value (synthetic_nav excluded, synthetic_nav_ecommerce not yet in the corpus). After synthetic_nav_ecommerce was added (2026-09-06) the re-run gives 0.2916 (training/models/loso_results.json). The correlations in this section were computed with 0.0027 and were not recomputed.
+
 **Pearson correlation (LOSO F1 vs. dominant-class share), all 9 sources:
 −0.375** — moderate, not the strong (< −0.6) confirmation that would let
 "volume starvation" stand as the sole explanation. Two sources break the
@@ -886,7 +890,7 @@ volume-only story in opposite directions:
 
 - **`synthetic_nav` is a genuine generalization failure, not volume
   starvation.** It holds the *smallest* class share of any source (0.9% of
-  benign) yet produces the *worst* LOSO score by a wide margin (0.0027). If
+  benign) yet produced the *worst* LOSO score by a wide margin in the original sweep (0.0027; pre-correction value, see the note above). If
   volume alone explained degradation, this low-share source should be one of
   the *least* damaging to remove. Its outsized failure is explained instead
   by its distinctive template-generated style (§F3.6 above): removing it

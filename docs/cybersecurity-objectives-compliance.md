@@ -29,7 +29,7 @@ del 2026-09-23 que resultó estar atada a un modelo huérfano (ver OE3.1).
 | Componente del objetivo | Dónde se cumple |
 |---|---|
 | Librería npm | `packages/core`, publicada como `logsguardian@0.1.0` (CI de publicación en `.github/workflows/ci.yml`) |
-| Pipeline de ingeniería de características | `packages/extractor` — 76 features (creció de 75 a 76 el 2026-09-25 con `non_json_quote_count`, PR #75; excluida de RF/IF hasta su propio retrain — ver `packages/core/src/worker.ts`), implementación única en TypeScript (`docs/feature-spec.md`, aún no actualizado a 76) |
+| Pipeline de ingeniería de características | `packages/extractor` — 76 features (creció de 75 a 76 el 2026-09-25 con `non_json_quote_count`, PR #75; excluida de RF/IF hasta su propio retrain — ver `packages/core/src/worker.ts`), implementación única en TypeScript (`docs/feature-spec.md`, actualizado a 76 filas con el PR #93) |
 | Modelo híbrido | RF (supervisado, autoridad de bloqueo) + IF (no supervisado, solo registro/alerta) en ONNX; política en `docs/decision-policy.md` |
 | Amenazas conocidas y anomalías | RF clasifica 4 clases + benigno; IF marca anomalías (`pass_anomaly`) |
 | Tiempo de ejecución sin bloquear el Event Loop | Inferencia en `worker_threads` (RF dedicado + pool de IF), `docs/architecture.md` |
@@ -170,13 +170,27 @@ el resultado final.
 - Deduplicación: `training/DEDUP_METHODOLOGY.md`. Partición estratificada por clase y fuente:
   `training/split.py`.
 - Reproducibilidad y anti-fuga: `training/splits/test.lock.sha256` se versiona **antes** de cada
-  reentrenamiento (`git log` muestra un commit `lock:` por generación; el más reciente para v11 es
-  `6d1fa68`, 2026-09-23, tras encontrarse que el lock commiteado no coincidía con los artefactos en
+  reentrenamiento (la tabla siguiente lista cada cambio del lock según `git log -p`; el último para v11
+  es del 2026-09-23, tras encontrarse que el lock commiteado no coincidía con los artefactos en
   disco — ver nota de procedencia al inicio del documento). Desde el 2026-09-26,
   `training/evaluate_test.py` además graba un manifiesto de checksums (`test.parquet`, `rf.onnx`,
   `if.onnx`) junto a cada lectura, y `rf_v11.pkl`/su metadata pasaron a estar trackeados en git —
   cierra el hueco que permitió que un candidato sin promover sobreescribiera el `.pkl` de producción
   bajo el mismo nombre sin que nada lo detectara (ver OE3.1).
+
+**Historial de `training/splits/test.lock.sha256`** (generado con `git log -p -- training/splits/test.lock.sha256`; hashes truncados a 8 caracteres). No hay un único lock por generación: el 2026-09-23 el mismo cambio de valor entró en tres commits, que se colapsan en una fila.
+
+| Commit | Fecha | Autor | Mensaje | Lock antes | Lock después |
+|---|---|---|---|---|---|
+| `f15e7cc`, `72aabd6`, `6d1fa68` | 2026-09-23 | Diegoval-Dev (`f15e7cc`); Sebastian Huertas Gomez (`72aabd6`, `6d1fa68`) | `investigate: benign-traffic persona diversification - 2 real feature bugs found and fixed`; `test(training): quantify SecLists leakage across all attack classes and the E2E fixture`; `chore(training): re-lock test set to match the restored rf_v11 generation` | `a3140ab3…` | `7486c258…` |
+| `8cbe6c9` | 2026-08-30 | Diegoval-Dev | lock: test set locked before retraining v11 | `6c5f253d…` | `a3140ab3…` |
+| `b43de9c` | 2026-08-02 | Diegoval-Dev | lock: test set locked before retraining v10 | `4a5e0b97…` | `6c5f253d…` |
+| `fa46bdd` | 2026-07-26 | Diegoval-Dev | lock: test set locked before retraining v9 | `251716bb…` | `4a5e0b97…` |
+| `5dc7c06` | 2026-07-25 | Diegoval-Dev | lock: test set locked before retraining v8 | `ee4b85db…` | `251716bb…` |
+| `59990ca` | 2026-07-24 | Diegoval-Dev | lock: test set locked before retraining v6 | `7df5adb8…` | `ee4b85db…` |
+| `6867f28` | 2026-07-24 | Diegoval-Dev | lock: test set locked before retraining v4 | `d1a2a284…` | `7df5adb8…` |
+| `df62619` | 2026-07-23 | Diegoval-Dev | lock: new test set locked before retraining v3 | `3beeaba4…` | `d1a2a284…` |
+| `cc00c3c` | 2026-06-11 | Diegoval-Dev | feat(training): fix pipeline and lock test set for training | — | `3beeaba4…` |
 
 ![logsguadian npm](cibersecurity-images/obj2-e.png)
 ![logsguadian npm](cibersecurity-images/obj2-f.png)
@@ -195,8 +209,7 @@ el resultado final.
 3. **Re-bloqueo del test set.** `test.lock.sha256` se regeneró para v3, v4, v6, v8, v9, v10 y v11 (al
    menos 7 veces, no 5). La disciplina de "leer el test una vez" se aplica por generación de modelo;
    debe declararse así en la sección de amenazas a la validez. Mitigado parcialmente desde el
-   2026-09-26: el lock en sí protege la *identidad* de fila (hash de path+query+body+label), no el
-   contenido de features, así que es correctamente invariante a cambios del extractor — pero antes de
+   2026-09-26: el lock en sí protege la *identidad* de fila. El lock es el SHA-256 de los identificadores por fila (_row_hash) del conjunto de prueba, ordenados y unidos por saltos de línea (training/split.py:150-155; se verifica en training/evaluate_test.py:165-173). No es un hash de path+query+body+label ni de los bytes del parquet: cubre la identidad de las filas, no el contenido de las características, así que es correctamente invariante a cambios del extractor — pero antes de
    esa fecha nada ataba un número citado al contenido exacto (byte a byte) del modelo/test-set que lo
    produjo; el manifiesto de checksums de `evaluate_test.py` cierra esa brecha específica hacia
    adelante, no retroactivamente para las generaciones anteriores a v11.
