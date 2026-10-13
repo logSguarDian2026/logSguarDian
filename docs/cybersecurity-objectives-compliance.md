@@ -178,7 +178,7 @@ el resultado final.
   cierra el hueco que permitió que un candidato sin promover sobreescribiera el `.pkl` de producción
   bajo el mismo nombre sin que nada lo detectara (ver OE3.1).
 
-**Historial de `training/splits/test.lock.sha256`** (generado con `git log -p -- training/splits/test.lock.sha256`; hashes truncados a 8 caracteres). No hay un único lock por generación: el 2026-09-23 el mismo cambio de valor entró en tres commits, que se colapsan en una fila.
+**Historial de `training/splits/test.lock.sha256`** (generado con `git log --all -- training/splits/test.lock.sha256`; hashes truncados a 8 caracteres). No hay un único lock por generación: el 2026-09-23 el mismo cambio de valor entró en tres commits, que se colapsan en una fila.
 
 | Commit | Fecha | Autor | Mensaje | Lock antes | Lock después |
 |---|---|---|---|---|---|
@@ -209,7 +209,7 @@ el resultado final.
 3. **Re-bloqueo del test set.** `test.lock.sha256` se regeneró para v3, v4, v6, v8, v9, v10 y v11 (al
    menos 7 veces, no 5). La disciplina de "leer el test una vez" se aplica por generación de modelo;
    debe declararse así en la sección de amenazas a la validez. Mitigado parcialmente desde el
-   2026-09-26: el lock en sí protege la *identidad* de fila. El lock es el SHA-256 de los identificadores por fila (_row_hash) del conjunto de prueba, ordenados y unidos por saltos de línea (training/split.py:150-155; se verifica en training/evaluate_test.py:165-173). No es un hash de path+query+body+label ni de los bytes del parquet: cubre la identidad de las filas, no el contenido de las características, así que es correctamente invariante a cambios del extractor — pero antes de
+   2026-09-26: el lock en sí protege la *identidad* de fila. El lock es el SHA-256 de los identificadores por fila (_row_hash) del conjunto de prueba, ordenados y unidos por saltos de línea (training/split.py:150-155; se verifica en training/evaluate_test.py:189-192 (verificación del lock: lectura y recálculo) y :171-181 (row_hash)). No es un hash de path+query+body+label ni de los bytes del parquet: cubre la identidad de las filas, no el contenido de las características, así que es correctamente invariante a cambios del extractor — pero antes de
    esa fecha nada ataba un número citado al contenido exacto (byte a byte) del modelo/test-set que lo
    produjo; el manifiesto de checksums de `evaluate_test.py` cierra esa brecha específica hacia
    adelante, no retroactivamente para las generaciones anteriores a v11.
